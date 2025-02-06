@@ -1,0 +1,27 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# env
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+create-version.bash
+/logs
+
+# production
+build
+dist
+
+# testing
+coverage
+
+# misc
+/local
