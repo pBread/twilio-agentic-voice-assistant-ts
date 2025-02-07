@@ -1,6 +1,6 @@
 import EventEmitter from "events";
 
-export class SessionStore extends EventEmitter {
+export class TurnStore extends EventEmitter {
   constructor() {
     super();
   }

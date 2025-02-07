@@ -2,6 +2,7 @@ import * as env from "./lib/env";
 
 import express from "express";
 import ExpressWs from "express-ws";
+import { ConversationRelayAdapter } from "./services/twilio-conversation-relay-adapter";
 
 const { HOSTNAME, PORT } = env;
 
@@ -20,6 +21,17 @@ app.post("/call-status", async (req, res) => {});
 ****************************************************/
 app.ws("/convo-relay/:callSid", async (ws, req) => {
   const { callSid } = req.params;
+
+  const relay = new ConversationRelayAdapter(ws, callSid);
+
+  relay.onSetup((ev) => {
+    // handle setup
+  });
+
+  // handle speech
+  relay.onPrompt((ev) => {
+    if (!ev.last) return; // do nothing on partial speech
+  });
 });
 
 /****************************************************

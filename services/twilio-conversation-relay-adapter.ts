@@ -1,7 +1,7 @@
 import type { WebSocket } from "ws";
 
-export class ConversationRelayService {
-  constructor(public callSid: string, public ws: WebSocket) {}
+export class ConversationRelayAdapter {
+  constructor(private ws: WebSocket, public callSid: string) {}
 
   /****************************************************
    Websocket Actions
