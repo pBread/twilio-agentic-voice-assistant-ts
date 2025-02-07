@@ -115,31 +115,31 @@ export class ConversationRelayService {
 /****************************************************
  Twilio Conversation Relay Actions
 ****************************************************/
-export type TwilioAction =
+type TwilioAction =
   | EndSession
   | PlayMedia
   | SendDigits
   | SendTextToken
   | SwitchLanguage;
 
-export type EndSession = {
+type EndSession = {
   type: "end";
   handoffData: string; // stringified json
 };
 
-export type PlayMedia = {
+type PlayMedia = {
   type: "play";
   loop?: 1; // Default is 1
   preemptible?: false; // Default is false
   source: string;
 };
 
-export type SendDigits = {
+type SendDigits = {
   type: "sendDigits";
   digits: string;
 };
 
-export type SendTextToken = {
+type SendTextToken = {
   type: "text";
   last: boolean;
   token: string;
@@ -154,7 +154,7 @@ type SwitchLanguage = {
 /****************************************************
  Twilio Conversation Relay Incoming Websocket Messages
 ****************************************************/
-export type TwilioRelayMessage =
+type TwilioRelayMessage =
   | DTMFMessage
   | ErrorMessage
   | HumanInterrupt
@@ -164,32 +164,32 @@ export type TwilioRelayMessage =
 type ExtractMessageEvent<T> = T extends { type: infer U } ? U : never;
 export type TwilioRelayMessageTypes = ExtractMessageEvent<TwilioRelayMessage>;
 
-export type DTMFMessage = {
+type DTMFMessage = {
   type: "dtmf";
   digit: string;
 };
 
-export type ErrorMessage = {
+type ErrorMessage = {
   type: "error";
   description: string;
 };
 
 // when a human interrupts a bot
-export type HumanInterrupt = {
+type HumanInterrupt = {
   type: "interrupt";
 
   durationUntilInterruptMs: string; // the ms when interruption occured
   utteranceUntilInterrupt: string; // the clause that was being spoken when the user interrupted
 };
 
-export type PromptMessage = {
+type PromptMessage = {
   type: "prompt";
   voicePrompt: string;
   lang: "en-US";
   last: true;
 };
 
-export type SetupMessage = {
+type SetupMessage = {
   accountSid: string;
   applicationSid: string | null;
   callerName: string;
