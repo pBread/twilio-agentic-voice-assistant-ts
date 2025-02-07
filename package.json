@@ -1,7 +1,9 @@
 {
   "author": "https://github.com/pBread",
   "name": "twilio-conversation-relay-ts",
-  "scripts": {},
+  "scripts": {
+    "dev": "nodemon app.ts"
+  },
   "version": "1.0.0",
   "dependencies": {
     "dotenv-flow": "^4.1.0",

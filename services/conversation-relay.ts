@@ -1,6 +1,6 @@
 import type { WebSocket } from "ws";
 
-export class RelayService {
+export class ConversationRelayService {
   constructor(public callSid: string, public ws: WebSocket) {}
 
   /****************************************************
