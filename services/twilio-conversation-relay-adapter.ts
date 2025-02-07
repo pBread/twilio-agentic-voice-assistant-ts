@@ -1,5 +1,10 @@
 import type { WebSocket } from "ws";
 
+/**
+ * @class ConversationRelayAdapter
+ * @description Adapter for Twilio's Conversation Relay WebSocket. Implements typed methods for
+ * speech-to-text, text-to-speech, DTMF tones, interruptions, and call control.
+ */
 export class ConversationRelayAdapter {
   constructor(private ws: WebSocket, public callSid: string) {}
 
