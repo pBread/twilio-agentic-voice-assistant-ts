@@ -115,31 +115,31 @@ export class ConversationRelayService {
 /****************************************************
  Twilio Conversation Relay Actions
 ****************************************************/
-type TwilioAction =
+export type TwilioAction =
   | EndSession
   | PlayMedia
   | SendDigits
   | SendTextToken
   | SwitchLanguage;
 
-type EndSession = {
+export type EndSession = {
   type: "end";
   handoffData: string; // stringified json
 };
 
-type PlayMedia = {
+export type PlayMedia = {
   type: "play";
   loop?: 1; // Default is 1
   preemptible?: false; // Default is false
   source: string;
 };
 
-type SendDigits = {
+export type SendDigits = {
   type: "sendDigits";
   digits: string;
 };
 
-type SendTextToken = {
+export type SendTextToken = {
   type: "text";
   last: boolean;
   token: string;
@@ -154,7 +154,7 @@ type SwitchLanguage = {
 /****************************************************
  Twilio Conversation Relay Incoming Websocket Messages
 ****************************************************/
-type TwilioRelayMessage =
+export type TwilioRelayMessage =
   | DTMFMessage
   | ErrorMessage
   | HumanInterrupt
@@ -164,32 +164,32 @@ type TwilioRelayMessage =
 type ExtractMessageEvent<T> = T extends { type: infer U } ? U : never;
 export type TwilioRelayMessageTypes = ExtractMessageEvent<TwilioRelayMessage>;
 
-type DTMFMessage = {
+export type DTMFMessage = {
   type: "dtmf";
   digit: string;
 };
 
-type ErrorMessage = {
+export type ErrorMessage = {
   type: "error";
   description: string;
 };
 
 // when a human interrupts a bot
-type HumanInterrupt = {
+export type HumanInterrupt = {
   type: "interrupt";
 
   durationUntilInterruptMs: string; // the ms when interruption occured
   utteranceUntilInterrupt: string; // the clause that was being spoken when the user interrupted
 };
 
-type PromptMessage = {
+export type PromptMessage = {
   type: "prompt";
   voicePrompt: string;
   lang: "en-US";
   last: true;
 };
 
-type SetupMessage = {
+export type SetupMessage = {
   accountSid: string;
   applicationSid: string | null;
   callerName: string;
