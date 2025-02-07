@@ -11,5 +11,5 @@ const hostReg =
   /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$/;
 if (!hostReg.test(HOSTNAME))
   console.error(
-    `Invalid HOSTNAME. Must only be hostname, e.g. domain.com or sub.domain.com`
+    `Invalid HOSTNAME. Only include the the hostname, e.g. domain.com or sub.domain.com, not the other URL elements, e.g. http://`
   );
