@@ -3,6 +3,7 @@ import * as env from "./lib/env";
 import express from "express";
 import ExpressWs from "express-ws";
 import { ConversationRelayAdapter } from "./services/twilio-conversation-relay-adapter";
+import log from "./lib/logger";
 
 const { HOSTNAME, PORT } = env;
 
@@ -38,6 +39,6 @@ app.ws("/convo-relay/:callSid", async (ws, req) => {
  Start Server
 ****************************************************/
 app.listen(PORT, () => {
-  console.log(`server running on http://localhost:${PORT}`);
-  console.log(`public base URL https://${HOSTNAME}`);
+  log.green(`server running on http://localhost:${PORT}`);
+  log.green(`public base URL https://${HOSTNAME}`);
 });
