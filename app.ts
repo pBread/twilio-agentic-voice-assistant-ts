@@ -2,8 +2,8 @@ import * as env from "./lib/env";
 
 import express from "express";
 import ExpressWs from "express-ws";
-import { ConversationRelayAdapter } from "./services/twilio-conversation-relay-adapter";
 import log from "./lib/logger";
+import { ConversationRelayAdapter } from "./services/twilio-conversation-relay-adapter";
 
 const { HOSTNAME, PORT } = env;
 
