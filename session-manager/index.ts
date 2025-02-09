@@ -11,11 +11,17 @@ export class SessionManager {
     this.context = new ContextStore();
     this.turns = new TurnStore();
 
-    this.agent = new AgentRuntime();
+    this.agent = new AgentRuntime(
+      {
+        config: {},
+        instructions: "Hello world",
+        middleware: [],
+        tools: [],
+      },
+      { context: this.context, turns: this.turns }
+    );
   }
 }
 
 const session = new SessionManager();
 session.turns.list();
-
-session.agent.addResolver();
