@@ -4,4 +4,6 @@ export class SessionTurnStore extends EventEmitter {
   constructor() {
     super();
   }
+
+  list = () => {};
 }
