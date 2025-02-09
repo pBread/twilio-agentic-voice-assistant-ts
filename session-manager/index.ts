@@ -8,11 +8,14 @@ export class SessionManager {
   turns: TurnStore;
 
   constructor() {
-    this.agent = new AgentRuntime();
     this.context = new ContextStore();
     this.turns = new TurnStore();
+
+    this.agent = new AgentRuntime();
   }
 }
 
 const session = new SessionManager();
 session.turns.list();
+
+session.agent.addResolver();
