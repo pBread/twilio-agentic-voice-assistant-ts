@@ -3,7 +3,8 @@ import * as env from "./lib/env";
 import express from "express";
 import ExpressWs from "express-ws";
 import log from "./lib/logger";
-import { ConversationRelayAdapter } from "./services/twilio-conversation-relay-adapter";
+import { ConversationRelayAdapter } from "./services/conversation-relay-adapter";
+import { TwilioCallWebhookPayload } from "./services/twilio-voice";
 
 const { HOSTNAME, PORT } = env;
 
@@ -13,7 +14,14 @@ app.use(express.urlencoded({ extended: true })).use(express.json());
 /****************************************************
  Incoming Call Webhook
 ****************************************************/
-app.post("/incoming-call", async (req, res) => {});
+app.post("/incoming-call", async (req, res) => {
+  const { CallSid } = req.body as TwilioCallWebhookPayload;
+
+  const twiml = `\
+
+  
+  `;
+});
 
 app.post("/call-status", async (req, res) => {});
 
