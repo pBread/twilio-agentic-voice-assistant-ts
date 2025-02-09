@@ -18,6 +18,7 @@
     "bots/**/*",
     "lib/**/*",
     "services/**/*",
-    "scripts/**/*.ts"
+    "scripts/**/*.ts",
+    "session-manager/**/*.ts"
   ]
 }
