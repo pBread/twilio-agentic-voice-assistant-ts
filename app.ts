@@ -31,7 +31,7 @@ app.post("/call-status", async (req, res) => {});
 app.ws("/convo-relay/:callSid", async (ws, req) => {
   const { callSid } = req.params;
 
-  const relay = new ConversationRelayAdapter(ws, callSid);
+  const relay = new ConversationRelayAdapter(ws);
 
   relay.onSetup((ev) => {
     // handle setup

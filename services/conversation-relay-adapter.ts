@@ -6,7 +6,7 @@ import type { WebSocket } from "ws";
  * speech-to-text, text-to-speech, DTMF tones, interruptions, and call control.
  */
 export class ConversationRelayAdapter {
-  constructor(private ws: WebSocket, public callSid: string) {}
+  constructor(private ws: WebSocket) {}
 
   /****************************************************
    Websocket Actions
