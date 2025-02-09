@@ -1,14 +1,6 @@
 import { ContextStore } from "./context-store";
 import { TurnStore } from "./turn-store";
 
-export interface AgentConfiguration {
-  config: LLMConfig;
-  instructions: string;
-  tools: ToolManifestItem[];
-
-  middleware: AgentMiddleware[];
-}
-
 export class AgentRuntime {
   private config: LLMConfig;
   private instructions: string;
@@ -53,6 +45,14 @@ export class AgentRuntime {
     const { tools } = this.executeMiddleware();
     return tools;
   }
+}
+
+export interface AgentConfiguration {
+  config: LLMConfig;
+  instructions: string;
+  tools: ToolManifestItem[];
+
+  middleware: AgentMiddleware[];
 }
 
 export type AgentMiddleware = (
