@@ -18,7 +18,7 @@ export class AgentRuntime {
     this.middleware = opts.middleware;
   }
 
-  private executeMiddleware(): AgentMiddlewareParams {
+  private applyMiddleware(): AgentMiddlewareParams {
     const initialParams: AgentMiddlewareParams = {
       instructions: this.instructions,
       tools: this.tools,
@@ -32,17 +32,17 @@ export class AgentRuntime {
   }
 
   getConfig(): LLMConfig {
-    const { config } = this.executeMiddleware();
+    const { config } = this.applyMiddleware();
     return config;
   }
 
   getSystemInstructions(): string {
-    const { instructions } = this.executeMiddleware();
+    const { instructions } = this.applyMiddleware();
     return instructions;
   }
 
   getTools(): ToolManifestItem[] {
-    const { tools } = this.executeMiddleware();
+    const { tools } = this.applyMiddleware();
     return tools;
   }
 }
