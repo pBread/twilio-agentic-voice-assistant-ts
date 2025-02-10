@@ -1,4 +1,5 @@
 import { makeId } from "../lib/ids";
+import log from "../lib/logger";
 import { TypedEventEmitter } from "../lib/types";
 import {
   BotDTMFTurn,
@@ -53,166 +54,54 @@ export class TurnStore {
   /****************************************************
    Turn Record Creators
   ****************************************************/
-  addBotDTMF = (params: BotDTMFTurnParams): BotDTMFTurn => {
-    const turn = makeBotDTMFTurn(params);
+  addBotText = (params: BotTextTurnParams): BotTextTurn => {
+    let content = "";
+    let interrupted = params.interrupted ?? false;
+    let version = 0;
+    const id = params.id ?? makeId("bot");
+
     const emitUpdate = () => {
-      turn.version++;
-      this.eventEmitter.emit("updatedTurn", turn.id);
+      this.eventEmitter.emit("updatedTurn", id);
     };
 
-    const fullTurn = {
-      ...turn,
+    const turn: BotTextTurn = {
+      createdAt: new Date().toISOString(),
+      id,
+      role: "bot",
+      type: "text",
+
       callSid: this.callSid,
       order: this.nextOrder(),
-      get version() {
-        return turn.version;
-      },
 
       get content() {
-        return turn.content;
+        return content;
       },
-      set content(value: string) {
-        turn.content = value;
-        emitUpdate();
+      set content(value) {
+        content = value;
+        this.version++;
       },
 
       get interrupted() {
-        return turn.interrupted;
+        return interrupted;
       },
-      set interrupted(value: boolean) {
-        turn.interrupted = value;
+
+      set interrupted(value) {
+        interrupted = value;
+        this.version++;
+      },
+
+      get version() {
+        return version;
+      },
+
+      set version(value) {
+        version = value;
         emitUpdate();
       },
     };
 
-    this.turnMap.set(fullTurn.id, fullTurn);
-    return fullTurn;
-  };
-
-  addBotText = (params: BotTextTurnParams): BotTextTurn => {
-    const turn = makeBotTextTurn(params);
-    const emitUpdate = () => {
-      turn.version++;
-      this.eventEmitter.emit("updatedTurn", turn.id);
-    };
-
-    const fullTurn = {
-      ...turn,
-      callSid: this.callSid,
-      order: this.nextOrder(),
-      get version() {
-        return turn.version;
-      },
-      get content() {
-        return turn.content;
-      },
-      set content(value: string) {
-        turn.content = value;
-        emitUpdate();
-      },
-    };
-    this.turnMap.set(fullTurn.id, fullTurn);
-    return fullTurn;
-  };
-
-  addBotTool = (params: BotToolTurnParams): BotToolTurn => {
-    const turn = makeBotToolTurn(params);
-    const emitUpdate = () => {
-      turn.version++;
-      this.eventEmitter.emit("updatedTurn", turn.id);
-    };
-
-    const fullTurn = {
-      ...turn,
-      callSid: this.callSid,
-      order: this.nextOrder(),
-      get version() {
-        return turn.version;
-      },
-    };
-    this.turnMap.set(fullTurn.id, fullTurn);
-    return fullTurn;
-  };
-
-  addHumanDTMF = (params: HumanDTMFTurnParams): HumanDTMFTurn => {
-    const turn = makeHumanDTMFTurn(params);
-    const emitUpdate = () => {
-      turn.version++;
-      this.eventEmitter.emit("updatedTurn", turn.id);
-    };
-
-    const fullTurn = {
-      ...turn,
-      callSid: this.callSid,
-      order: this.nextOrder(),
-      get version() {
-        return turn.version;
-      },
-
-      get content() {
-        return turn.content;
-      },
-      set content(content: string) {
-        turn.content = content;
-        emitUpdate();
-      },
-    };
-    this.turnMap.set(fullTurn.id, fullTurn);
-    return fullTurn;
-  };
-
-  addHumanText = (params: HumanTextTurnParams): HumanTextTurn => {
-    const turn = makeHumanTextTurn(params);
-    const emitUpdate = () => {
-      turn.version++;
-      this.eventEmitter.emit("updatedTurn", turn.id);
-    };
-
-    const fullTurn = {
-      ...turn,
-      callSid: this.callSid,
-      order: this.nextOrder(),
-      get version() {
-        return turn.version;
-      },
-
-      get content() {
-        return turn.content;
-      },
-      set content(content: string) {
-        turn.content = content;
-        emitUpdate();
-      },
-    };
-    this.turnMap.set(fullTurn.id, fullTurn);
-    return fullTurn;
-  };
-
-  addSystem = (params: SystemTurnParams): SystemTurn => {
-    const turn = makeSystemTurn(params);
-    const emitUpdate = () => {
-      turn.version++;
-      this.eventEmitter.emit("updatedTurn", turn.id);
-    };
-
-    const fullTurn = {
-      ...turn,
-      callSid: this.callSid,
-      order: this.nextOrder(),
-      get version() {
-        return turn.version;
-      },
-
-      get content() {
-        return turn.content;
-      },
-      set content(content: string) {
-        turn.content = content;
-        emitUpdate();
-      },
-    };
-    this.turnMap.set(fullTurn.id, fullTurn);
-    return fullTurn;
+    this.turnMap.set(turn.id, turn);
+    return turn;
   };
 
   /****************************************************
@@ -249,81 +138,3 @@ interface TurnEvents {
 /****************************************************
  Turn Creators
 ****************************************************/
-export function makeBotDTMFTurn(
-  params: BotDTMFTurnParams
-): Omit<BotDTMFTurn, "order" | "callSid"> {
-  return {
-    ...params,
-    createdAt: new Date().toISOString(),
-    id: params.id ?? makeId("bot"),
-    interrupted: params.interrupted ?? false,
-    role: "bot",
-    type: "dtmf",
-    version: 0,
-  };
-}
-
-export function makeBotTextTurn(
-  params: BotTextTurnParams
-): Omit<BotTextTurn, "order" | "callSid"> {
-  return {
-    ...params,
-    createdAt: new Date().toISOString(),
-    id: params.id ?? makeId("bot"),
-    interrupted: params.interrupted ?? false,
-    role: "bot",
-    type: "text",
-    version: 0,
-  };
-}
-
-export function makeBotToolTurn(
-  params: BotToolTurnParams
-): Omit<BotToolTurn, "order" | "callSid"> {
-  return {
-    ...params,
-    createdAt: new Date().toISOString(),
-    id: params.id ?? makeId("bot"),
-    role: "bot",
-    type: "tool",
-    version: 0,
-  };
-}
-
-export function makeHumanDTMFTurn(
-  params: HumanDTMFTurnParams
-): Omit<HumanDTMFTurn, "order" | "callSid"> {
-  return {
-    ...params,
-    createdAt: new Date().toISOString(),
-    id: params.id ?? makeId("hum"),
-    role: "human",
-    type: "dtmf",
-    version: 0,
-  };
-}
-
-export function makeHumanTextTurn(
-  params: HumanTextTurnParams
-): Omit<HumanTextTurn, "order" | "callSid"> {
-  return {
-    ...params,
-    createdAt: new Date().toISOString(),
-    id: params.id ?? makeId("hum"),
-    role: "human",
-    type: "text",
-    version: 0,
-  };
-}
-
-export function makeSystemTurn(
-  params: SystemTurnParams
-): Omit<SystemTurn, "order" | "callSid"> {
-  return {
-    ...params,
-    createdAt: new Date().toISOString(),
-    id: params.id ?? makeId("sys"),
-    role: "system",
-    version: 0,
-  };
-}
