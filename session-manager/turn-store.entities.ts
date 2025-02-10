@@ -80,7 +80,7 @@ export interface BotToolTurn extends StoreTurn {
 
 export type BotToolTurnParams = Omit<
   BotToolTurn,
-  "callSid" | "createdAt" | "role" | "type" | "version"
+  "callSid" | "createdAt" | "id" | "order" | "role" | "type" | "version"
 > & {
   id?: string;
 };
