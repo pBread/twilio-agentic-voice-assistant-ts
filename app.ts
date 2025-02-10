@@ -5,6 +5,7 @@ import ExpressWs from "express-ws";
 import log from "./lib/logger";
 import { ConversationRelayAdapter } from "./services/conversation-relay-adapter";
 import { TwilioCallWebhookPayload } from "./services/twilio-voice";
+import { SessionManager } from "./session-manager";
 
 const { HOSTNAME, PORT } = env;
 
@@ -30,6 +31,8 @@ app.post("/call-status", async (req, res) => {});
 ****************************************************/
 app.ws("/convo-relay/:callSid", async (ws, req) => {
   const { callSid } = req.params;
+
+  const session = new SessionManager(callSid);
 
   const relay = new ConversationRelayAdapter(ws);
 
