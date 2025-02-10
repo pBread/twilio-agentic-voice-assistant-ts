@@ -1,6 +1,7 @@
 import { makeId } from "../lib/ids";
 import log from "../lib/logger";
-import { TypedEventEmitter, createVersionedObject } from "../lib/events";
+import { createVersionedObject } from "../lib/versioning";
+import { TypedEventEmitter } from "../lib/events";
 import {
   BotDTMFTurn,
   BotDTMFTurnParams,
