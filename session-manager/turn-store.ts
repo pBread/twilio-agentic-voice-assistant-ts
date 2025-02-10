@@ -35,7 +35,7 @@ export class TurnStore {
   list = () => [...this.turnMap.values()];
 
   addBotDTMF = (params: BotDTMFTurnParams): BotDTMFTurn => {
-    const turn = makeBotDTMF(params);
+    const turn = makeBotDTMFTurn(params);
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
@@ -46,7 +46,7 @@ export class TurnStore {
   };
 
   addBotText = (params: BotTextTurnParams): BotTextTurn => {
-    const turn = makeBotText(params);
+    const turn = makeBotTextTurn(params);
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
@@ -57,7 +57,7 @@ export class TurnStore {
   };
 
   addBotTool = (params: BotToolTurnParams): BotToolTurn => {
-    const turn = makeBotTool(params);
+    const turn = makeBotToolTurn(params);
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
@@ -68,7 +68,7 @@ export class TurnStore {
   };
 
   addHumanDTMF = (params: HumanDTMFTurnParams): HumanDTMFTurn => {
-    const turn = makeHumanDTMF(params);
+    const turn = makeHumanDTMFTurn(params);
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
@@ -79,7 +79,7 @@ export class TurnStore {
   };
 
   addHumanText = (params: HumanTextTurnParams): HumanTextTurn => {
-    const turn = makeHumanText(params);
+    const turn = makeHumanTextTurn(params);
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
@@ -119,7 +119,7 @@ export class TurnStore {
   };
 }
 
-export function makeBotDTMF(
+export function makeBotDTMFTurn(
   params: BotDTMFTurnParams
 ): Omit<BotDTMFTurn, "order" | "callSid"> {
   return {
@@ -132,7 +132,7 @@ export function makeBotDTMF(
   };
 }
 
-export function makeBotText(
+export function makeBotTextTurn(
   params: BotTextTurnParams
 ): Omit<BotTextTurn, "order" | "callSid"> {
   return {
@@ -145,7 +145,7 @@ export function makeBotText(
   };
 }
 
-export function makeBotTool(
+export function makeBotToolTurn(
   params: BotToolTurnParams
 ): Omit<BotToolTurn, "order" | "callSid"> {
   return {
@@ -157,7 +157,7 @@ export function makeBotTool(
   };
 }
 
-export function makeHumanDTMF(
+export function makeHumanDTMFTurn(
   params: HumanDTMFTurnParams
 ): Omit<HumanDTMFTurn, "order" | "callSid"> {
   return {
@@ -169,7 +169,7 @@ export function makeHumanDTMF(
   };
 }
 
-export function makeHumanText(
+export function makeHumanTextTurn(
   params: HumanTextTurnParams
 ): Omit<HumanTextTurn, "order" | "callSid"> {
   return {
