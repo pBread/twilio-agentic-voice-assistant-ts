@@ -6,6 +6,7 @@ export type Turn =
   | HumanTextTurn
   | SystemTurn;
 
+// properties inherited by all turn entities
 interface StoreTurn {
   callSid: string;
   createdAt: string;
@@ -17,6 +18,10 @@ interface StoreTurn {
  Bot Turns
 ****************************************************/
 export type BotTurn = BotDTMFTurn | BotTextTurn | BotToolTurn;
+export type BotTurnParams =
+  | BotDTMFTurnParams
+  | BotTextTurnParams
+  | BotToolTurnParams;
 
 // represents DTMF tones from the bot
 export interface BotDTMFTurn extends StoreTurn {
@@ -75,6 +80,7 @@ export interface ToolCall {
  Human Turns
 ****************************************************/
 export type HumanTurn = HumanDTMFTurn | HumanTextTurn;
+export type HumanTurnParams = HumanDTMFTurnParams | HumanTextTurnParams;
 
 // represents DTMF tones from the bot
 export interface HumanDTMFTurn extends StoreTurn {
