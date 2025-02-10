@@ -3,9 +3,10 @@ export function createVersionedObject<T extends VersionedObject>(
   baseObject: T,
   emitUpdate: () => void
 ): T {
+  const clonedObject = JSON.parse(JSON.stringify(baseObject));
   return new Proxy(
-    baseObject,
-    createVersionedHandler<T>(baseObject, emitUpdate)
+    clonedObject,
+    createVersionedHandler<T>(clonedObject, emitUpdate)
   );
 }
 

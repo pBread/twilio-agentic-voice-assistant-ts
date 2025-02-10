@@ -49,10 +49,4 @@ const turn2 = session.turns.addBotTool({
   ],
 });
 
-const sub = turn2.tool_calls.filter((it) => it);
-sub[0].id += "-1";
-sub[0].id += "-2";
-sub[0].id += "-3";
-sub[0].id += "-4";
-
-log.debug("session", sub);
+session.turns.setToolResult("tool-id-0", { yoko: "ono" });
