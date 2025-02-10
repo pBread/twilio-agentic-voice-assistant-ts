@@ -37,18 +37,19 @@ session.turns.on("updatedTurn", (id) => {
 // turn.content = "Hello world.";
 // turn.content += " Next sentence.";
 
-const toolCall0 = {
-  function: { name: "fnName", arguments: "" },
-  id: "tool-id-0",
-  index: 0,
-  type: "function",
-} as ToolCall;
-
 const turn2 = session.turns.addBotTool({
   id: "tool-turn",
-  tool_calls: [toolCall0],
+  tool_calls: [
+    {
+      function: { name: "fnName", arguments: "" },
+      id: "tool-id-0",
+      index: 0,
+      type: "function",
+    },
+  ],
 });
 
-turn2.id += "-1";
+const sub = turn2.tool_calls.filter((it) => it);
+sub[0].id += "-1";
 
-toolCall0.id += "-1";
+log.debug("session", sub);
