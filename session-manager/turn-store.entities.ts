@@ -36,12 +36,13 @@ export type BotDTMFTurnParams = Omit<
   "callSid" | "createdAt" | "interrupted" | "id" | "order" | "role" | "type"
 > & {
   id?: string;
+  interrupted?: boolean;
 };
 
 // represents a text from LLM that will be spoken
 export interface BotTextTurn extends StoreTurn {
   content: string;
-  interrupted: boolean;
+  interrupted?: boolean;
   role: "bot";
   type: "text";
 }
@@ -51,6 +52,7 @@ export type BotTextTurnParams = Omit<
   "callSid" | "createdAt" | "interrupted" | "id" | "order" | "role" | "type"
 > & {
   id?: string;
+  interrupted?: boolean;
 };
 
 // represents the LLM requesting a FN tool be executed

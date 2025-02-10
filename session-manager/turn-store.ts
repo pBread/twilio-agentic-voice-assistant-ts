@@ -24,8 +24,7 @@ export class TurnStore {
     this.callSid = callSid;
   }
 
-  private _currentOrder: number = 0; // order is a non-sequential incrementor. Each turn is only gauranteed to have an order value greater than the previous. In other words, order is not always exactly +1 greater than the previous.
-  // current order can only be referenced, not set publically
+  private _currentOrder: number = 0;
   public get currentOrder() {
     return this._currentOrder;
   }
@@ -35,7 +34,8 @@ export class TurnStore {
   get = (id: string) => this.turnMap.get(id);
   list = () => [...this.turnMap.values()];
 
-  addBotDTMF = (turn: Omit<BotDTMFTurn, "order" | "callSid">): BotDTMFTurn => {
+  addBotDTMF = (params: BotDTMFTurnParams): BotDTMFTurn => {
+    const turn = makeBotDTMF(params);
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
@@ -45,7 +45,8 @@ export class TurnStore {
     return fullTurn;
   };
 
-  addBotText = (turn: Omit<BotTextTurn, "order" | "callSid">): BotTextTurn => {
+  addBotText = (params: BotTextTurnParams): BotTextTurn => {
+    const turn = makeBotText(params);
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
@@ -55,7 +56,8 @@ export class TurnStore {
     return fullTurn;
   };
 
-  addBotTool = (turn: Omit<BotToolTurn, "order" | "callSid">): BotToolTurn => {
+  addBotTool = (params: BotToolTurnParams): BotToolTurn => {
+    const turn = makeBotTool(params);
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
@@ -65,9 +67,8 @@ export class TurnStore {
     return fullTurn;
   };
 
-  addHumanDTMF = (
-    turn: Omit<HumanDTMFTurn, "order" | "callSid">
-  ): HumanDTMFTurn => {
+  addHumanDTMF = (params: HumanDTMFTurnParams): HumanDTMFTurn => {
+    const turn = makeHumanDTMF(params);
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
@@ -77,9 +78,8 @@ export class TurnStore {
     return fullTurn;
   };
 
-  addHumanText = (
-    turn: Omit<HumanTextTurn, "order" | "callSid">
-  ): HumanTextTurn => {
+  addHumanText = (params: HumanTextTurnParams): HumanTextTurn => {
+    const turn = makeHumanText(params);
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
@@ -89,7 +89,8 @@ export class TurnStore {
     return fullTurn;
   };
 
-  addSystem = (turn: Omit<SystemTurn, "order" | "callSid">): SystemTurn => {
+  addSystem = (params: SystemTurnParams): SystemTurn => {
+    const turn = makeSystemTurn(params);
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
@@ -123,11 +124,11 @@ export function makeBotDTMF(
 ): Omit<BotDTMFTurn, "order" | "callSid"> {
   return {
     ...params,
-    id: params.id ?? makeId("bot"),
     createdAt: new Date().toISOString(),
+    id: params.id ?? makeId("bot"),
+    interrupted: params.interrupted ?? false,
     role: "bot",
     type: "dtmf",
-    interrupted: false,
   };
 }
 
@@ -136,11 +137,11 @@ export function makeBotText(
 ): Omit<BotTextTurn, "order" | "callSid"> {
   return {
     ...params,
-    id: params.id ?? makeId("bot"),
     createdAt: new Date().toISOString(),
+    id: params.id ?? makeId("bot"),
+    interrupted: params.interrupted ?? false,
     role: "bot",
     type: "text",
-    interrupted: false,
   };
 }
 
@@ -149,8 +150,8 @@ export function makeBotTool(
 ): Omit<BotToolTurn, "order" | "callSid"> {
   return {
     ...params,
-    id: params.id ?? makeId("bot"),
     createdAt: new Date().toISOString(),
+    id: params.id ?? makeId("bot"),
     role: "bot",
     type: "tool",
   };
@@ -161,8 +162,8 @@ export function makeHumanDTMF(
 ): Omit<HumanDTMFTurn, "order" | "callSid"> {
   return {
     ...params,
-    id: params.id ?? makeId("hum"),
     createdAt: new Date().toISOString(),
+    id: params.id ?? makeId("hum"),
     role: "human",
     type: "dtmf",
   };
@@ -173,8 +174,8 @@ export function makeHumanText(
 ): Omit<HumanTextTurn, "order" | "callSid"> {
   return {
     ...params,
-    id: params.id ?? makeId("hum"),
     createdAt: new Date().toISOString(),
+    id: params.id ?? makeId("hum"),
     role: "human",
     type: "text",
   };
@@ -185,8 +186,8 @@ export function makeSystemTurn(
 ): Omit<SystemTurn, "order" | "callSid"> {
   return {
     ...params,
-    id: params.id ?? makeId("sys"),
     createdAt: new Date().toISOString(),
+    id: params.id ?? makeId("sys"),
     role: "system",
   };
 }
