@@ -6,7 +6,7 @@ export class AgentRuntime {
   private instructions: string;
   private tools: ToolManifestItem[];
 
-  private middleware: AgentMiddleware[];
+  private resolvers: AgentResolver[];
 
   constructor(
     opts: AgentConfiguration,
@@ -15,34 +15,34 @@ export class AgentRuntime {
     this.config = opts.config;
     this.instructions = opts.instructions;
     this.tools = opts.tools;
-    this.middleware = opts.middleware;
+    this.resolvers = opts.resolvers;
   }
 
-  private applyMiddleware(): AgentMiddlewareParams {
-    const initialParams: AgentMiddlewareParams = {
+  private applyResolvers(): AgentResolverParams {
+    const initialParams: AgentResolverParams = {
       instructions: this.instructions,
       tools: this.tools,
       config: this.config,
     };
 
-    return this.middleware.reduce((params, middleware) => {
-      const updates = middleware(this.store, params);
+    return this.resolvers.reduce((params, resolver) => {
+      const updates = resolver(this.store, params);
       return { ...params, ...updates };
     }, initialParams);
   }
 
   getConfig(): LLMConfig {
-    const { config } = this.applyMiddleware();
+    const { config } = this.applyResolvers();
     return config;
   }
 
   getSystemInstructions(): string {
-    const { instructions } = this.applyMiddleware();
+    const { instructions } = this.applyResolvers();
     return instructions;
   }
 
   getTools(): ToolManifestItem[] {
-    const { tools } = this.applyMiddleware();
+    const { tools } = this.applyResolvers();
     return tools;
   }
 }
@@ -52,15 +52,15 @@ export interface AgentConfiguration {
   instructions: string;
   tools: ToolManifestItem[];
 
-  middleware: AgentMiddleware[];
+  resolvers: AgentResolver[];
 }
 
-export type AgentMiddleware = (
+export type AgentResolver = (
   store: { context: ContextStore; turns: TurnStore },
-  params: AgentMiddlewareParams
-) => Partial<AgentMiddlewareParams>;
+  params: AgentResolverParams
+) => Partial<AgentResolverParams>;
 
-interface AgentMiddlewareParams {
+interface AgentResolverParams {
   config: LLMConfig;
   instructions: string;
   tools: ToolManifestItem[];

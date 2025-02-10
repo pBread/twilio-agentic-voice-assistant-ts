@@ -15,7 +15,7 @@ export class SessionManager {
       {
         config: {},
         instructions: "Hello world",
-        middleware: [],
+        resolvers: [],
         tools: [],
       },
       { context: this.context, turns: this.turns }
