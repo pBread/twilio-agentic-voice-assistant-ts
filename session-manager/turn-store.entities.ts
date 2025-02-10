@@ -12,6 +12,7 @@ interface StoreTurn {
   createdAt: string;
   id: string;
   order: number; // order is a non-sequential incrementor. Each turn is only gauranteed to have an order value greater than the previous. In other words, order is not always exactly +1 greater than the previous.
+  version: number;
 }
 
 /****************************************************
@@ -33,7 +34,14 @@ export interface BotDTMFTurn extends StoreTurn {
 
 export type BotDTMFTurnParams = Omit<
   BotDTMFTurn,
-  "callSid" | "createdAt" | "interrupted" | "id" | "order" | "role" | "type"
+  | "callSid"
+  | "createdAt"
+  | "interrupted"
+  | "id"
+  | "order"
+  | "role"
+  | "type"
+  | "version"
 > & {
   id?: string;
   interrupted?: boolean;
@@ -49,7 +57,14 @@ export interface BotTextTurn extends StoreTurn {
 
 export type BotTextTurnParams = Omit<
   BotTextTurn,
-  "callSid" | "createdAt" | "interrupted" | "id" | "order" | "role" | "type"
+  | "callSid"
+  | "createdAt"
+  | "interrupted"
+  | "id"
+  | "order"
+  | "role"
+  | "type"
+  | "version"
 > & {
   id?: string;
   interrupted?: boolean;
@@ -65,7 +80,7 @@ export interface BotToolTurn extends StoreTurn {
 
 export type BotToolTurnParams = Omit<
   BotToolTurn,
-  "callSid" | "createdAt" | "role" | "type"
+  "callSid" | "createdAt" | "role" | "type" | "version"
 > & {
   id?: string;
 };
@@ -93,7 +108,7 @@ export interface HumanDTMFTurn extends StoreTurn {
 
 export type HumanDTMFTurnParams = Omit<
   HumanDTMFTurn,
-  "callSid" | "createdAt" | "id" | "order" | "role" | "type"
+  "callSid" | "createdAt" | "id" | "order" | "role" | "type" | "version"
 > & {
   id?: string;
 };
@@ -106,7 +121,7 @@ export interface HumanTextTurn extends StoreTurn {
 
 export type HumanTextTurnParams = Omit<
   HumanTextTurn,
-  "callSid" | "createdAt" | "id" | "order" | "role" | "type"
+  "callSid" | "createdAt" | "id" | "order" | "role" | "type" | "version"
 > & {
   id?: string;
 };

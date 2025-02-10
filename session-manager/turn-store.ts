@@ -18,7 +18,7 @@ import {
 
 export class TurnStore {
   private callSid: string;
-  private turnMap: Map<string, Turn>; // map enforces turn ordering
+  private turnMap: Map<string, Turn>; // map order enforces turn ordering, not the order property on the turns
 
   constructor(callSid: string) {
     this.callSid = callSid;
@@ -55,21 +55,61 @@ export class TurnStore {
   ****************************************************/
   addBotDTMF = (params: BotDTMFTurnParams): BotDTMFTurn => {
     const turn = makeBotDTMFTurn(params);
+    const emitUpdate = () => {
+      turn.version++;
+      this.eventEmitter.emit("updatedTurn", turn.id);
+    };
+
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
       order: this.nextOrder(),
+      get version() {
+        return turn.version;
+      },
+
+      get content() {
+        return turn.content;
+      },
+      set content(value: string) {
+        turn.content = value;
+        emitUpdate();
+      },
+
+      get interrupted() {
+        return turn.interrupted;
+      },
+      set interrupted(value: boolean) {
+        turn.interrupted = value;
+        emitUpdate();
+      },
     };
+
     this.turnMap.set(fullTurn.id, fullTurn);
     return fullTurn;
   };
 
   addBotText = (params: BotTextTurnParams): BotTextTurn => {
     const turn = makeBotTextTurn(params);
+    const emitUpdate = () => {
+      turn.version++;
+      this.eventEmitter.emit("updatedTurn", turn.id);
+    };
+
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
       order: this.nextOrder(),
+      get version() {
+        return turn.version;
+      },
+      get content() {
+        return turn.content;
+      },
+      set content(value: string) {
+        turn.content = value;
+        emitUpdate();
+      },
     };
     this.turnMap.set(fullTurn.id, fullTurn);
     return fullTurn;
@@ -77,10 +117,18 @@ export class TurnStore {
 
   addBotTool = (params: BotToolTurnParams): BotToolTurn => {
     const turn = makeBotToolTurn(params);
+    const emitUpdate = () => {
+      turn.version++;
+      this.eventEmitter.emit("updatedTurn", turn.id);
+    };
+
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
       order: this.nextOrder(),
+      get version() {
+        return turn.version;
+      },
     };
     this.turnMap.set(fullTurn.id, fullTurn);
     return fullTurn;
@@ -88,10 +136,26 @@ export class TurnStore {
 
   addHumanDTMF = (params: HumanDTMFTurnParams): HumanDTMFTurn => {
     const turn = makeHumanDTMFTurn(params);
+    const emitUpdate = () => {
+      turn.version++;
+      this.eventEmitter.emit("updatedTurn", turn.id);
+    };
+
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
       order: this.nextOrder(),
+      get version() {
+        return turn.version;
+      },
+
+      get content() {
+        return turn.content;
+      },
+      set content(content: string) {
+        turn.content = content;
+        emitUpdate();
+      },
     };
     this.turnMap.set(fullTurn.id, fullTurn);
     return fullTurn;
@@ -99,10 +163,26 @@ export class TurnStore {
 
   addHumanText = (params: HumanTextTurnParams): HumanTextTurn => {
     const turn = makeHumanTextTurn(params);
+    const emitUpdate = () => {
+      turn.version++;
+      this.eventEmitter.emit("updatedTurn", turn.id);
+    };
+
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
       order: this.nextOrder(),
+      get version() {
+        return turn.version;
+      },
+
+      get content() {
+        return turn.content;
+      },
+      set content(content: string) {
+        turn.content = content;
+        emitUpdate();
+      },
     };
     this.turnMap.set(fullTurn.id, fullTurn);
     return fullTurn;
@@ -110,10 +190,26 @@ export class TurnStore {
 
   addSystem = (params: SystemTurnParams): SystemTurn => {
     const turn = makeSystemTurn(params);
+    const emitUpdate = () => {
+      turn.version++;
+      this.eventEmitter.emit("updatedTurn", turn.id);
+    };
+
     const fullTurn = {
       ...turn,
       callSid: this.callSid,
       order: this.nextOrder(),
+      get version() {
+        return turn.version;
+      },
+
+      get content() {
+        return turn.content;
+      },
+      set content(content: string) {
+        turn.content = content;
+        emitUpdate();
+      },
     };
     this.turnMap.set(fullTurn.id, fullTurn);
     return fullTurn;
@@ -122,6 +218,7 @@ export class TurnStore {
   /****************************************************
    Turn Setter Methods
   ****************************************************/
+
   setToolResult = (toolId: string, result: object) => {
     const toolTurn = [...this.turnMap.values()].find(
       (turn) =>
@@ -144,7 +241,10 @@ export class TurnStore {
 /****************************************************
  Turn Events
 ****************************************************/
-interface TurnEvents {}
+interface TurnEvents {
+  addedTurn: (turn: Turn) => void;
+  updatedTurn: (id: string) => void;
+}
 
 /****************************************************
  Turn Creators
@@ -159,6 +259,7 @@ export function makeBotDTMFTurn(
     interrupted: params.interrupted ?? false,
     role: "bot",
     type: "dtmf",
+    version: 0,
   };
 }
 
@@ -172,6 +273,7 @@ export function makeBotTextTurn(
     interrupted: params.interrupted ?? false,
     role: "bot",
     type: "text",
+    version: 0,
   };
 }
 
@@ -184,6 +286,7 @@ export function makeBotToolTurn(
     id: params.id ?? makeId("bot"),
     role: "bot",
     type: "tool",
+    version: 0,
   };
 }
 
@@ -196,6 +299,7 @@ export function makeHumanDTMFTurn(
     id: params.id ?? makeId("hum"),
     role: "human",
     type: "dtmf",
+    version: 0,
   };
 }
 
@@ -208,6 +312,7 @@ export function makeHumanTextTurn(
     id: params.id ?? makeId("hum"),
     role: "human",
     type: "text",
+    version: 0,
   };
 }
 
@@ -219,5 +324,6 @@ export function makeSystemTurn(
     createdAt: new Date().toISOString(),
     id: params.id ?? makeId("sys"),
     role: "system",
+    version: 0,
   };
 }
