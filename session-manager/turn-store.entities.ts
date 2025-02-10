@@ -10,7 +10,7 @@ interface StoreTurn {
   callSid: string;
   createdAt: string;
   id: string;
-  order: number; // order is a non-sequential incrementor. Each turn is only gauranteed to have an order value greater than the previous. It's not always +1 greater than the previous.
+  order: number; // order is a non-sequential incrementor. Each turn is only gauranteed to have an order value greater than the previous. In other words, order is not always exactly +1 greater than the previous.
 }
 
 /****************************************************
@@ -29,7 +29,9 @@ export interface BotDTMFTurn extends StoreTurn {
 export type BotDTMFTurnParams = Omit<
   BotDTMFTurn,
   "callSid" | "createdAt" | "interrupted" | "id" | "order" | "role" | "type"
->;
+> & {
+  id?: string;
+};
 
 // represents a text from LLM that will be spoken
 export interface BotTextTurn extends StoreTurn {
@@ -42,7 +44,9 @@ export interface BotTextTurn extends StoreTurn {
 export type BotTextTurnParams = Omit<
   BotTextTurn,
   "callSid" | "createdAt" | "interrupted" | "id" | "order" | "role" | "type"
->;
+> & {
+  id?: string;
+};
 
 // represents the LLM requesting a FN tool be executed
 // note: the results are stored on the toolcall and not a separate item like some LLM APIs, such as OpenAI

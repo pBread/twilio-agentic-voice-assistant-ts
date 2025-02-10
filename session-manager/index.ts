@@ -7,9 +7,9 @@ export class SessionManager {
   context: ContextStore;
   turns: TurnStore;
 
-  constructor() {
+  constructor(public callSid: string) {
     this.context = new ContextStore();
-    this.turns = new TurnStore();
+    this.turns = new TurnStore(callSid);
 
     this.agent = new AgentRuntime(
       {
@@ -23,5 +23,5 @@ export class SessionManager {
   }
 }
 
-const session = new SessionManager();
+const session = new SessionManager("CA00000....");
 session.turns.list();
