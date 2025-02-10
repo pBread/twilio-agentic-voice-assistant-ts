@@ -2,6 +2,7 @@ import log from "../lib/logger";
 import { AgentRuntime } from "./agent-runtime";
 import { ContextStore } from "./context-store";
 import { TurnStore } from "./turn-store";
+import { ToolCall } from "./turn-store.entities";
 
 export class SessionManager {
   agent: AgentRuntime;
@@ -32,9 +33,22 @@ session.turns.on("updatedTurn", (id) => {
   log.debug("session", id, turn?.version, JSON.stringify(turn, null, 2));
 });
 
-const turn = session.turns.addBotText({ content: "Hello" });
-turn.content = "Hello world.";
+// const turn = session.turns.addBotText({ id: "turn-0", content: "Hello" });
+// turn.content = "Hello world.";
+// turn.content += " Next sentence.";
 
-turn.content += " Next sentence.";
+const toolCall0 = {
+  function: { name: "fnName", arguments: "" },
+  id: "tool-id-0",
+  index: 0,
+  type: "function",
+} as ToolCall;
 
-turn.interrupted = true;
+const turn2 = session.turns.addBotTool({
+  id: "tool-turn",
+  tool_calls: [toolCall0],
+});
+
+turn2.id += "-1";
+
+toolCall0.id += "-1";
