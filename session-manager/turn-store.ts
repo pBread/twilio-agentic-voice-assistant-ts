@@ -1,4 +1,5 @@
 import { makeId } from "../lib/ids";
+import { TypedEventEmitter } from "../lib/types";
 import {
   BotDTMFTurn,
   BotDTMFTurnParams,
@@ -17,23 +18,41 @@ import {
 
 export class TurnStore {
   private callSid: string;
-  private turnMap: Map<string, Turn>;
+  private turnMap: Map<string, Turn>; // map enforces turn ordering
 
   constructor(callSid: string) {
     this.callSid = callSid;
     this.turnMap = new Map();
+    this.eventEmitter = new TypedEventEmitter<TurnEvents>();
   }
 
-  private _currentOrder: number = 0;
+  /****************************************************
+   Events
+  ****************************************************/
+  private eventEmitter: TypedEventEmitter<TurnEvents>;
+  public on: TypedEventEmitter<TurnEvents>["on"] = (...args) =>
+    this.eventEmitter.on(...args);
+
+  /****************************************************
+   Turn Sequential Ordering
+  ****************************************************/
+  private _currentOrder: number = 0; // order is a non-sequential incrementor. Each turn is only gauranteed to have an order value greater than the previous. In other words, order is not always exactly +1 greater than the previous.
+  // currentOrder cannot be mutated by external methods to protect order sequence
   public get currentOrder() {
     return this._currentOrder;
   }
   private nextOrder = () => this._currentOrder++;
 
+  /****************************************************
+   Primitive Methods
+  ****************************************************/
   delete = (id: string) => this.turnMap.delete(id);
   get = (id: string) => this.turnMap.get(id);
   list = () => [...this.turnMap.values()];
 
+  /****************************************************
+   Turn Record Creators
+  ****************************************************/
   addBotDTMF = (params: BotDTMFTurnParams): BotDTMFTurn => {
     const turn = makeBotDTMFTurn(params);
     const fullTurn = {
@@ -100,6 +119,9 @@ export class TurnStore {
     return fullTurn;
   };
 
+  /****************************************************
+   Turn Setter Methods
+  ****************************************************/
   setToolResult = (toolId: string, result: object) => {
     const toolTurn = [...this.turnMap.values()].find(
       (turn) =>
@@ -119,6 +141,14 @@ export class TurnStore {
   };
 }
 
+/****************************************************
+ Turn Events
+****************************************************/
+interface TurnEvents {}
+
+/****************************************************
+ Turn Creators
+****************************************************/
 export function makeBotDTMFTurn(
   params: BotDTMFTurnParams
 ): Omit<BotDTMFTurn, "order" | "callSid"> {
