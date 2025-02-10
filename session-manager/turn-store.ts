@@ -20,8 +20,8 @@ export class TurnStore {
   private turnMap: Map<string, Turn>;
 
   constructor(callSid: string) {
-    this.turnMap = new Map();
     this.callSid = callSid;
+    this.turnMap = new Map();
   }
 
   private _currentOrder: number = 0;
