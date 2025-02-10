@@ -55,50 +55,23 @@ export class TurnStore {
    Turn Record Creators
   ****************************************************/
   addBotText = (params: BotTextTurnParams): BotTextTurn => {
-    let content = "";
-    let interrupted = params.interrupted ?? false;
-    let version = 0;
     const id = params.id ?? makeId("bot");
 
-    const emitUpdate = () => {
-      this.eventEmitter.emit("updatedTurn", id);
-    };
+    const turn: BotTextTurn = createVersionedObject(
+      {
+        content: params.content,
+        createdAt: new Date().toISOString(),
+        id,
+        role: "bot",
+        type: "text",
+        interrupted: params.interrupted ?? false,
 
-    const turn: BotTextTurn = {
-      createdAt: new Date().toISOString(),
-      id,
-      role: "bot",
-      type: "text",
-
-      callSid: this.callSid,
-      order: this.nextOrder(),
-
-      get content() {
-        return content;
+        callSid: this.callSid,
+        order: this.nextOrder(),
+        version: 0,
       },
-      set content(value) {
-        content = value;
-        this.version++;
-      },
-
-      get interrupted() {
-        return interrupted;
-      },
-
-      set interrupted(value) {
-        interrupted = value;
-        this.version++;
-      },
-
-      get version() {
-        return version;
-      },
-
-      set version(value) {
-        version = value;
-        emitUpdate();
-      },
-    };
+      () => this.eventEmitter.emit("updatedTurn", id)
+    );
 
     this.turnMap.set(turn.id, turn);
     return turn;
@@ -135,6 +108,51 @@ interface TurnEvents {
   updatedTurn: (id: string) => void;
 }
 
-/****************************************************
- Turn Creators
-****************************************************/
+function createVersionedObject<T extends { version: number }>(
+  baseObject: T,
+  emitUpdate: () => void
+): T {
+  // Store the actual property values in a separate object
+  const propertyValues: Partial<T> = {};
+
+  // Initialize property values from the base object
+  for (const key of Object.keys(baseObject) as Array<keyof T>)
+    if (key !== "version") propertyValues[key] = baseObject[key];
+
+  // Create property descriptors for all properties
+  const descriptors: PropertyDescriptorMap = {};
+
+  for (const key of Object.keys(baseObject) as Array<keyof T>) {
+    if (key === "version") {
+      // special handling for version property
+      descriptors[key as string] = {
+        get() {
+          return baseObject.version;
+        },
+        set(value: number) {
+          baseObject.version = value;
+          emitUpdate();
+        },
+        enumerable: true,
+        configurable: true,
+      };
+    } else {
+      // All other properties get versioned getters/setters
+      descriptors[key as string] = {
+        get() {
+          return propertyValues[key];
+        },
+        set(value: any) {
+          propertyValues[key] = value;
+          baseObject.version++;
+          emitUpdate();
+        },
+        enumerable: true,
+        configurable: true,
+      };
+    }
+  }
+
+  // Create and return the versioned object
+  return Object.defineProperties({} as T, descriptors);
+}
