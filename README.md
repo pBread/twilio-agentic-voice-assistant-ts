@@ -24,7 +24,7 @@ The app will automatically initialize any class that extends AgentRuntimeAbstrac
 // Full implementation using abstract class
 class MyAgent extends AgentRuntimeAbstract<MyTools, MyConfig, MyParams> {
   getInstructions(): string {
-    return this.params?.systemPrompt ?? "Default instructions";
+    return this.params?.systemPrompt ?? "You are a friendly robot!";
   }
 
   getLLMConfig(): MyConfig {
@@ -41,7 +41,7 @@ class MyAgent extends AgentRuntimeAbstract<MyTools, MyConfig, MyParams> {
 
 // Or lightweight implementation using just the interface
 const lightweightAgent: AgentRuntime<MyTools, MyConfig> = {
-  getInstructions: () => "Default instructions",
+  getInstructions: () => "You are a friendly robot!",
   getLLMConfig: () => ({ model: "gpt-4", temperature: 0.7 }),
   getToolManifest: () => ({
     name: "example-tool",
