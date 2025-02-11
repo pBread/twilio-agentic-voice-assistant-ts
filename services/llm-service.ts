@@ -9,7 +9,11 @@ import { OPENAI_API_KEY } from "../lib/env";
 import { TypedEventEmitter } from "../lib/events";
 import log from "../lib/logger";
 import { SessionManager } from "../session-manager";
-import { Turn } from "../session-manager/turn-store.entities";
+import {
+  BotTextTurn,
+  BotToolTurn,
+  Turn,
+} from "../session-manager/turn-store.entities";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
@@ -29,6 +33,7 @@ export class LLMService {
   doCompletion = async (): Promise<undefined | Promise<any>> => {
     const messages = this.getMessageParams();
 
+    // There should only be one completion stream open at a time.
     if (this.stream) {
       log.warn(
         "llm",
@@ -37,12 +42,29 @@ export class LLMService {
       this.abort();
     }
 
-    this.stream = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages,
-      stream: true,
-      tools: this.getToolManifest(),
-    });
+    try {
+      this.stream = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages,
+        stream: true,
+        tools: this.getToolManifest(),
+      });
+    } catch (error) {
+      log.error("llm", "Error attempting completion. Will retry once.", error);
+
+      this.abort();
+      return setTimeout(() => {
+        if (!this.stream) this.doCompletion(); // reattempt only if another completion is not already underway
+      }, 1000);
+    }
+
+    let textTurn: BotTextTurn | undefined;
+    let toolTurn: BotToolTurn | undefined;
+
+    for await (const chunk of this.stream) {
+      const choice = chunk.choices[0];
+      const delta = choice.delta;
+    }
   };
 
   /****************************************************
@@ -138,3 +160,10 @@ export class LLMService {
 }
 
 interface LLMEvents {}
+
+type Finish_Reason =
+  | "content_filter"
+  | "function_call"
+  | "length"
+  | "stop"
+  | "tool_calls";
