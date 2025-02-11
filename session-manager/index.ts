@@ -1,8 +1,8 @@
 import { TypedEventEmitter } from "../lib/events";
 import { AgentRuntime } from "./agent-runtime";
-import { ContextStore } from "./context-store";
-import { TurnStore } from "./turn-store";
-import type { TurnEvents } from "./turn-store.entities";
+import { ContextStore } from "./context-store/context-store";
+import type { TurnEvents } from "./turn-store/entities";
+import { TurnStore } from "./turn-store/turn-store";
 
 export class SessionManager {
   agent: AgentRuntime;
