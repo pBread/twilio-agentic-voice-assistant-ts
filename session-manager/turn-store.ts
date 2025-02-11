@@ -203,20 +203,3 @@ export class TurnStore {
     return toolTurn;
   };
 }
-
-export function makeSystemTurn(
-  params: SystemTurnParams,
-  callSid: string,
-  id: string,
-  order: number
-) {
-  return {
-    callSid,
-    content: params.content,
-    createdAt: new Date().toISOString(),
-    id,
-    order,
-    role: "system",
-    version: 0,
-  };
-}
