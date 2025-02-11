@@ -1,4 +1,28 @@
-type VersionedObject = { version: number };
+/**
+ * @function createVersionedObject
+ * @description Creates a versioned object that tracks changes to itself and all nested objects.
+ * When any property of the object or its nested objects is modified, the version
+ * number is incremented and an update event is emitted.
+ *
+ * IMPORTANT: Versioning is tracked via a JavaScript's Proxy class, which does not allow tracking changes to the original reference. Changes that are made to a reference created before invocation will not be tracked.
+ *
+ * BAD EXAMPLE
+ * const toolCall = { function: { name: "fnName", arguments: "" }, id: "tool-id-0",index: 0, type: "function" };
+ * session.turns.addBotTool({ tool_calls: [toolCall] });
+ *
+ * toolCall.function.arguments += "{ 'hello': 'world' } " // this will not be reflected in the turn store
+ *
+ * GOOD EXAMPLE
+ * const toolCall = { function: { name: "fnName", arguments: "" }, id: "tool-id-0",index: 0, type: "function" };
+ * const turn = session.turns.addBotTool({ tool_calls: [toolCall] });
+ * turn.tool_calls[0].function.arguments += "{ 'hello': 'world' } "; // this will be reflected
+ *
+ * @template T - The type of object to be versioned (must include a version number property)
+ * @param baseObject - The object to be versioned
+ * @param emitUpdate - Callback function to be called when the object is modified
+ * @returns A proxied version of the object that tracks all changes
+ */
+
 export function createVersionedObject<T extends VersionedObject>(
   baseObject: T,
   emitUpdate: () => void
@@ -130,3 +154,5 @@ function createArrayMethodHandler(
 
   return modifyingMethods[prop as keyof typeof modifyingMethods];
 }
+
+type VersionedObject = { version: number };
