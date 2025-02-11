@@ -1,7 +1,7 @@
 import { TypedEventEmitter } from "../lib/events";
 import { ContextStore } from "./context-store";
 import { TurnStore } from "./turn-store";
-import type { TurnEvents } from "./turn-store/entities";
+import type { TurnEvents } from "./turn-store.entities";
 
 export class SessionManager {
   context: ContextStore;

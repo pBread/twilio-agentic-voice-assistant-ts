@@ -13,12 +13,13 @@ import {
   BotTextTurn,
   BotToolTurn,
   Turn,
-} from "../session-manager/turn-store/entities";
+} from "../session-manager/turn-store.entities";
+import { AgentRuntime } from "./agent-runtime";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 export class LLMService {
-  constructor(private session: SessionManager) {
+  constructor(private session: SessionManager, private agent: AgentRuntime) {
     this.eventEmitter = new TypedEventEmitter<LLMEvents>();
   }
 
@@ -143,12 +144,12 @@ export class LLMService {
   };
 
   makeSystemParam = () => ({
-    content: this.session.agent.getSystemInstructions(),
+    content: this.agent.getSystemInstructions(),
     role: "system",
   });
 
   // replace this with a translator if other LLM API tools require a different parameter
-  getToolManifest = () => this.session.agent.getTools() as ChatCompletionTool[];
+  getToolManifest = () => this.agent.getTools() as ChatCompletionTool[];
 
   /**
    * Abort the current completion.
