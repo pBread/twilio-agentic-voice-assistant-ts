@@ -8,13 +8,13 @@ import type { Stream } from "openai/streaming";
 import { OPENAI_API_KEY } from "../lib/env";
 import { TypedEventEmitter } from "../lib/events";
 import log from "../lib/logger";
-import { SessionManager } from "../session-manager";
+import { AgentRuntime } from "./agent-runtime";
+import { SessionManager } from "./session-manager";
 import {
   BotTextTurn,
   BotToolTurn,
   Turn,
-} from "../session-manager/turn-store.entities";
-import { AgentRuntime } from "./agent-runtime";
+} from "./session-manager/turn-store.entities";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 

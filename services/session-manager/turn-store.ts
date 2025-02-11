@@ -1,5 +1,5 @@
-import { TypedEventEmitter } from "../lib/events";
-import { makeId } from "../lib/ids";
+import { TypedEventEmitter } from "../../lib/events";
+import { makeId } from "../../lib/ids";
 import {
   BotDTMFTurn,
   BotDTMFTurnParams,
