@@ -4,7 +4,7 @@ import {
   TWILIO_ACCOUNT_SID as accountSid,
   TWILIO_API_KEY,
   TWILIO_API_SECRET,
-} from "../lib/env";
+} from "../../lib/env";
 
 const client = twilio(TWILIO_API_KEY, TWILIO_API_SECRET, { accountSid });
 

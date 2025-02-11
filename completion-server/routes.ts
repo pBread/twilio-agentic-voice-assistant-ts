@@ -1,86 +1,77 @@
 import { Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
+import twilio from "twilio";
+import { ConversationRelayAttributes } from "twilio/lib/twiml/VoiceResponse";
 import { HOSTNAME } from "../lib/env";
-import { TwilioCallWebhookPayload } from "./twilio-voice";
+import log from "../lib/logger";
+import { TwilioCallWebhookPayload } from "./twilio/voice";
 
 const router = Router();
 
-interface MakeConversationRelayTwiML {
+interface MakeConversationRelayTwiML
+  extends Omit<ConversationRelayAttributes, "url"> {
   callSid: string;
-  // TTS
-  ttsProvider: string;
-  voice: string;
-
-  // STT
-  transcriptionProvider: string;
-
-  // greeting
-  welcomeGreeting: string;
-  welcomeGreetingInterruptible: boolean;
-
-  dtmfDetection: boolean;
-  interruptByDtmf: boolean;
-
   context: {};
   parameters?: { [key: string]: string }; // values are stringified json objects
 }
 
 function makeConversationRelayTwiML({
   callSid,
-
-  ttsProvider,
-  voice,
-
-  transcriptionProvider,
-
-  welcomeGreeting,
-  welcomeGreetingInterruptible,
-
-  dtmfDetection,
-  interruptByDtmf,
-
   context,
+  parameters = {},
+  ...params
 }: MakeConversationRelayTwiML) {
-  let parameters: string[] = [];
-  parameters.push(
-    `<Parameter name="context" value="${JSON.stringify(context)}" />`
+  const response = new twilio.twiml.VoiceResponse();
+
+  const connect = response.connect({
+    // action endpoint will be executed when an 'end' action is dispatched to the ConversationRelay websocket
+    // https://www.twilio.com/docs/voice/twiml/connect/conversationrelay#end-session-message
+    //
+    // In this implementation, we use the action for transfering conversations to a human agent
+    action: `https://${HOSTNAME}/call-wrapup`,
+  });
+
+  const conversationRelay = connect.conversationRelay({
+    ...params,
+    url: `wss://${HOSTNAME}/convo-relay/${callSid}`, // the websocket route defined below
+  });
+
+  conversationRelay.parameter({
+    name: "context",
+    value: JSON.stringify(context),
+  });
+
+  Object.entries(parameters).forEach(([name, value]) =>
+    conversationRelay.parameter({ name, value })
   );
-  parameters.push(`<Parameter name="greeting" value="${welcomeGreeting}" />`);
-  parameters.push(
-    `<Parameter name="welcomeGreetingInterruptible" value="${welcomeGreetingInterruptible}" />`
-  );
 
-  let welcomeParams = welcomeGreetingInterruptible // If welcome is interruptable, the greeting will be chunked by sentence then emitted to the user in the websocket. This give us more granularity on tracking interruptions.
-    ? ""
-    : `\
-welcomeGreeting="${welcomeGreeting}"
-welcomeGreetingInterruptible="${welcomeGreetingInterruptible}"
-`;
-
-  return `\
-<Response>
-  <Connect action="https://${HOSTNAME}/live-agent-handoff">
-    <ConversationRelay url="wss://${HOSTNAME}/convo-relay/${callSid}"
-      ttsProvider="${ttsProvider}"
-      voice="${voice}"
-
-      transcriptionProvider="${transcriptionProvider}"
-
-      dtmfDetection="${dtmfDetection}"
-      interruptByDtmf="${interruptByDtmf}"
-
-
-      ${welcomeParams}
-
-      >
-
-  </Connect>
-</Response>
-
-  `;
+  return response.toString();
 }
 
-router.post("/live-agent-handoff", async (req, res) => {});
+router.post("/call-wrapup", async (req, res) => {
+  const isHandoff = "HandoffData" in req.body;
+  const callSid = req.body.CallSid;
+
+  if (isHandoff) {
+    log.info(
+      "/call-wrapup",
+      `Live agent handoff starting. CallSid: ${callSid}`
+    );
+
+    let handoffData: object;
+    try {
+      handoffData = JSON.parse(req.body.HandoffData);
+    } catch (error) {
+      log.error(
+        `/call-wrapup`,
+        "Unable to parse handoffData in wrapup webhook. ",
+        "Request Body: ",
+        JSON.stringify(req.body)
+      );
+      res.status(500).send({ status: "failed", error });
+    }
+  }
+});
 
 /****************************************************
  Phone Number Webhooks
