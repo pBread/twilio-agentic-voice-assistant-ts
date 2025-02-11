@@ -16,6 +16,7 @@ import {
   SystemTurn,
   SystemTurnParams,
   Turn,
+  TurnEvents,
 } from "./turn-store.entities";
 
 export class TurnStore {
@@ -71,7 +72,7 @@ export class TurnStore {
         order: this.nextOrder(),
         version: 0,
       } as BotTextTurn,
-      () => this.eventEmitter.emit("updatedTurn", id)
+      () => this.eventEmitter.emit("turnUpdated", id)
     );
 
     this.turnMap.set(turn.id, turn);
@@ -93,7 +94,7 @@ export class TurnStore {
         order: this.nextOrder(),
         version: 0,
       } as BotToolTurn,
-      () => this.eventEmitter.emit("updatedTurn", id)
+      () => this.eventEmitter.emit("turnUpdated", id)
     );
 
     this.turnMap.set(turn.id, turn);
@@ -121,12 +122,4 @@ export class TurnStore {
     this.turnMap.set(toolTurn.id, toolTurn);
     return toolTurn;
   };
-}
-
-/****************************************************
- Turn Events
-****************************************************/
-interface TurnEvents {
-  addedTurn: (turn: Turn) => void;
-  updatedTurn: (id: string) => void;
 }
