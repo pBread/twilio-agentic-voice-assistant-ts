@@ -4,25 +4,36 @@
  * When any property of the object or its nested objects is modified, the version
  * number is incremented and an update event is emitted.
  *
- * IMPORTANT: Versioning is tracked via a JavaScript's Proxy class, which does not allow tracking
- * changes to the original reference. Changes that are made to a reference created before invocation
- * will not be tracked.
+ * This pattern is used to avoid excessive garbage collection that could occur given the numerous
+ * updates that occur during completion streaming.
  *
- * BAD EXAMPLE
- * // since the toolCall reference is created outside of the store, the Proxy cannot track the changes
+ * IMPORTANT: Versioning is tracked via a JavaScript's Proxy class, which DOES NOT allow tracking
+ * changes to the original reference. An unsuspecting developer may accidently bypass the
+ * versioning and the data synchronization features of this app, if they do the following:
+ *
+ * ** BAD EXAMPLE **
  * const toolCall = { function: { name: "fnName", arguments: "" }, id: "tool-id-0",index: 0, type: "function" };
  * session.turns.addBotTool({ tool_calls: [toolCall] });
  * toolCall.function.arguments += "{ 'hello': 'world' } " // this will not be reflected in the turn store
+ * *****************
  *
- * GOOD EXAMPLE
+ * However, in my opinion, no one should expect that pattern to work anyway when creating records in a store.
+ * If you made this mistake, now you know to never assume an original object can be mutated after passing it
+ * to some class – even if you wrote it yourself.
+ *
+ * These examples will all work, however.
+ *
+ * ** GOOD EXAMPLE **
  * const toolCall = { function: { name: "fnName", arguments: "" }, id: "tool-id-0",index: 0, type: "function" };
  * const turn = session.turns.addBotTool({ tool_calls: [toolCall] });
  * turn.tool_calls[0].function.arguments += "{ 'hello': 'world' } "; // this will be reflected
+ * ******************
  *
- * GOOD EXAMPLE
+ * ** GOOD EXAMPLE **
  * const turn = session.turns.addBotTool({ tool_calls: [{ function: { name: "fnName", arguments: "" }, id: "tool-id-0",index: 0, type: "function" }] });
  * const toolCall = turn.tool_calls[0]
  * toolCall.function.arguments += "{ 'hello': 'world' } "; // this will be reflected
+ * ******************
  *
  * @template T - The type of object to be versioned (must include a version number property)
  * @param baseObject - The object to be versioned
