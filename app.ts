@@ -4,8 +4,8 @@ import express from "express";
 import ExpressWs from "express-ws";
 import log from "./lib/logger";
 import { ConversationRelayAdapter } from "./services/conversation-relay-adapter";
+import { SessionManager } from "./services/session-manager";
 import { TwilioCallWebhookPayload } from "./services/twilio-voice";
-import { SessionManager } from "./session-manager";
 
 const { HOSTNAME, PORT } = env;
 

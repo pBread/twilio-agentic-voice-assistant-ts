@@ -2,6 +2,54 @@
 
 ## Development
 
+## Agent Runtime
+
+The Agent Runtime system provides a flexible framework designed for LLM interoperability. The architecture ensures that your LLM implementations can be easily swapped or modified without affecting the rest of the application.
+
+### Architecture
+
+The system consists of two main parts:
+
+- An AgentRuntime interface that the LLMService uses to interact with your agent
+- An AgentRuntimeAbstract class that provides the base implementation structure
+
+The app will automatically initialize any class that extends AgentRuntimeAbstract. However, the LLMService only knows about the AgentRuntime interface. This means you can:
+
+- Create a full agent by extending the abstract class (recommended)
+- Pass standalone functions that satisfy the interface (useful for testing or simple implementations)
+
+### Basic Usage
+
+```ts
+// Full implementation using abstract class
+class MyAgent extends AgentRuntimeAbstract<MyTools, MyConfig, MyParams> {
+  getInstructions(): string {
+    return this.params?.systemPrompt ?? "Default instructions";
+  }
+
+  getLLMConfig(): MyConfig {
+    return this.config;
+  }
+
+  getToolManifest(): MyTools {
+    return {
+      name: "example-tool",
+      description: "An example tool",
+    };
+  }
+}
+
+// Or lightweight implementation using just the interface
+const lightweightAgent: AgentRuntime<MyTools, MyConfig> = {
+  getInstructions: () => "Default instructions",
+  getLLMConfig: () => ({ model: "gpt-4", temperature: 0.7 }),
+  getToolManifest: () => ({
+    name: "example-tool",
+    description: "An example tool",
+  }),
+};
+```
+
 ### Synchronizing Session Data
 
 Real-time voice use-cases are extraordinarily sensitive to latency hence the conversation state (turns and context) are best handled in-memory. This data can be synchronized with external data storage by subscribing to the SessionManager events.

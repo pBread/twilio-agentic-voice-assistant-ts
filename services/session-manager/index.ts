@@ -3,6 +3,10 @@ import { ContextStore } from "./context-store";
 import { TurnStore } from "./turn-store";
 import type { TurnEvents } from "./turn-store.entities";
 
+export type * from "./context-store";
+export type * from "./turn-store";
+export type * from "./turn-store.entities";
+
 export class SessionManager {
   context: ContextStore;
   turns: TurnStore;

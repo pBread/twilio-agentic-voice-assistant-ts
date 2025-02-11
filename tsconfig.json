@@ -15,7 +15,7 @@
   "exclude": ["node_modules", "dist"],
   "include": [
     "app.ts",
-    "bots/**/*",
+    "agents/**/*",
     "lib/**/*",
     "services/**/*",
     "scripts/**/*.ts",

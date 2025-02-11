@@ -5,10 +5,10 @@ import type {
   ChatCompletionTool,
 } from "openai/resources";
 import type { Stream } from "openai/streaming";
+import { AgentRuntime } from "../agents/agent-runtime";
 import { OPENAI_API_KEY } from "../lib/env";
 import { TypedEventEmitter } from "../lib/events";
 import log from "../lib/logger";
-import { AgentRuntime } from "./agent-runtime";
 import { SessionManager } from "./session-manager";
 import {
   BotTextTurn,
@@ -18,8 +18,13 @@ import {
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
+interface LLMConfig {}
+
 export class LLMService {
-  constructor(private session: SessionManager, private agent: AgentRuntime) {
+  constructor(
+    private session: SessionManager,
+    private agent: AgentRuntime<ChatCompletionTool[], LLMConfig>
+  ) {
     this.eventEmitter = new TypedEventEmitter<LLMEvents>();
   }
 
@@ -144,12 +149,12 @@ export class LLMService {
   };
 
   makeSystemParam = () => ({
-    content: this.agent.getSystemInstructions(),
+    content: this.agent.getInstructions(),
     role: "system",
   });
 
   // replace this with a translator if other LLM API tools require a different parameter
-  getToolManifest = () => this.agent.getTools() as ChatCompletionTool[];
+  getToolManifest = () => this.agent.getToolManifest();
 
   /**
    * Abort the current completion.
