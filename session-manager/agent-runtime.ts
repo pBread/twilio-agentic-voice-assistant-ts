@@ -1,5 +1,5 @@
-import { ContextStore } from "./context-store";
-import { TurnStore } from "./turn-store";
+import { ContextStore } from "./context-store/context-store";
+import { TurnStore } from "./turn-store/turn-store";
 
 export class AgentRuntime {
   private config: LLMConfig;
