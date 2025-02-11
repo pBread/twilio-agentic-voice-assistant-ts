@@ -4,18 +4,25 @@
  * When any property of the object or its nested objects is modified, the version
  * number is incremented and an update event is emitted.
  *
- * IMPORTANT: Versioning is tracked via a JavaScript's Proxy class, which does not allow tracking changes to the original reference. Changes that are made to a reference created before invocation will not be tracked.
+ * IMPORTANT: Versioning is tracked via a JavaScript's Proxy class, which does not allow tracking
+ * changes to the original reference. Changes that are made to a reference created before invocation
+ * will not be tracked.
  *
  * BAD EXAMPLE
+ * // since the toolCall reference is created outside of the store, the Proxy cannot track the changes
  * const toolCall = { function: { name: "fnName", arguments: "" }, id: "tool-id-0",index: 0, type: "function" };
  * session.turns.addBotTool({ tool_calls: [toolCall] });
- *
  * toolCall.function.arguments += "{ 'hello': 'world' } " // this will not be reflected in the turn store
  *
  * GOOD EXAMPLE
  * const toolCall = { function: { name: "fnName", arguments: "" }, id: "tool-id-0",index: 0, type: "function" };
  * const turn = session.turns.addBotTool({ tool_calls: [toolCall] });
  * turn.tool_calls[0].function.arguments += "{ 'hello': 'world' } "; // this will be reflected
+ *
+ * GOOD EXAMPLE
+ * const turn = session.turns.addBotTool({ tool_calls: [{ function: { name: "fnName", arguments: "" }, id: "tool-id-0",index: 0, type: "function" }] });
+ * const toolCall = turn.tool_calls[0]
+ * toolCall.function.arguments += "{ 'hello': 'world' } "; // this will be reflected
  *
  * @template T - The type of object to be versioned (must include a version number property)
  * @param baseObject - The object to be versioned
@@ -99,6 +106,7 @@ function createVersionedHandler<T extends object>(
   };
 }
 
+// emits update events when an array is mutated
 function createArrayMethodHandler(
   array: any[],
   prop: string | symbol,
