@@ -13,7 +13,7 @@ import {
   BotTextTurn,
   BotToolTurn,
   Turn,
-} from "../session-manager/turn-store.entities";
+} from "../session-manager/turn-store/entities";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
