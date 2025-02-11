@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import type {
   ChatCompletionChunk,
   ChatCompletionMessageParam,
+  ChatCompletionTool,
 } from "openai/resources";
 import type { Stream } from "openai/streaming";
 import { OPENAI_API_KEY } from "../lib/env";
@@ -25,16 +26,36 @@ export class LLMService {
    Completion Loop
   ****************************************************/
   stream?: Stream<ChatCompletionChunk>;
-  doCompletion = async (): Promise<undefined | Promise<any>> => {};
+  doCompletion = async (): Promise<undefined | Promise<any>> => {
+    const messages = this.getMessageParams();
+
+    if (this.stream) {
+      log.warn(
+        "llm",
+        "Starting a completion while one is already underway. Previous completion will be aborted."
+      );
+      this.abort();
+    }
+
+    this.stream = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages,
+      stream: true,
+      tools: this.getToolManifest(),
+    });
+  };
 
   /****************************************************
    Translate Store Turns to OpenAI Message Parameter
   ****************************************************/
   getMessageParams = () =>
-    this.session.turns
-      .list()
-      .flatMap(this.translateStoreTurnToLLMParam)
-      .filter((msg) => !!msg && msg.content !== null);
+    [
+      this.makeSystemParam(),
+      ...this.session.turns
+        .list()
+        .flatMap(this.translateStoreTurnToLLMParam)
+        .filter((msg) => !!msg && msg.content !== null),
+    ] as ChatCompletionMessageParam[];
 
   /**
    * Converts the store's turn schema to the OpenAI parameter schema required by their completion API
@@ -98,6 +119,14 @@ export class LLMService {
 
     return null;
   };
+
+  makeSystemParam = () => ({
+    content: this.session.agent.getSystemInstructions(),
+    role: "system",
+  });
+
+  // replace this with a translator if other LLM API tools require a different parameter
+  getToolManifest = () => this.session.agent.getTools() as ChatCompletionTool[];
 
   /**
    * Abort the current completion.
