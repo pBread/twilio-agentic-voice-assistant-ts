@@ -138,3 +138,11 @@ export type SystemTurnParams = Omit<
   SystemTurn,
   "callSid" | "createdAt" | "id" | "order" | "role"
 > & { id?: string };
+
+/****************************************************
+ Turn Events
+****************************************************/
+export interface TurnEvents {
+  turnAdded: (turn: Turn) => void;
+  turnUpdated: (id: string) => void;
+}
