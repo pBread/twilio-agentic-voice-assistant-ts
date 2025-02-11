@@ -1,4 +1,7 @@
-import type { ContextStore, TurnStore } from "../services/session-manager";
+import type {
+  ContextStore,
+  TurnStore,
+} from "../completion-server/session-manager";
 
 /**
  * Interface defining the core functionality of an Agent Runtime

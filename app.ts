@@ -2,6 +2,11 @@ import * as env from "./lib/env";
 
 import express from "express";
 import ExpressWs from "express-ws";
+import {
+  CONVERSATION_RELAY_WS_ROUTE,
+  completionServerRoutes,
+  conversationRelayWebsocketHandler,
+} from "./completion-server/routes";
 import log from "./lib/logger";
 
 const { HOSTNAME, PORT } = env;
@@ -9,29 +14,9 @@ const { HOSTNAME, PORT } = env;
 const { app } = ExpressWs(express());
 app.use(express.urlencoded({ extended: true })).use(express.json());
 
-/****************************************************
- Incoming Call Webhook
-****************************************************/
-
-/****************************************************
- Conversation Relay Websocket
-****************************************************/
-app.ws("/convo-relay/:callSid", async (ws, req) => {
-  const { callSid } = req.params;
-
-  const session = new SessionManager(callSid);
-
-  const relay = new ConversationRelayAdapter(ws);
-
-  relay.onSetup((ev) => {
-    // handle setup
-  });
-
-  // handle speech
-  relay.onPrompt((ev) => {
-    if (!ev.last) return; // do nothing on partial speech
-  });
-});
+// completion server
+app.use(completionServerRoutes);
+app.ws(CONVERSATION_RELAY_WS_ROUTE, conversationRelayWebsocketHandler);
 
 /****************************************************
  Start Server
