@@ -1,8 +1,8 @@
-import log from "../lib/logger";
+import { TypedEventEmitter } from "../lib/events";
 import { AgentRuntime } from "./agent-runtime";
 import { ContextStore } from "./context-store";
 import { TurnStore } from "./turn-store";
-import { ToolCall } from "./turn-store.entities";
+import type { TurnEvents } from "./turn-store.entities";
 
 export class SessionManager {
   agent: AgentRuntime;
@@ -22,31 +22,19 @@ export class SessionManager {
       },
       { context: this.context, turns: this.turns }
     );
+
+    // bubble up the events from each child
+    this.eventEmitter = new TypedEventEmitter<TurnEvents>();
+
+    this.turns.on("turnAdded", (...args) =>
+      this.eventEmitter.emit("turnAdded", ...args)
+    );
+    this.turns.on("turnUpdated", (...args) =>
+      this.eventEmitter.emit("turnUpdated", ...args)
+    );
   }
+
+  private eventEmitter: TypedEventEmitter<TurnEvents>;
+  public on: TypedEventEmitter<TurnEvents>["on"] = (...args) =>
+    this.eventEmitter.on(...args);
 }
-
-const session = new SessionManager("CA00000....");
-session.turns.list();
-
-session.turns.on("updatedTurn", (id) => {
-  const turn = session.turns.get(id);
-  log.debug("session", id, turn?.version, JSON.stringify(turn, null, 2));
-});
-
-// const turn = session.turns.addBotText({ id: "turn-0", content: "Hello" });
-// turn.content = "Hello world.";
-// turn.content += " Next sentence.";
-
-const turn2 = session.turns.addBotTool({
-  id: "tool-turn",
-  tool_calls: [
-    {
-      function: { name: "fnName", arguments: "" },
-      id: "tool-id-0",
-      index: 0,
-      type: "function",
-    },
-  ],
-});
-
-session.turns.setToolResult("tool-id-0", { yoko: "ono" });
