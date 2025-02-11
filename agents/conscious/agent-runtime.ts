@@ -1,6 +1,9 @@
 import type { ChatCompletionTool } from "openai/resources";
-import { OpenAIStreamingConfig } from "../../services/llm-service";
-import type { ContextStore, TurnStore } from "../../services/session-manager";
+import { OpenAIStreamingConfig } from "../../completion-server/llm-service";
+import type {
+  ContextStore,
+  TurnStore,
+} from "../../completion-server/session-manager";
 import { AgentRuntimeAbstract } from "../agent-runtime";
 
 export class ConsciousAgentRuntime extends AgentRuntimeAbstract<
