@@ -1,7 +1,6 @@
-import { makeId } from "../lib/ids";
-import log from "../lib/logger";
-import { createVersionedObject } from "../lib/versioning";
 import { TypedEventEmitter } from "../lib/events";
+import { makeId } from "../lib/ids";
+import { createVersionedObject } from "../lib/versioning";
 import {
   BotDTMFTurn,
   BotDTMFTurnParams,
@@ -56,20 +55,41 @@ export class TurnStore {
   /****************************************************
    Turn Record Creators
   ****************************************************/
+  addBotDTMF = (params: BotDTMFTurnParams): BotDTMFTurn => {
+    const id = params.id ?? makeId("bot");
+
+    const turn: BotDTMFTurn = createVersionedObject(
+      {
+        callSid: this.callSid,
+        content: params.content,
+        createdAt: new Date().toISOString(),
+        id,
+        interrupted: params.interrupted ?? false,
+        order: this.nextOrder(),
+        role: "bot",
+        type: "dtmf",
+        version: 0,
+      } as BotDTMFTurn,
+      () => this.eventEmitter.emit("turnUpdated", id)
+    );
+
+    this.turnMap.set(turn.id, turn);
+    return turn;
+  };
+
   addBotText = (params: BotTextTurnParams): BotTextTurn => {
     const id = params.id ?? makeId("bot");
 
     const turn: BotTextTurn = createVersionedObject(
       {
+        callSid: this.callSid,
         content: params.content,
         createdAt: new Date().toISOString(),
         id,
+        interrupted: params.interrupted ?? false,
+        order: this.nextOrder(),
         role: "bot",
         type: "text",
-        interrupted: params.interrupted ?? false,
-
-        callSid: this.callSid,
-        order: this.nextOrder(),
         version: 0,
       } as BotTextTurn,
       () => this.eventEmitter.emit("turnUpdated", id)
@@ -84,16 +104,77 @@ export class TurnStore {
 
     const turn: BotToolTurn = createVersionedObject(
       {
+        callSid: this.callSid,
         createdAt: new Date().toISOString(),
         id,
-        role: "bot",
-        type: "tool",
-        tool_calls: params.tool_calls,
-
-        callSid: this.callSid,
         order: this.nextOrder(),
+        role: "bot",
+        tool_calls: params.tool_calls,
+        type: "tool",
         version: 0,
       } as BotToolTurn,
+      () => this.eventEmitter.emit("turnUpdated", id)
+    );
+
+    this.turnMap.set(turn.id, turn);
+    return turn;
+  };
+
+  addHumanDTMF = (params: HumanDTMFTurnParams): HumanDTMFTurn => {
+    const id = params.id ?? makeId("hum");
+
+    const turn: HumanDTMFTurn = createVersionedObject(
+      {
+        callSid: this.callSid,
+        content: params.content,
+        createdAt: new Date().toISOString(),
+        id,
+        order: this.nextOrder(),
+        role: "human",
+        type: "dtmf",
+        version: 0,
+      } as HumanDTMFTurn,
+      () => this.eventEmitter.emit("turnUpdated", id)
+    );
+
+    this.turnMap.set(turn.id, turn);
+    return turn;
+  };
+
+  addHumanText = (params: HumanTextTurnParams): HumanTextTurn => {
+    const id = params.id ?? makeId("hum");
+
+    const turn: HumanTextTurn = createVersionedObject(
+      {
+        callSid: this.callSid,
+        content: params.content,
+        createdAt: new Date().toISOString(),
+        id,
+        order: this.nextOrder(),
+        role: "human",
+        type: "text",
+        version: 0,
+      } as HumanTextTurn,
+      () => this.eventEmitter.emit("turnUpdated", id)
+    );
+
+    this.turnMap.set(turn.id, turn);
+    return turn;
+  };
+
+  addSystem = (params: SystemTurnParams): SystemTurn => {
+    const id = params.id ?? makeId("sys");
+
+    const turn: SystemTurn = createVersionedObject(
+      {
+        callSid: this.callSid,
+        content: params.content,
+        createdAt: new Date().toISOString(),
+        id,
+        order: this.nextOrder(),
+        role: "system",
+        version: 0,
+      } as SystemTurn,
       () => this.eventEmitter.emit("turnUpdated", id)
     );
 
@@ -104,9 +185,8 @@ export class TurnStore {
   /****************************************************
    Turn Setter Methods
   ****************************************************/
-
   setToolResult = (toolId: string, result: object) => {
-    const toolTurn = [...this.turnMap.values()].find(
+    const toolTurn = this.list().find(
       (turn) =>
         turn.role === "bot" &&
         turn.type === "tool" &&
