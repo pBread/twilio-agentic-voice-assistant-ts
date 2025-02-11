@@ -1,33 +1,35 @@
 import type { ChatCompletionTool } from "openai/resources";
+import { OpenAIStreamingConfig } from "../../services/llm-service";
 import type { ContextStore, TurnStore } from "../../services/session-manager";
 import { AgentRuntimeAbstract } from "../agent-runtime";
 
 export class ConsciousAgentRuntime extends AgentRuntimeAbstract<
   ChatCompletionTool[],
-  ConsciousLLMConfig,
+  OpenAIStreamingConfig,
   ConsciousLLMParams
 > {
   constructor(
     protected readonly store: { context: ContextStore; turns: TurnStore },
-    protected readonly config: ConsciousLLMConfig,
+    protected readonly config: OpenAIStreamingConfig,
     public params: ConsciousLLMParams
   ) {
     super(store, config, params);
   }
 
   getInstructions = (): string => {
-    return "Yoko";
+    return this.params.instructionTemplate;
   };
 
-  getLLMConfig = (): ConsciousLLMConfig => {
-    return {};
+  getLLMConfig = (): OpenAIStreamingConfig => {
+    return this.config;
   };
 
   getToolManifest = (): ChatCompletionTool[] => {
-    return [];
+    return this.params.tools;
   };
 }
 
-export interface ConsciousLLMConfig {}
-
-export interface ConsciousLLMParams {}
+export interface ConsciousLLMParams {
+  instructionTemplate: string;
+  tools: ChatCompletionTool[];
+}

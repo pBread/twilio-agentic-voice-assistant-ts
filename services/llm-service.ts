@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import type {
   ChatCompletionChunk,
+  ChatCompletionCreateParamsStreaming,
   ChatCompletionMessageParam,
   ChatCompletionTool,
 } from "openai/resources";
@@ -18,12 +19,13 @@ import {
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
-interface LLMConfig {}
-
 export class LLMService {
   constructor(
     private session: SessionManager,
-    private agent: AgentRuntime<ChatCompletionTool[], LLMConfig>
+    private agent: AgentRuntime<
+      ChatCompletionTool[],
+      ChatCompletionCreateParamsStreaming
+    >
   ) {
     this.eventEmitter = new TypedEventEmitter<LLMEvents>();
   }
@@ -50,7 +52,7 @@ export class LLMService {
 
     try {
       this.stream = await openai.chat.completions.create({
-        model: "gpt-4",
+        ...this.agent.getLLMConfig(),
         messages,
         stream: true,
         tools: this.getToolManifest(),
@@ -173,3 +175,23 @@ type Finish_Reason =
   | "length"
   | "stop"
   | "tool_calls";
+
+export interface OpenAIStreamingConfig
+  extends Omit<
+    ChatCompletionCreateParamsStreaming,
+    // important to remove as to avoid overriding completion parameters declared elsewhere
+    | "messages" // turn formatting is done in LLMService
+    | "stream" // controlled by LLMService
+    | "tools" // tool filtering is performeds by the getToolManifest method on agent
+
+    // irrelevant params
+    | "audio"
+    | "function_call"
+    | "functions"
+    | "response_format"
+    | "stop"
+    | "store"
+    | "n"
+    | "seed"
+    | "tool_choice"
+  > {}
