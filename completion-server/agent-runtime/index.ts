@@ -30,9 +30,7 @@ export class AgentRuntime implements IAgentRuntime {
   // tools
   toolMap: Map<string, ToolDefinition>;
   getToolManifest = (): ToolDefinition<any>[] => {
-    return [...this.toolMap.values()].filter(
-      (tool) => tool.name !== "getUserProfile"
-    );
+    return [...this.toolMap.values()];
   };
 
   executeTool = async (
@@ -40,10 +38,6 @@ export class AgentRuntime implements IAgentRuntime {
     args: string
   ): Promise<ToolResponse> => {
     const tool = this.toolMap.get(toolName);
-    const isToolAvailable = this.getToolManifest().some(
-      (tool) => toolName === tool.name
-    );
-
     if (!tool) {
       log.warn(
         "agent",
@@ -52,6 +46,10 @@ export class AgentRuntime implements IAgentRuntime {
       return { status: "error", error: `Tool ${toolName} does not exist.` };
     }
 
+    // sometimes the bot will try to execute a tool it previously had executed even if the tool is no longer in the tool manifest.
+    const isToolAvailable = this.getToolManifest().some(
+      (tool) => toolName === tool.name
+    );
     if (!isToolAvailable) {
       log.warn(
         "agent",
@@ -63,15 +61,29 @@ export class AgentRuntime implements IAgentRuntime {
       };
     }
 
+    if (tool.type === "request") {
+      const result = await executeRequestTool(tool, args);
+      return result;
+    }
+
     return { status: "error", error: "unknown" };
   };
 }
 
-async function executeRequestTool(tool: RequestTool, args?: string) {
+async function executeRequestTool(
+  tool: RequestTool,
+  args?: string
+): Promise<ToolResponse> {
   return fetch(tool.endpoint.url, {
     method: tool.endpoint.method,
     body: args,
   })
-    .then((res) => ({ status: "success", data: res.json() }))
+    .then(
+      async (res) =>
+        ({
+          status: "success",
+          data: await res.json(),
+        } as ToolResponse)
+    )
     .catch((error) => ({ status: "error", error }));
 }
