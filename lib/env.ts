@@ -30,7 +30,7 @@ function validateEnvVariables() {
   // Check for missing required variables
   Object.entries(requiredVars).forEach(([key, value]) => {
     if (!value) {
-      const errorMsg = `Missing env var ${key}`;
+      const errorMsg = `Missing environment variable ${key}`;
       log.red(errorMsg);
       errors.push(errorMsg);
     }
@@ -44,7 +44,11 @@ function validateEnvVariables() {
 
   // Throw combined error if any validation failed
   if (errors.length > 0)
-    throw new Error(`Environment validation failed:\n${errors.join("\n")}`);
+    throw new Error(
+      `Environment validation failed with the following errors:\n${errors
+        .map((err, idx) => `\t(${idx + 1}) ${err}`)
+        .join("\n")}`
+    );
 
   // Export validated variables
   return requiredVars;
