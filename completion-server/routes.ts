@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
+import { ConsciousAgentRuntime } from "../agents/conscious/agent-runtime";
 import log from "../lib/logger";
+import { LLMService } from "./llm-service";
 import { SessionManager } from "./session-manager";
 import { ConversationRelayAdapter } from "./twilio/conversation-relay-adapter";
 import { makeConversationRelayTwiML } from "./twilio/twiml";
 import { TwilioCallWebhookPayload } from "./twilio/voice";
-import { LLMService } from "./llm-service";
-import { ConsciousAgentRuntime } from "../agents/conscious/agent-runtime";
 
 const router = Router();
 
