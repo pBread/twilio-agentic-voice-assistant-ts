@@ -14,7 +14,7 @@ export function makeConversationRelayTwiML({
   context,
   parameters = {},
   ...params
-}: MakeConversationRelayTwiML) {
+}: MakeConversationRelayTwiML): string {
   const response = new twilio.twiml.VoiceResponse();
 
   const connect = response.connect({
