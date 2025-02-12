@@ -42,14 +42,6 @@ export class LLMService {
   ****************************************************/
   stream?: Stream<ChatCompletionChunk>;
   doCompletion = async (attempt = 0): Promise<undefined | Promise<any>> => {
-    if (attempt > LLM_MAX_RETRY_ATTEMPTS) {
-      const message = `LLM completion failed more than max retry attempt`;
-      log.error(`llm`, message);
-      this.relay.end({ reason: "error", message });
-      return;
-    }
-    if (attempt > 0) log.info(`llm`, `Completion retry attempt: ${attempt}`);
-
     const messages = this.getMessageParams();
 
     // There should only be one completion stream open at a time.
@@ -62,7 +54,7 @@ export class LLMService {
     }
 
     try {
-      const tools = this.getToolManifest();
+      const tools = this.agent.getToolManifest();
       this.stream = await openai.chat.completions.create({
         ...this.agent.getLLMConfig(),
         messages,
@@ -71,11 +63,8 @@ export class LLMService {
       });
     } catch (error) {
       log.error("llm", "Error attempting completion", error);
-
       this.abort();
-      return setTimeout(() => {
-        if (!this.stream) this.doCompletion(attempt + 1); // reattempt only if another completion is not already underway
-      }, 1000);
+      return this.handleRetry(attempt + 1);
     }
 
     let textTurn: BotTextTurn | undefined;
@@ -85,6 +74,21 @@ export class LLMService {
       const choice = chunk.choices[0];
       const delta = choice.delta;
     }
+  };
+
+  handleRetry = (attempt: number) => {
+    setTimeout(() => {
+      if (this.stream) return;
+      if (attempt > LLM_MAX_RETRY_ATTEMPTS) {
+        const message = `LLM completion failed more than max retry attempt`;
+        log.error(`llm`, message);
+        this.relay.end({ reason: "error", message });
+        return;
+      }
+
+      if (attempt > 0) log.info(`llm`, `Completion retry attempt: ${attempt}`);
+      this.doCompletion(attempt);
+    }, 1000);
   };
 
   /****************************************************
@@ -167,9 +171,6 @@ export class LLMService {
     role: "system",
   });
 
-  // replace this with a translator if other LLM API tools require a different parameter
-  getToolManifest = () => this.agent.getToolManifest();
-
   /**
    * Abort the current completion.
    */
@@ -217,3 +218,5 @@ export interface OpenAIStreamingConfig
     | "seed"
     | "tool_choice"
   > {}
+
+function retry(fn: Function, attempt: number) {}
