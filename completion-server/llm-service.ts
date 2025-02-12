@@ -7,7 +7,7 @@ import type {
 } from "openai/resources";
 import type { Stream } from "openai/streaming";
 import { AgentRuntime } from "../agents/agent-runtime";
-import { OPENAI_API_KEY, LLM_MAX_RETRY_ATTEMPTS } from "../lib/env";
+import { LLM_MAX_RETRY_ATTEMPTS, OPENAI_API_KEY } from "../lib/env";
 import { TypedEventEmitter } from "../lib/events";
 import log from "../lib/logger";
 import { SessionManager } from "./session-manager";
@@ -18,13 +18,15 @@ import {
   ToolCall,
   TurnRecord,
 } from "./session-manager/turn-store.entities";
+import { ConversationRelayAdapter } from "./twilio/conversation-relay-adapter";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 export class LLMService {
   constructor(
     private session: SessionManager,
-    private agent: AgentRuntime<ChatCompletionTool[], OpenAIStreamingConfig>
+    private agent: AgentRuntime<ChatCompletionTool[], OpenAIStreamingConfig>,
+    private relay: ConversationRelayAdapter
   ) {
     this.eventEmitter = new TypedEventEmitter<LLMEvents>();
   }
@@ -40,7 +42,12 @@ export class LLMService {
   ****************************************************/
   stream?: Stream<ChatCompletionChunk>;
   doCompletion = async (attempt = 0): Promise<undefined | Promise<any>> => {
-    if (attempt > LLM_MAX_RETRY_ATTEMPTS) return;
+    if (attempt > LLM_MAX_RETRY_ATTEMPTS) {
+      const message = `LLM completion failed more than max retry attempt`;
+      log.error(`llm`, message);
+      this.relay.end({ reason: "error", message });
+      return;
+    }
     if (attempt > 0) log.info(`llm`, `Completion retry attempt: ${attempt}`);
 
     const messages = this.getMessageParams();

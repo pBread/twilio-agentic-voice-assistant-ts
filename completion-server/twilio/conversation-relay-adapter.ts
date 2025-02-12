@@ -5,6 +5,14 @@ import type { WebSocket } from "ws";
  * @description Adapter for Twilio's Conversation Relay WebSocket. Implements typed methods for
  * speech-to-text, text-to-speech, DTMF tones, interruptions, and call control.
  */
+
+export type HandoffData = HandoffDueToError;
+
+interface HandoffDueToError {
+  reason: "error";
+  message: string;
+}
+
 export class ConversationRelayAdapter {
   constructor(public ws: WebSocket) {}
 
@@ -21,8 +29,11 @@ export class ConversationRelayAdapter {
    * Ends the session and optionally provides handoff data.
    * @param {object} [handoffData={}] - Data to pass during session handoff.
    */
-  end = (handoffData: object = {}) =>
-    this.dispatch({ type: "end", handoffData: JSON.stringify(handoffData) });
+  end = (handoffData?: HandoffData) =>
+    this.dispatch({
+      type: "end",
+      handoffData: JSON.stringify(handoffData ?? {}),
+    });
 
   /**
    * Plays media to the caller.

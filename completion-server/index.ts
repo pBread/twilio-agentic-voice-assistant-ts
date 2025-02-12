@@ -4,9 +4,12 @@ import { ConsciousAgentRuntime } from "../agents/conscious/agent-runtime";
 import log from "../lib/logger";
 import { LLMService } from "./llm-service";
 import { SessionManager } from "./session-manager";
-import { ConversationRelayAdapter } from "./twilio/conversation-relay-adapter";
+import {
+  ConversationRelayAdapter,
+  HandoffData,
+} from "./twilio/conversation-relay-adapter";
 import { makeConversationRelayTwiML } from "./twilio/twiml";
-import { TwilioCallWebhookPayload } from "./twilio/voice";
+import { endCall, TwilioCallWebhookPayload } from "./twilio/voice";
 
 const router = Router();
 
@@ -69,15 +72,15 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     {
       instructionTemplate: "You are a friendly robot who likes to tell jokes",
       tools: [
-        {
-          type: "function",
-          function: { name: "getUser" },
-        },
+        // {
+        //   type: "function",
+        //   function: { name: "getUser" },
+        // },
       ],
     }
   );
 
-  const llm = new LLMService(session, agent);
+  const llm = new LLMService(session, agent, relay);
 
   relay.onSetup((ev) => {
     // handle setup
@@ -140,24 +143,39 @@ router.post("/call-wrapup", async (req, res) => {
   const isHandoff = "HandoffData" in req.body;
   const callSid = req.body.CallSid;
 
+  if (!isHandoff) log.warn(`/call-wrapup`, "call completed w/out handoff data");
+
+  let handoffData: HandoffData;
+  try {
+    handoffData = JSON.parse(req.body.HandoffData) as HandoffData;
+  } catch (error) {
+    log.error(
+      `/call-wrapup`,
+      "Unable to parse handoffData in wrapup webhook. ",
+      "Request Body: ",
+      JSON.stringify(req.body)
+    );
+    res.status(500).send({ status: "failed", error });
+    return;
+  }
+
+  if (handoffData.reason === "error") {
+    log.info(
+      "/call-wrapup",
+      `wrapping up call that failed due to error, callSid: ${callSid}, message: ${handoffData.message}`
+    );
+
+    await endCall(callSid);
+
+    res.status(200).send("complete");
+    return;
+  }
+
   if (isHandoff) {
     log.info(
       "/call-wrapup",
       `Live agent handoff starting. CallSid: ${callSid}`
     );
-
-    let handoffData: object;
-    try {
-      handoffData = JSON.parse(req.body.HandoffData);
-    } catch (error) {
-      log.error(
-        `/call-wrapup`,
-        "Unable to parse handoffData in wrapup webhook. ",
-        "Request Body: ",
-        JSON.stringify(req.body)
-      );
-      res.status(500).send({ status: "failed", error });
-    }
   }
 });
 

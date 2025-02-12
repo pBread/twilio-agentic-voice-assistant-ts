@@ -8,6 +8,10 @@ import {
 
 const client = twilio(TWILIO_API_KEY, TWILIO_API_SECRET, { accountSid });
 
+export async function endCall(callSid: string) {
+  return client.calls(callSid).update({ status: "completed" });
+}
+
 /**
  * @function startRecording
  * Starts recording the call
