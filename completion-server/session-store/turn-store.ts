@@ -15,7 +15,7 @@ import type {
   SystemTurnParams,
   TurnEvents,
   TurnRecord,
-} from "./entities";
+} from "../../shared/turns";
 import { createVersionedObject } from "./versioning";
 
 export class TurnStore {

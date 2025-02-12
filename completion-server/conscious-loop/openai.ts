@@ -9,13 +9,9 @@ import type { Stream } from "openai/streaming";
 import { LLM_MAX_RETRY_ATTEMPTS, OPENAI_API_KEY } from "../../lib/env";
 import { TypedEventEmitter } from "../../lib/events";
 import log from "../../lib/logger";
+import type { BotTextTurn, BotToolTurn, TurnRecord } from "../../shared/turns";
 import type { IAgentRuntime } from "../agent-runtime/types";
-import type {
-  BotTextTurn,
-  BotToolTurn,
-  SessionStore,
-  TurnRecord,
-} from "../session-store";
+import type { SessionStore } from "../session-store";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter";
 import type { ConsciousLoopEvents, IConsciousLoop } from "./types";
 
