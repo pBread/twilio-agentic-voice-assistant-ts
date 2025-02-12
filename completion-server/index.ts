@@ -68,7 +68,12 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     { model: "gpt-4" },
     {
       instructionTemplate: "You are a friendly robot who likes to tell jokes",
-      tools: [],
+      tools: [
+        {
+          type: "function",
+          function: { name: "getUser" },
+        },
+      ],
     }
   );
 

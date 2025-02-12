@@ -7,7 +7,7 @@ import type {
 } from "openai/resources";
 import type { Stream } from "openai/streaming";
 import { AgentRuntime } from "../agents/agent-runtime";
-import { OPENAI_API_KEY } from "../lib/env";
+import { OPENAI_API_KEY, LLM_MAX_RETRY_ATTEMPTS } from "../lib/env";
 import { TypedEventEmitter } from "../lib/events";
 import log from "../lib/logger";
 import { SessionManager } from "./session-manager";
@@ -39,7 +39,10 @@ export class LLMService {
    Completion Loop
   ****************************************************/
   stream?: Stream<ChatCompletionChunk>;
-  doCompletion = async (): Promise<undefined | Promise<any>> => {
+  doCompletion = async (attempt = 0): Promise<undefined | Promise<any>> => {
+    if (attempt > LLM_MAX_RETRY_ATTEMPTS) return;
+    if (attempt > 0) log.info(`llm`, `Completion retry attempt: ${attempt}`);
+
     const messages = this.getMessageParams();
 
     // There should only be one completion stream open at a time.
@@ -59,11 +62,11 @@ export class LLMService {
         tools: this.getToolManifest(),
       });
     } catch (error) {
-      log.error("llm", "Error attempting completion. Will retry once.", error);
+      log.error("llm", "Error attempting completion", error);
 
       this.abort();
       return setTimeout(() => {
-        if (!this.stream) this.doCompletion(); // reattempt only if another completion is not already underway
+        if (!this.stream) this.doCompletion(attempt + 1); // reattempt only if another completion is not already underway
       }, 1000);
     }
 

@@ -23,6 +23,10 @@ export const {
 
 // Optional, but include warnings
 export const DEFAULT_TWILIO_NUMBER = process.env.DEFAULT_TWILIO_NUMBER;
+export const LLM_MAX_RETRY_ATTEMPTS = process.env.LLM_MAX_RETRY_ATTEMPTS
+  ? parseInt(process.env.LLM_MAX_RETRY_ATTEMPTS)
+  : 3;
+
 if (!DEFAULT_TWILIO_NUMBER)
   log.yellow(`(warning) Missing environment variable DEFAULT_TWILIO_NUMBER`);
 
