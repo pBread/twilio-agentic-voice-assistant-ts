@@ -3,7 +3,7 @@
  * @template TTools - The type of tools the agent can use
  * @template TConfig - The configuration type for the LLM
  */
-export interface AgentRuntime<TTools extends {}, TConfig extends {} = {}> {
+export interface IAgentRuntime<TTools extends {}, TConfig extends {} = {}> {
   getInstructions(): string;
   getLLMConfig(): TConfig;
   getToolManifest(): TTools;

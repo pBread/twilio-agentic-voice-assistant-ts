@@ -9,7 +9,7 @@ import type { Stream } from "openai/streaming";
 import { LLM_MAX_RETRY_ATTEMPTS, OPENAI_API_KEY } from "../lib/env";
 import { TypedEventEmitter } from "../lib/events";
 import log from "../lib/logger";
-import { AgentRuntime } from "./agent-runtime/types";
+import { IAgentRuntime } from "./agent-runtime/interfaces";
 import { SessionManager } from "./session-manager";
 import {
   BotDTMFTurnParams,
@@ -25,7 +25,7 @@ const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 export class LLMService {
   constructor(
     private session: SessionManager,
-    private agent: AgentRuntime<ChatCompletionTool[], OpenAIStreamingConfig>,
+    private agent: IAgentRuntime<ChatCompletionTool[], ConsciousLLMConfig>,
     private relay: ConversationRelayAdapter
   ) {
     this.eventEmitter = new TypedEventEmitter<LLMEvents>();
@@ -50,7 +50,7 @@ export class LLMService {
         "llm",
         "Starting a completion while one is already underway. Previous completion will be aborted."
       );
-      this.abort();
+      this.abort(); // judgement call: should previous completion be aborted or should the new one be cancelled?
     }
 
     try {
@@ -199,7 +199,7 @@ type Finish_Reason =
   | "stop"
   | "tool_calls";
 
-export interface OpenAIStreamingConfig
+export interface ConsciousLLMConfig
   extends Omit<
     ChatCompletionCreateParamsStreaming,
     // important to remove as to avoid overriding completion parameters declared elsewhere

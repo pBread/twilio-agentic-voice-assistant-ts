@@ -1,5 +1,5 @@
 import type { ChatCompletionTool } from "openai/resources";
-import { OpenAIStreamingConfig } from "../../completion-server/llm-service";
+import { ConsciousLLMConfig } from "../../completion-server/llm-service";
 import type {
   ContextStore,
   TurnStore,
@@ -8,12 +8,12 @@ import { AgentRuntimeAbstract } from "../agent-runtime";
 
 export class ConsciousAgentRuntime extends AgentRuntimeAbstract<
   ChatCompletionTool[],
-  OpenAIStreamingConfig,
+  ConsciousLLMConfig,
   ConsciousLLMParams
 > {
   constructor(
     protected readonly store: { context: ContextStore; turns: TurnStore },
-    protected readonly config: OpenAIStreamingConfig,
+    protected readonly config: ConsciousLLMConfig,
     public params: ConsciousLLMParams
   ) {
     super(store, config, params);
@@ -23,7 +23,7 @@ export class ConsciousAgentRuntime extends AgentRuntimeAbstract<
     return this.params.instructionTemplate;
   };
 
-  getLLMConfig = (): OpenAIStreamingConfig => {
+  getLLMConfig = (): ConsciousLLMConfig => {
     return this.config;
   };
 
