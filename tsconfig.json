@@ -18,7 +18,7 @@
     "agents/**/*",
     "lib/**/*",
     "services/**/*",
-    "scripts/**/*",
+    "scripts/**/*.ts",
     "session-manager/**/*",
     "completion-server/**/*"
   ]

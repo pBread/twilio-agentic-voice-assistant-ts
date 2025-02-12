@@ -2,7 +2,8 @@
   "author": "https://github.com/pBread",
   "name": "twilio-conversation-relay-ts",
   "scripts": {
-    "dev": "nodemon app.ts"
+    "dev": "nodemon app.ts",
+    "grok": "node scripts/ngrok.js"
   },
   "version": "1.0.0",
   "dependencies": {
