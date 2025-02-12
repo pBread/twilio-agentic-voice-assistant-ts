@@ -72,10 +72,10 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     {
       instructionTemplate: "You are a friendly robot who likes to tell jokes",
       tools: [
-        // {
-        //   type: "function",
-        //   function: { name: "getUser" },
-        // },
+        {
+          type: "function",
+          function: { name: "getUser" },
+        },
       ],
     }
   );

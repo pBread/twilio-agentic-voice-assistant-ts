@@ -62,11 +62,12 @@ export class LLMService {
     }
 
     try {
+      const tools = this.getToolManifest();
       this.stream = await openai.chat.completions.create({
         ...this.agent.getLLMConfig(),
         messages,
         stream: true,
-        tools: this.getToolManifest(),
+        ...(tools?.length ? { tools } : {}), // no zero length arrays
       });
     } catch (error) {
       log.error("llm", "Error attempting completion", error);
