@@ -1,6 +1,6 @@
 import { TypedEventEmitter } from "../../lib/events";
 import { makeId } from "../../lib/ids";
-import {
+import type {
   BotDTMFTurn,
   BotDTMFTurnParams,
   BotTextTurn,
@@ -15,7 +15,7 @@ import {
   SystemTurnParams,
   TurnRecord,
   TurnEvents,
-} from "./turn-store.entities";
+} from "./entities";
 import { createVersionedObject } from "./versioning";
 
 export class TurnStore {
