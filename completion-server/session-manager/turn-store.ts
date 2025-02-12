@@ -13,14 +13,14 @@ import {
   HumanTextTurnParams,
   SystemTurn,
   SystemTurnParams,
-  Turn,
+  TurnRecord,
   TurnEvents,
 } from "./turn-store.entities";
 import { createVersionedObject } from "./versioning";
 
 export class TurnStore {
   private callSid: string;
-  private turnMap: Map<string, Turn>; // map order enforces turn ordering, not the order property on the turns
+  private turnMap: Map<string, TurnRecord>; // map order enforces turn ordering, not the order property on the turns
 
   constructor(callSid: string) {
     this.callSid = callSid;

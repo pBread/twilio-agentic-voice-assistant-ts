@@ -1,4 +1,4 @@
-export type Turn =
+export type TurnRecord =
   | BotDTMFTurn
   | BotTextTurn
   | BotToolTurn
@@ -7,7 +7,7 @@ export type Turn =
   | SystemTurn;
 
 // properties inherited by all turn entities
-interface StoreTurn {
+interface TurnRecordBase {
   callSid: string;
   createdAt: string;
   id: string;
@@ -25,7 +25,7 @@ export type BotTurnParams =
   | BotToolTurnParams;
 
 // represents DTMF tones from the bot
-export interface BotDTMFTurn extends StoreTurn {
+export interface BotDTMFTurn extends TurnRecordBase {
   content: string;
   interrupted: boolean;
   role: "bot";
@@ -48,7 +48,7 @@ export type BotDTMFTurnParams = Omit<
 };
 
 // represents a text from LLM that will be spoken
-export interface BotTextTurn extends StoreTurn {
+export interface BotTextTurn extends TurnRecordBase {
   content: string;
   interrupted?: boolean;
   role: "bot";
@@ -72,7 +72,7 @@ export type BotTextTurnParams = Omit<
 
 // represents the LLM requesting a FN tool be executed
 // note: the results are stored on the toolcall and not a separate item like some LLM APIs, such as OpenAI
-export interface BotToolTurn extends StoreTurn {
+export interface BotToolTurn extends TurnRecordBase {
   role: "bot";
   tool_calls: ToolCall[];
   type: "tool";
@@ -100,7 +100,7 @@ export type HumanTurn = HumanDTMFTurn | HumanTextTurn;
 export type HumanTurnParams = HumanDTMFTurnParams | HumanTextTurnParams;
 
 // represents DTMF tones from the bot
-export interface HumanDTMFTurn extends StoreTurn {
+export interface HumanDTMFTurn extends TurnRecordBase {
   content: string;
   role: "human";
   type: "dtmf";
@@ -113,7 +113,7 @@ export type HumanDTMFTurnParams = Omit<
   id?: string;
 };
 
-export interface HumanTextTurn extends StoreTurn {
+export interface HumanTextTurn extends TurnRecordBase {
   content: string;
   role: "human";
   type: "text";
@@ -129,7 +129,7 @@ export type HumanTextTurnParams = Omit<
 /****************************************************
  System Turn
 ****************************************************/
-export interface SystemTurn extends StoreTurn {
+export interface SystemTurn extends TurnRecordBase {
   content: string;
   role: "system";
 }
@@ -143,6 +143,6 @@ export type SystemTurnParams = Omit<
  Turn Events
 ****************************************************/
 export interface TurnEvents {
-  turnAdded: (turn: Turn) => void;
+  turnAdded: (turn: TurnRecord) => void;
   turnUpdated: (id: string) => void;
 }

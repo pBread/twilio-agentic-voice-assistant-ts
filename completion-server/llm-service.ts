@@ -12,9 +12,11 @@ import { TypedEventEmitter } from "../lib/events";
 import log from "../lib/logger";
 import { SessionManager } from "./session-manager";
 import {
+  BotDTMFTurnParams,
   BotTextTurn,
   BotToolTurn,
-  Turn,
+  ToolCall,
+  TurnRecord,
 } from "./session-manager/turn-store.entities";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
@@ -22,10 +24,7 @@ const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 export class LLMService {
   constructor(
     private session: SessionManager,
-    private agent: AgentRuntime<
-      ChatCompletionTool[],
-      ChatCompletionCreateParamsStreaming
-    >
+    private agent: AgentRuntime<ChatCompletionTool[], OpenAIStreamingConfig>
   ) {
     this.eventEmitter = new TypedEventEmitter<LLMEvents>();
   }
@@ -33,6 +32,8 @@ export class LLMService {
   private eventEmitter: TypedEventEmitter<LLMEvents>;
   public on: TypedEventEmitter<LLMEvents>["on"] = (...args) =>
     this.eventEmitter.on(...args);
+  private emit: TypedEventEmitter<LLMEvents>["emit"] = (event, ...args) =>
+    this.eventEmitter.emit(event, ...args);
 
   /****************************************************
    Completion Loop
@@ -91,7 +92,7 @@ export class LLMService {
    * Converts the store's turn schema to the OpenAI parameter schema required by their completion API
    */
   translateStoreTurnToLLMParam = (
-    turn: Turn
+    turn: TurnRecord
   ): ChatCompletionMessageParam | ChatCompletionMessageParam[] | null => {
     if (turn.role === "bot" && turn.type === "dtmf")
       return { role: "assistant", content: turn.content };
@@ -167,7 +168,17 @@ export class LLMService {
   };
 }
 
-interface LLMEvents {}
+interface LLMEvents {
+  "completion.started": (turn: BotDTMFTurnParams) => void;
+  "completion.finished": (turn?: TurnRecord, reason?: Finish_Reason) => void;
+
+  dtmf: (digits: string) => void; // dtmf digits the bot wants to send
+  "text-chunk": (text: string, last: boolean, fullText?: string) => void; // chunk of text the LLM wants to say
+
+  "tool.starting": (turn: BotToolTurn, params: ToolCall) => void;
+  "tool.finished": (turn: BotToolTurn, params: ToolCall, result: any) => void;
+  "tool.error": (turn: BotToolTurn, param: ToolCall, error: any) => boolean;
+}
 
 type Finish_Reason =
   | "content_filter"
