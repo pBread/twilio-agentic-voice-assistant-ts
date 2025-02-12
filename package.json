@@ -3,6 +3,7 @@
   "name": "twilio-conversation-relay-ts",
   "scripts": {
     "dev": "nodemon app.ts",
+    "debug": "nodemon shared/tools.ts",
     "grok": "node scripts/ngrok.js"
   },
   "version": "1.0.0",
@@ -12,7 +13,8 @@
     "express-ws": "^5.0.2",
     "openai": "^4.83.0",
     "twilio": "^5.4.3",
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
