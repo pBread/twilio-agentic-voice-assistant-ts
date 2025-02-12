@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
-import { ConsciousAgentRuntime } from "../agents/conscious/agent-runtime";
 import log from "../lib/logger";
+import { AgentRuntime } from "./agent-runtime";
 import { LLMService } from "./llm-service";
 import { SessionManager } from "./session-manager";
 import {
@@ -66,7 +66,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const relay = new ConversationRelayAdapter(ws);
   const session = new SessionManager(callSid);
 
-  const agent = new ConsciousAgentRuntime(
+  const agent = new AgentRuntime(
     session,
     { model: "gpt-4" },
     {
