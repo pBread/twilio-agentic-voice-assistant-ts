@@ -7,7 +7,7 @@ export type * from "./context-store";
 export type * from "./turn-store";
 export type * from "./turn-store.entities";
 
-export class SessionManager {
+export class SessionStore {
   context: ContextStore;
   turns: TurnStore;
 

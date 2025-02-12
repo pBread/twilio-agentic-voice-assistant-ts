@@ -1,4 +1,4 @@
-import type { BotToolTurn, ToolCall } from "../session-manager";
+import type { BotToolTurn, ToolCall } from "../session-store";
 
 export interface IConsciousLoop<TConfig, TToolManifest, TTurns> {
   run(): Promise<undefined | Promise<any>>;

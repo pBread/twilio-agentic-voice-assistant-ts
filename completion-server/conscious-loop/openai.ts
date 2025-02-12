@@ -13,9 +13,9 @@ import type { IAgentRuntime } from "../agent-runtime/interfaces";
 import type {
   BotTextTurn,
   BotToolTurn,
-  SessionManager,
+  SessionStore,
   TurnRecord,
-} from "../session-manager";
+} from "../session-store";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter";
 import type { ConsciousLoopEvents, IConsciousLoop } from "./interfaces";
 
@@ -30,7 +30,7 @@ export class OpenAIConsciousLoop
     >
 {
   constructor(
-    private session: SessionManager,
+    private store: SessionStore,
     private agent: IAgentRuntime<ChatCompletionTool[], OpenAIConfig>,
     private relay: ConversationRelayAdapter
   ) {
@@ -118,7 +118,7 @@ export class OpenAIConsciousLoop
   getTurns = () =>
     [
       this.makeSystemParam(),
-      ...this.session.turns
+      ...this.store.turns
         .list()
         .flatMap(this.translateStoreTurnToLLMParam)
         .filter((msg) => !!msg && msg.content !== null),
@@ -162,7 +162,7 @@ export class OpenAIConsciousLoop
           log.warn(
             "llm",
             "A Tool Call has null result, which should never happen. This turn will be filtered",
-            JSON.stringify({ turn, tool, allTurns: this.session.turns.list() })
+            JSON.stringify({ turn, tool, allTurns: this.store.turns.list() })
           );
           return null;
         }
@@ -174,7 +174,7 @@ export class OpenAIConsciousLoop
           log.warn(
             "llm",
             "Error parsing tool result",
-            JSON.stringify({ turn, tool, allTurns: this.session.turns.list() })
+            JSON.stringify({ turn, tool, allTurns: this.store.turns.list() })
           );
           content = `{"status": "error", "error": "unknown" }`;
         }
@@ -186,7 +186,7 @@ export class OpenAIConsciousLoop
     log.warn(
       "llm",
       "StoreTurn not recognized by LLM translator.",
-      JSON.stringify({ turn, allTurns: this.session.turns.list() })
+      JSON.stringify({ turn, allTurns: this.store.turns.list() })
     );
 
     return null;

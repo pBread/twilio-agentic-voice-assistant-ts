@@ -3,7 +3,7 @@ import { WebsocketRequestHandler } from "express-ws";
 import log from "../lib/logger";
 import { AgentRuntime } from "./agent-runtime";
 import { OpenAIConsciousLoop } from "./conscious-loop/openai";
-import { SessionManager } from "./session-manager";
+import { SessionStore } from "./session-store";
 import {
   ConversationRelayAdapter,
   HandoffData,
@@ -64,10 +64,10 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   log.info("/convo-relay", `websocket initializing, CallSid ${callSid}`);
 
   const relay = new ConversationRelayAdapter(ws);
-  const session = new SessionManager(callSid);
+  const store = new SessionStore(callSid);
 
   const agent = new AgentRuntime(
-    session,
+    store,
     { model: "gpt-4" },
     {
       instructionTemplate: "You are a friendly robot who likes to tell jokes",
@@ -80,7 +80,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     }
   );
 
-  const consciousLoop = new OpenAIConsciousLoop(session, agent, relay);
+  const consciousLoop = new OpenAIConsciousLoop(store, agent, relay);
 
   relay.onSetup((ev) => {
     // handle setup
@@ -92,7 +92,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     if (!ev.last) return; // do nothing on partial speech
     log.info(`relay.prompt`, `"${ev.voicePrompt}"`);
 
-    session.turns.addHumanText({ content: ev.voicePrompt });
+    store.turns.addHumanText({ content: ev.voicePrompt });
     consciousLoop.run();
   });
 
@@ -127,9 +127,9 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
       "relay",
       "conversation relay ws closed.",
       "session turns:\n",
-      JSON.stringify(session.turns.list()),
+      JSON.stringify(store.turns.list()),
       "session context:\n",
-      JSON.stringify(session.context)
+      JSON.stringify(store.context)
     );
   });
 };
