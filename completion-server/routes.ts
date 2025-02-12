@@ -1,53 +1,61 @@
 import { Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
-import twilio from "twilio";
-import { ConversationRelayAttributes } from "twilio/lib/twiml/VoiceResponse";
-import { HOSTNAME } from "../lib/env";
 import log from "../lib/logger";
+import { SessionManager } from "./session-manager";
+import { ConversationRelayAdapter } from "./twilio/conversation-relay-adapter";
+import { makeConversationRelayTwiML } from "./twilio/twiml";
 import { TwilioCallWebhookPayload } from "./twilio/voice";
 
 const router = Router();
 
-interface MakeConversationRelayTwiML
-  extends Omit<ConversationRelayAttributes, "url"> {
-  callSid: string;
-  context: {};
-  parameters?: { [key: string]: string }; // values are stringified json objects
-}
+/****************************************************
+ Phone Number Webhooks
+****************************************************/
+router.post("/incoming-call", async (req, res) => {
+  const { CallSid: callSid } = req.body as TwilioCallWebhookPayload;
 
-function makeConversationRelayTwiML({
-  callSid,
-  context,
-  parameters = {},
-  ...params
-}: MakeConversationRelayTwiML) {
-  const response = new twilio.twiml.VoiceResponse();
+  const twiml = makeConversationRelayTwiML({ callSid, context: {} });
+});
 
-  const connect = response.connect({
-    // action endpoint will be executed when an 'end' action is dispatched to the ConversationRelay websocket
-    // https://www.twilio.com/docs/voice/twiml/connect/conversationrelay#end-session-message
-    //
-    // In this implementation, we use the action for transfering conversations to a human agent
-    action: `https://${HOSTNAME}/call-wrapup`,
+router.post("/call-status", async (req, res) => {});
+
+/****************************************************
+ Outbound Calling Routes
+****************************************************/
+router.post("/place-call/:to", async (req, res) => {
+  log.debug("/place-call", "Not Implemented");
+  const to = req.params.to;
+});
+
+router.post("/place-call/on-answer", async (req, res) => {
+  log.debug("/place-call", "Not Implemented");
+});
+
+/****************************************************
+ Conversation Relay Websocket
+****************************************************/
+export const CONVERSATION_RELAY_WS_ROUTE = "/convo-relay/:callSid";
+export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
+  ws,
+  req
+) => {
+  const { callSid } = req.params;
+
+  const relay = new ConversationRelayAdapter(ws);
+  const session = new SessionManager(callSid);
+
+  relay.onSetup((ev) => {
+    // handle setup
   });
 
-  const conversationRelay = connect.conversationRelay({
-    ...params,
-    url: `wss://${HOSTNAME}/convo-relay/${callSid}`, // the websocket route defined below
-  });
+  const turns = session.turns.list();
+};
 
-  conversationRelay.parameter({
-    name: "context",
-    value: JSON.stringify(context),
-  });
-
-  Object.entries(parameters).forEach(([name, value]) =>
-    conversationRelay.parameter({ name, value })
-  );
-
-  return response.toString();
-}
-
+/****************************************************
+ Executed After Conversation Relay Session Ends
+ https://www.twilio.com/docs/voice/twiml/connect/conversationrelay#end-session-message
+ Used for transfering calls to a human agent.
+****************************************************/
 router.post("/call-wrapup", async (req, res) => {
   const isHandoff = "HandoffData" in req.body;
   const callSid = req.body.CallSid;
@@ -73,41 +81,4 @@ router.post("/call-wrapup", async (req, res) => {
   }
 });
 
-/****************************************************
- Phone Number Webhooks
-****************************************************/
-router.post("/incoming-call", async (req, res) => {
-  const { CallSid } = req.body as TwilioCallWebhookPayload;
-
-  const twiml = `\
-
-
-  `;
-});
-
-router.post("/call-status", async (req, res) => {});
-
-/****************************************************
- Outbound Calling Routes
-****************************************************/
-router.post("/place-call/:to", async (req, res) => {
-  const to = req.params.to;
-
-  const twiml = `\
-
-
-  `;
-});
-
 export const completionServerRoutes = router;
-
-/****************************************************
- Conversation Relay Websocket
-****************************************************/
-export const CONVERSATION_RELAY_WS_ROUTE = "/convo-relay/:callSid";
-export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
-  ws,
-  req
-) => {
-  const { callSid } = req.params;
-};
