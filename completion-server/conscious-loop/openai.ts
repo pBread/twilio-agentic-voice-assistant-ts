@@ -17,23 +17,28 @@ import type {
   TurnRecord,
 } from "../session-manager";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter";
-import { CompletionEvents } from "./interfaces";
+import type { ConsciousLoopEvents, IConsciousLoop } from "./interfaces";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
-export class OpenAIConsciousLoop {
+export class OpenAIConsciousLoop
+  implements
+    IConsciousLoop<
+      OpenAIConfig,
+      ChatCompletionTool[] | undefined,
+      ChatCompletionMessageParam[]
+    >
+{
   constructor(
     private session: SessionManager,
     private agent: IAgentRuntime<ChatCompletionTool[], OpenAIConfig>,
     private relay: ConversationRelayAdapter
   ) {
-    this.eventEmitter = new TypedEventEmitter<CompletionEvents>();
+    this.eventEmitter = new TypedEventEmitter<ConsciousLoopEvents>();
   }
 
   stream?: Stream<ChatCompletionChunk>;
-  run = async (attempt = 0): Promise<undefined | Promise<any>> => {
-    const messages = this.getMessageParams();
-
+  run = async (): Promise<undefined | Promise<any>> => {
     // There should only be one completion stream open at a time.
     if (this.stream) {
       log.warn(
@@ -43,17 +48,23 @@ export class OpenAIConsciousLoop {
       this.abort(); // judgement call: should previous completion be aborted or should the new one be cancelled?
     }
 
+    this.emit("run.started");
+    await this.doCompletion();
+    this.emit("run.finished");
+  };
+
+  doCompletion = async (attempt = 0): Promise<undefined | Promise<any>> => {
+    const messages = this.getTurns();
+
     try {
-      const tools = this.agent.getToolManifest();
       this.stream = await openai.chat.completions.create({
         ...this.agent.getLLMConfig(),
         messages,
         stream: true,
-        ...(tools?.length ? { tools } : {}), // no zero length arrays
+        tools: this.getToolManifest(),
       });
     } catch (error) {
       log.error("llm", "Error attempting completion", error);
-      this.abort();
       return this.handleRetry(attempt + 1);
     }
 
@@ -66,30 +77,45 @@ export class OpenAIConsciousLoop {
     }
   };
 
-  handleRetry = (attempt: number) => {
-    setTimeout(() => {
-      if (this.stream) return;
-      if (attempt > LLM_MAX_RETRY_ATTEMPTS) {
-        const message = `LLM completion failed more than max retry attempt`;
-        log.error(`llm`, message);
-        this.relay.end({ reason: "error", message });
-        return;
-      }
+  handleRetry = async (attempt: number) =>
+    new Promise((resolve) => {
+      this.abort(); // set stream to undefined
 
-      if (attempt > 0) log.info(`llm`, `Completion retry attempt: ${attempt}`);
-      this.run(attempt);
-    }, 1000);
-  };
+      setTimeout(() => {
+        if (this.stream) return resolve(null);
+        if (attempt > LLM_MAX_RETRY_ATTEMPTS) {
+          const message = `LLM completion failed more than max retry attempt`;
+          log.error(`llm`, message);
+          this.relay.end({ reason: "error", message });
+          return resolve(null);
+        }
+
+        if (attempt > 0)
+          log.info(`llm`, `Completion retry attempt: ${attempt}`);
+
+        resolve(this.doCompletion(attempt));
+      }, 1000);
+    });
 
   abort = () => {
     this.stream?.controller.abort();
     this.stream = undefined;
   };
 
+  getConfig = (): OpenAIConfig => {
+    const config = this.agent.getLLMConfig();
+    return config as OpenAIConfig;
+  };
+
+  getToolManifest = (): ChatCompletionTool[] | undefined => {
+    const toolManifest = this.agent.getToolManifest();
+    return toolManifest?.length ? toolManifest : undefined;
+  };
+
   /**
    * Create the message history for OpenAI's completion params
    */
-  getMessageParams = () =>
+  getTurns = () =>
     [
       this.makeSystemParam(),
       ...this.session.turns
@@ -169,14 +195,21 @@ export class OpenAIConsciousLoop {
   /****************************************************
    Event Type Casting
   ****************************************************/
-  private eventEmitter: TypedEventEmitter<CompletionEvents>;
-  public on: TypedEventEmitter<CompletionEvents>["on"] = (...args) =>
+  private eventEmitter: TypedEventEmitter<ConsciousLoopEvents>;
+  public on: TypedEventEmitter<ConsciousLoopEvents>["on"] = (...args) =>
     this.eventEmitter.on(...args);
-  private emit: TypedEventEmitter<CompletionEvents>["emit"] = (
+  private emit: TypedEventEmitter<ConsciousLoopEvents>["emit"] = (
     event,
     ...args
   ) => this.eventEmitter.emit(event, ...args);
 }
+
+type Finish_Reason =
+  | "content_filter"
+  | "function_call"
+  | "length"
+  | "stop"
+  | "tool_calls";
 
 export interface OpenAIConfig
   extends Omit<
