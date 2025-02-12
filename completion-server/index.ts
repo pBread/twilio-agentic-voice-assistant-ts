@@ -143,7 +143,11 @@ router.post("/call-wrapup", async (req, res) => {
   const isHandoff = "HandoffData" in req.body;
   const callSid = req.body.CallSid;
 
-  if (!isHandoff) log.warn(`/call-wrapup`, "call completed w/out handoff data");
+  if (!isHandoff) {
+    log.warn(`/call-wrapup`, "call completed w/out handoff data");
+    res.status(200).send("complete");
+    return;
+  }
 
   let handoffData: HandoffData;
   try {
