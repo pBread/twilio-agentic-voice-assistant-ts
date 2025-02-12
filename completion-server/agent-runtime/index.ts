@@ -1,7 +1,7 @@
 import type { ChatCompletionTool } from "openai/resources";
 import type { OpenAIConfig } from "../conscious-loop/openai";
 import type { ContextStore, TurnStore } from "../session-store";
-import type { AgentRuntimeParams, IAgentRuntime } from "./interfaces";
+import type { AgentRuntimeParams, IAgentRuntime } from "./types";
 
 export class AgentRuntime
   implements IAgentRuntime<ChatCompletionTool[], OpenAIConfig>
