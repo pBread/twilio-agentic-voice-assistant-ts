@@ -6,10 +6,10 @@ import type {
   ChatCompletionTool,
 } from "openai/resources";
 import type { Stream } from "openai/streaming";
-import { AgentRuntime } from "../agents/agent-runtime";
 import { LLM_MAX_RETRY_ATTEMPTS, OPENAI_API_KEY } from "../lib/env";
 import { TypedEventEmitter } from "../lib/events";
 import log from "../lib/logger";
+import { AgentRuntime } from "./agent-runtime/types";
 import { SessionManager } from "./session-manager";
 import {
   BotDTMFTurnParams,
@@ -218,5 +218,3 @@ export interface OpenAIStreamingConfig
     | "seed"
     | "tool_choice"
   > {}
-
-function retry(fn: Function, attempt: number) {}
