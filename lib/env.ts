@@ -1,32 +1,58 @@
-import "dotenv-flow/config"; // supports multiple environments, e.g. .env, .env.local
+import "dotenv-flow/config";
 import log from "./logger";
 
+// Validate and export environment variables
+const validatedEnv = validateEnvVariables();
+
+export const {
+  HOSTNAME,
+  OPENAI_API_KEY,
+  TWILIO_ACCOUNT_SID,
+  TWILIO_API_KEY,
+  TWILIO_API_SECRET,
+} = validatedEnv;
+
+// Optional variables
 export const PORT = process.env.PORT as string;
 
-/****************************************************
- Required
-****************************************************/
-export const HOSTNAME = process.env.HOSTNAME as string;
-export const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
-export const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID as string;
-export const TWILIO_API_KEY = process.env.TWILIO_API_KEY as string;
-export const TWILIO_API_SECRET = process.env.TWILIO_API_SECRET as string;
+function validateEnvVariables() {
+  const errors: string[] = [];
 
-if (!HOSTNAME) log.red(`Missing env var HOSTNAME`);
-if (!OPENAI_API_KEY) log.red("Missing env var OPENAI_API_KEY");
-if (!TWILIO_ACCOUNT_SID) log.red("Missing env var TWILIO_ACCOUNT_SID");
-if (!TWILIO_API_KEY) log.red("Missing env var TWILIO_API_KEY");
-if (!TWILIO_API_SECRET) log.red("Missing env var TWILIO_API_SECRET");
+  // Define required variables and their validation
+  const requiredVars = {
+    HOSTNAME: process.env.HOSTNAME,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
+    TWILIO_API_KEY: process.env.TWILIO_API_KEY,
+    TWILIO_API_SECRET: process.env.TWILIO_API_SECRET,
+  } as const;
 
-// check to makesure HOSTNAME is really just a hostname and not a URL
-if (
-  HOSTNAME &&
-  // RFC-1123
-  !/^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/.test(
-    HOSTNAME
-  )
-) {
-  log.warn(
-    `Invalid HOSTNAME. Only include the the hostname, e.g. domain.com or sub.domain.com, not the other URL elements, e.g. http://`
+  // Check for missing required variables
+  Object.entries(requiredVars).forEach(([key, value]) => {
+    if (!value) {
+      const errorMsg = `Missing env var ${key}`;
+      log.red(errorMsg);
+      errors.push(errorMsg);
+    }
+  });
+
+  // Special validation for HOSTNAME
+  if (requiredVars.HOSTNAME && !isValidHostname(requiredVars.HOSTNAME)) {
+    const errorMsg = `Invalid HOSTNAME. Only include the hostname, e.g. domain.com or sub.domain.com, not the other URL elements, e.g. http://`;
+    log.warn(errorMsg);
+  }
+
+  // Throw combined error if any validation failed
+  if (errors.length > 0)
+    throw new Error(`Environment validation failed:\n${errors.join("\n")}`);
+
+  // Export validated variables
+  return requiredVars;
+}
+
+// Helper function to validate hostname using RFC-1123
+function isValidHostname(hostname: string): boolean {
+  return /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-zA-z0-9\-]*[A-Za-z0-9])$/.test(
+    hostname
   );
 }
