@@ -75,11 +75,22 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
       tools: [
         {
           type: "request",
-          name: "getUser",
+          name: "getUserProfile",
           endpoint: {
             url: `https://www.${HOSTNAME}/get-user`,
             method: "POST",
             contentType: "json",
+          },
+        },
+        {
+          type: "function",
+          name: "updateUserProfile",
+          parameters: {
+            type: "object",
+            properties: { userEmail: { type: "string" } },
+          },
+          execute: async (args) => {
+            log.debug("args", args);
           },
         },
       ],

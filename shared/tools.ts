@@ -1,6 +1,6 @@
 import type { z } from "zod";
 
-export type ToolDefinition<T extends z.ZodObject<any>> =
+export type ToolDefinition<T extends z.ZodObject<any> = any> =
   | FunctionTool<T>
   | RequestTool<T>;
 
@@ -11,7 +11,7 @@ interface BaseTool {
 }
 
 // a tool that will execute a specific function when called
-export interface FunctionTool<TParams extends z.ZodObject<any>>
+export interface FunctionTool<TParams extends z.ZodObject<any> = any>
   extends BaseTool {
   type: "function";
   parameters?: TParams;
@@ -21,7 +21,7 @@ export interface FunctionTool<TParams extends z.ZodObject<any>>
 // a tool that will make an API request
 // todo: extend with different methods & content-types
 // todo: allow parameter mapping, i.e. path, body, query, header
-export interface RequestTool<TParams extends z.ZodObject<any>>
+export interface RequestTool<TParams extends z.ZodObject<any> = any>
   extends BaseTool {
   type: "request";
   endpoint: { url: string; method: "POST"; contentType: "json" };

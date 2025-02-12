@@ -15,6 +15,7 @@ import type { IAgentRuntime } from "../agent-runtime/types";
 import type { SessionStore } from "../session-store";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter";
 import type { ConsciousLoopEvents, IConsciousLoop } from "./types";
+import { z } from "zod";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
@@ -71,6 +72,8 @@ export class OpenAIConsciousLoop
     for await (const chunk of this.stream) {
       const choice = chunk.choices[0];
       const delta = choice.delta;
+
+      log.debug("llm", "chunk", JSON.stringify(delta, null, 2));
     }
   };
 
@@ -113,7 +116,9 @@ export class OpenAIConsciousLoop
       type: "function",
       function: {
         name: tool.name,
-        ...zodFunction({ name: tool.name, parameters: tool.parameters }),
+        ...(tool.parameters instanceof z.ZodObject
+          ? zodFunction({ name: tool.name, parameters: tool.parameters })
+          : { parameters: tool.parameters }),
       },
     }));
   };
