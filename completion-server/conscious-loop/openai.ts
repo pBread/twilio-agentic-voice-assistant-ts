@@ -1,7 +1,7 @@
 import OpenAI from "openai";
+import { zodFunction } from "openai/helpers/zod";
 import type {
   ChatCompletionChunk,
-  ChatCompletionCreateParamsStreaming,
   ChatCompletionMessageParam,
   ChatCompletionTool,
 } from "openai/resources";
@@ -9,6 +9,7 @@ import type { Stream } from "openai/streaming";
 import { LLM_MAX_RETRY_ATTEMPTS, OPENAI_API_KEY } from "../../lib/env";
 import { TypedEventEmitter } from "../../lib/events";
 import log from "../../lib/logger";
+import type { OpenAIConfig } from "../../shared/openai";
 import type { BotTextTurn, BotToolTurn, TurnRecord } from "../../shared/turns";
 import type { IAgentRuntime } from "../agent-runtime/types";
 import type { SessionStore } from "../session-store";
@@ -27,7 +28,7 @@ export class OpenAIConsciousLoop
 {
   constructor(
     private store: SessionStore,
-    private agent: IAgentRuntime<ChatCompletionTool[], OpenAIConfig>,
+    private agent: IAgentRuntime,
     private relay: ConversationRelayAdapter
   ) {
     this.eventEmitter = new TypedEventEmitter<ConsciousLoopEvents>();
@@ -54,7 +55,7 @@ export class OpenAIConsciousLoop
 
     try {
       this.stream = await openai.chat.completions.create({
-        ...this.agent.getLLMConfig(),
+        ...this.getConfig(),
         messages,
         stream: true,
         tools: this.getToolManifest(),
@@ -98,19 +99,26 @@ export class OpenAIConsciousLoop
     this.stream = undefined;
   };
 
+  // translate this app's config schema into OpenAI format
   getConfig = (): OpenAIConfig => {
-    const config = this.agent.getLLMConfig();
-    return config as OpenAIConfig;
+    const { model } = this.agent.getLLMConfig();
+    return { model };
   };
 
+  // translate this app's tool schema into OpenAI format
   getToolManifest = (): ChatCompletionTool[] | undefined => {
-    const toolManifest = this.agent.getToolManifest();
-    return toolManifest?.length ? toolManifest : undefined;
+    const tools = this.agent.getToolManifest();
+
+    return tools.map((tool) => ({
+      type: "function",
+      function: {
+        name: tool.name,
+        ...zodFunction({ name: tool.name, parameters: tool.parameters }),
+      },
+    }));
   };
 
-  /**
-   * Create the message history for OpenAI's completion params
-   */
+  // translate this app's turn schema into OpenAI format
   getTurns = () =>
     [
       this.makeSystemParam(),
@@ -206,23 +214,3 @@ type Finish_Reason =
   | "length"
   | "stop"
   | "tool_calls";
-
-export interface OpenAIConfig
-  extends Omit<
-    ChatCompletionCreateParamsStreaming,
-    // important to remove as to avoid overriding completion parameters declared elsewhere
-    | "messages" // turn formatting is done in LLMService
-    | "stream" // controlled by LLMService
-    | "tools" // tool filtering is performeds by the getToolManifest method on agent
-
-    // irrelevant params
-    | "audio"
-    | "function_call"
-    | "functions"
-    | "response_format"
-    | "stop"
-    | "store"
-    | "n"
-    | "seed"
-    | "tool_choice"
-  > {}

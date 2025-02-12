@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
+import { HOSTNAME } from "../lib/env";
 import log from "../lib/logger";
 import { AgentRuntime } from "./agent-runtime";
 import { OpenAIConsciousLoop } from "./conscious-loop/openai";
@@ -73,8 +74,13 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
       instructionTemplate: "You are a friendly robot who likes to tell jokes",
       tools: [
         {
-          type: "function",
-          function: { name: "getUser" },
+          type: "request",
+          name: "getUser",
+          endpoint: {
+            url: `https://www.${HOSTNAME}/get-user`,
+            method: "POST",
+            contentType: "json",
+          },
         },
       ],
     }

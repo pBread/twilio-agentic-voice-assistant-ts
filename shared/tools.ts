@@ -7,14 +7,14 @@ export type ToolDefinition<T extends z.ZodObject<any>> =
 interface BaseTool {
   name: string;
   description?: string;
-  parameters: z.ZodObject<any>;
+  parameters?: z.ZodObject<any>;
 }
 
 // a tool that will execute a specific function when called
 export interface FunctionTool<TParams extends z.ZodObject<any>>
   extends BaseTool {
   type: "function";
-  parameters: TParams;
+  parameters?: TParams;
   execute: (args: z.infer<TParams>) => Promise<any>;
 }
 
@@ -25,5 +25,5 @@ export interface RequestTool<TParams extends z.ZodObject<any>>
   extends BaseTool {
   type: "request";
   endpoint: { url: string; method: "POST"; contentType: "json" };
-  parameters: TParams;
+  parameters?: TParams;
 }
