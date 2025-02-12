@@ -6,7 +6,7 @@ import {
   CONVERSATION_RELAY_WS_ROUTE,
   completionServerRoutes,
   conversationRelayWebsocketHandler,
-} from "./completion-server/routes";
+} from "./completion-server";
 import log from "./lib/logger";
 
 const { HOSTNAME, PORT } = env;
