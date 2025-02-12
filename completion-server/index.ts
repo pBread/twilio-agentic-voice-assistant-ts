@@ -2,14 +2,14 @@ import { Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
 import log from "../lib/logger";
 import { AgentRuntime } from "./agent-runtime";
-import { LLMService } from "./llm-service";
+import { OpenAIConsciousLoop } from "./conscious-loop/openai";
 import { SessionManager } from "./session-manager";
 import {
   ConversationRelayAdapter,
   HandoffData,
 } from "./twilio/conversation-relay-adapter";
 import { makeConversationRelayTwiML } from "./twilio/twiml";
-import { endCall, TwilioCallWebhookPayload } from "./twilio/voice";
+import { endCall, type TwilioCallWebhookPayload } from "./twilio/voice";
 
 const router = Router();
 
@@ -80,7 +80,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     }
   );
 
-  const llm = new LLMService(session, agent, relay);
+  const consciousLoop = new OpenAIConsciousLoop(session, agent, relay);
 
   relay.onSetup((ev) => {
     // handle setup
@@ -93,13 +93,13 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     log.info(`relay.prompt`, `"${ev.voicePrompt}"`);
 
     session.turns.addHumanText({ content: ev.voicePrompt });
-    llm.doCompletion();
+    consciousLoop.run();
   });
 
   relay.onInterrupt((ev) => {
     log.info(`relay.interrupt`, `human interrupted bot`);
 
-    llm.abort();
+    consciousLoop.abort();
   });
 
   relay.onDTMF((ev) => {
@@ -111,13 +111,13 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     log.error(`relay.error`, `ConversationRelay error: ${ev.description}`);
   });
 
-  llm.on("text-chunk", (text, last, fullText) => {
+  consciousLoop.on("text-chunk", (text, last, fullText) => {
     relay.sendTextToken(text, last); // send each token as it is received
 
     if (last && fullText) log.info("llm.transcript", `"${fullText}"`);
   });
 
-  llm.on("dtmf", (digits) => {
+  consciousLoop.on("dtmf", (digits) => {
     relay.sendDTMF(digits);
     log.info("llm", `dtmf (bot): ${digits}`);
   });

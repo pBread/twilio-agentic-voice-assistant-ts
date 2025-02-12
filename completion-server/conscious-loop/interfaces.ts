@@ -5,6 +5,8 @@ import type {
   TurnRecord,
 } from "../session-manager";
 
+export interface IConsciousLoop {}
+
 export interface CompletionEvents {
   "completion.started": (turn: BotDTMFTurnParams) => void;
   "completion.finished": (turn?: TurnRecord) => void;

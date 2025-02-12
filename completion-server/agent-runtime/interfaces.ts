@@ -13,5 +13,5 @@ export interface IAgentRuntime<TTools extends {}, TConfig extends {} = {}> {
 
 export interface AgentRuntimeParams {
   instructionTemplate: string;
-  tools: ChatCompletionTool[];
+  tools: ChatCompletionTool[]; // todo: replace this with the Open API (not Open AI) format
 }
