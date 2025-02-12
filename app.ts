@@ -9,7 +9,7 @@ import {
 } from "./completion-server";
 import log from "./lib/logger";
 
-const { HOSTNAME, PORT } = env;
+const { DEFAULT_TWILIO_NUMBER, HOSTNAME, PORT } = env;
 
 const { app } = ExpressWs(express());
 app.use(express.urlencoded({ extended: true })).use(express.json());
@@ -24,4 +24,6 @@ app.ws(CONVERSATION_RELAY_WS_ROUTE, conversationRelayWebsocketHandler);
 app.listen(PORT, () => {
   log.green(`server running on http://localhost:${PORT}`);
   log.green(`public base URL https://${HOSTNAME}`);
+  if (env.DEFAULT_TWILIO_NUMBER)
+    log.green(`default phone number: ${DEFAULT_TWILIO_NUMBER}`);
 });

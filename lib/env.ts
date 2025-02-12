@@ -2,7 +2,6 @@ import "dotenv-flow/config";
 import log from "./logger";
 
 // Validate and export environment variables
-const validatedEnv = validateEnvVariables();
 
 const required = {
   HOSTNAME: process.env.HOSTNAME,
@@ -11,6 +10,8 @@ const required = {
   TWILIO_API_KEY: process.env.TWILIO_API_KEY,
   TWILIO_API_SECRET: process.env.TWILIO_API_SECRET,
 } as const;
+
+const validatedEnv = validateEnvVariables();
 
 export const {
   HOSTNAME,
@@ -23,10 +24,10 @@ export const {
 // Optional, but include warnings
 export const DEFAULT_TWILIO_NUMBER = process.env.DEFAULT_TWILIO_NUMBER;
 if (!DEFAULT_TWILIO_NUMBER)
-  log.yellow(`Missing environment variable DEFAULT_TWILIO_NUMBER`);
+  log.yellow(`(warning) Missing environment variable DEFAULT_TWILIO_NUMBER`);
 
 // Optional
-export const PORT = process.env.PORT as string;
+export const PORT = process.env.PORT ?? "3333";
 
 function validateEnvVariables() {
   const errors: string[] = [];
