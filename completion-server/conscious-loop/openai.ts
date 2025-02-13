@@ -192,18 +192,21 @@ export class OpenAIConsciousLoop
       const results = await Promise.all(
         botTool.tool_calls.map(async (tool) => {
           try {
-            return {
-              toolId: tool.id,
-              result: await this.agent.executeTool(
+            this.emit("tool.starting", botTool, tool);
+            const result = {
+              tool,
+              data: await this.agent.executeTool(
                 tool.function.name,
                 tool.function.arguments
               ),
             };
+
+            return result;
           } catch (error) {
             log.warn("llm", "Error while executing a tool", error);
             return {
-              toolId: tool.id,
-              result: {
+              tool,
+              data: {
                 status: "error",
                 error: "unknown error",
               } as ToolResponse,
@@ -214,7 +217,12 @@ export class OpenAIConsciousLoop
 
       for (const result of results) {
         // todo: add abort logic
-        this.store.turns.setToolResult(result.toolId, result.result);
+        this.store.turns.setToolResult(result.tool.id, result.data);
+        if (result.data.status === "success")
+          this.emit("tool.success", botTool, result.tool, result.data);
+
+        if (result.data.status === "error")
+          this.emit("tool.error", botTool, result.tool, result.data);
       }
 
       return this.doCompletion();
