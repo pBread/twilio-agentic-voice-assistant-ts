@@ -41,7 +41,7 @@ export class OpenAIConsciousLoop
     public relay: ConversationRelayAdapter
   ) {
     this.eventEmitter = new TypedEventEmitter<ConsciousLoopEvents>();
-    this.logStream = createLogStreamer("chunks");
+    this.logStream = createLogStreamer("chunks"); // todo: remove
   }
 
   logStream: ReturnType<typeof createLogStreamer>;
@@ -77,15 +77,12 @@ export class OpenAIConsciousLoop
       return this.handleRetry(attempt + 1);
     }
 
-    let idx = -1;
-
     let botText: BotTextTurn | undefined;
     let botTool: BotToolTurn | undefined;
 
     let finish_reason: Finish_Reason | null = null;
 
     for await (const chunk of this.stream) {
-      idx++;
       const choice = chunk.choices[0];
       const delta = choice.delta;
 
@@ -161,7 +158,6 @@ export class OpenAIConsciousLoop
     ****************************************************/
     if (finish_reason === "stop") {
       if (!botText) throw Error("finished for 'stop' but no BotText"); // should be unreachable
-
       this.emit("text-chunk", "", true, botText.content);
     }
 
