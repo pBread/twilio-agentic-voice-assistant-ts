@@ -74,7 +74,7 @@ export type BotTextTurnParams = Omit<
 // note: the results are stored on the toolcall and not a separate item like some LLM APIs, such as OpenAI
 export interface BotToolTurn extends TurnRecordBase {
   role: "bot";
-  tool_calls: ToolCall[];
+  tool_calls: StoreToolCall[];
   type: "tool";
 }
 
@@ -85,7 +85,7 @@ export type BotToolTurnParams = Omit<
   id?: string;
 };
 
-export interface ToolCall {
+export interface StoreToolCall {
   function: { name: string; arguments: any };
   id: string;
   index: number;
