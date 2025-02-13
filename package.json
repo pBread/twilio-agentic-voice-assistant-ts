@@ -12,6 +12,7 @@
     "express": "^4.21.2",
     "express-ws": "^5.0.2",
     "openai": "^4.83.0",
+    "p-queue": "^8.1.0",
     "twilio": "^5.4.3",
     "ws": "^8.18.0",
     "zod": "^3.24.2"
@@ -20,6 +21,7 @@
     "@types/express": "^5.0.0",
     "@types/express-ws": "^3.0.5",
     "@types/node": "^22.13.1",
+    "@types/p-queue": "^3.2.1",
     "@types/twilio": "^3.19.3",
     "@types/ws": "^8.5.14",
     "nodemon": "^3.1.9",
