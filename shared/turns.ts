@@ -144,5 +144,6 @@ export type SystemTurnParams = Omit<
 ****************************************************/
 export interface TurnEvents {
   turnAdded: (turn: TurnRecord) => void;
+  turnDeleted: (turnId: string, turn?: TurnRecord) => void;
   turnUpdated: (id: string) => void;
 }

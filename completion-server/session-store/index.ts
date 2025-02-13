@@ -21,6 +21,9 @@ export class SessionStore {
     this.turns.on("turnAdded", (...args) =>
       this.eventEmitter.emit("turnAdded", ...args)
     );
+    this.turns.on("turnDeleted", (...args) =>
+      this.eventEmitter.emit("turnDeleted", ...args)
+    );
     this.turns.on("turnUpdated", (...args) =>
       this.eventEmitter.emit("turnUpdated", ...args)
     );

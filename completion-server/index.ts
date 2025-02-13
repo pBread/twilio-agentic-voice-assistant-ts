@@ -116,6 +116,13 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
 
   const relay = new ConversationRelayAdapter(ws);
   const store = new SessionStore(callSid);
+  store.on("turnAdded", (turn) => log.debug("store", "turnAdded", turn));
+  store.on("turnUpdated", (turnId) =>
+    log.debug("store", "turnUpdated", store.turns.get(turnId))
+  );
+  store.on("turnDeleted", (turnId, turn) => {
+    log.debug("store", "turnDeleted", turnId, turn);
+  });
 
   const agent = new AgentRuntime(
     relay,
@@ -154,6 +161,9 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     // handle setup
     const params = ev.customParameters ?? {};
     const context = "context" in params ? JSON.parse(params.context) : {};
+
+    const turn = store.turns.addHumanText({ content: "hello", id: "myid" });
+    store.turns.delete(turn.id);
   });
 
   relay.onPrompt((ev) => {

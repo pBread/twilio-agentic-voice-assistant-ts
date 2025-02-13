@@ -48,7 +48,12 @@ export class TurnStore {
   /****************************************************
    Primitive Methods
   ****************************************************/
-  delete = (id: string) => this.turnMap.delete(id);
+  delete = (id: string) => {
+    const turn = this.get(id);
+    const result = this.turnMap.delete(id);
+    this.eventEmitter.emit("turnDeleted", id, turn);
+    return result;
+  };
   get = (id: string) => this.turnMap.get(id);
   list = () => [...this.turnMap.values()];
 
