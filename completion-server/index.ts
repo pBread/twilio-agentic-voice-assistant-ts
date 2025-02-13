@@ -23,6 +23,8 @@ const router = Router();
 ****************************************************/
 router.post("/incoming-call", async (req, res) => {
   const { CallSid: callSid } = req.body as TwilioCallWebhookPayload;
+  log.reset();
+  log.setCallSid(callSid);
 
   try {
     const twiml = makeConversationRelayTwiML({
@@ -87,6 +89,9 @@ router.post("/outbound", outboundCallHandler);
 
 router.post("/outbound/answer", async (req, res) => {
   const { CallSid: callSid } = req.body as TwilioCallWebhookPayload;
+  log.reset();
+  log.setCallSid(callSid);
+
   log.info(`/outbound/answer`, `CallSid ${callSid}`);
 
   try {

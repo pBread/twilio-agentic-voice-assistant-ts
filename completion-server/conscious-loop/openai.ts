@@ -9,23 +9,21 @@ import type { Stream } from "openai/streaming";
 import { z } from "zod";
 import { LLM_MAX_RETRY_ATTEMPTS, OPENAI_API_KEY } from "../../lib/env";
 import { TypedEventEmitter } from "../../lib/events";
-import log from "../../lib/logger";
+import log, { createLogStreamer } from "../../lib/logger";
 import type { OpenAIConfig } from "../../shared/openai";
 import type {
   BotTextTurn,
   BotTextTurnParams,
   BotToolTurn,
   BotToolTurnParams,
-  BotTurnParams,
   StoreToolCall,
   TurnRecord,
 } from "../../shared/turns";
 import type { IAgentRuntime } from "../agent-runtime/types";
+import { ToolResponse } from "../agent-runtime/types";
 import type { SessionStore } from "../session-store";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter";
 import type { ConsciousLoopEvents, IConsciousLoop } from "./types";
-import { createLogStreamer } from "../../lib/logger";
-import { ToolResponse } from "../agent-runtime/types";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
@@ -79,7 +77,6 @@ export class OpenAIConsciousLoop
       return this.handleRetry(attempt + 1);
     }
 
-    let isFirstParam = true; // OpenAI's completion stream
     let idx = -1;
 
     let botText: BotTextTurn | undefined;
@@ -100,13 +97,6 @@ export class OpenAIConsciousLoop
       const isTextDelta = content !== undefined;
       const isToolDelta = "tool_calls" in delta;
 
-      if (delta.content === null)
-        log.debug(
-          "llm",
-          "delta content is null",
-          JSON.stringify({ chunk, botText, botTool })
-        );
-
       const isFirstTextDelta = isTextDelta && !botText;
       const isFirstToolDelta = isToolDelta && !botTool;
       const isNewTool = isToolDelta && !!delta?.tool_calls?.[0].id; // One completion may have multiple tools, but the position in the tool_call array will always be 0. "id" is only emitted during the first delta of a new tool. There is also an "index" property on the tool_call object, that can also track this.
@@ -119,11 +109,9 @@ export class OpenAIConsciousLoop
 
       // handle the first text chunk of a botText completion
       if (isFirstTextDelta) {
-        log.debug("llm", "isFirstTextDelta");
         params = { content, id: chunk.id };
         botText = this.store.turns.addBotText(params);
-        isFirstParam = false;
-        this.emit("text-chunk", content, !!finish_reason, botText.content);
+        this.emit("text-chunk", content, false, botText.content);
       }
 
       // handle subsequent chunks of botText completion
@@ -143,7 +131,6 @@ export class OpenAIConsciousLoop
             tool_calls: delta.tool_calls as StoreToolCall[],
           }; // isFirstToolDelta
           botTool = this.store.turns.addBotTool(params);
-          isFirstParam = false;
         }
 
       // handles the first chunk of subsequent tools
@@ -155,12 +142,6 @@ export class OpenAIConsciousLoop
 
         botTool.tool_calls[deltaTool?.index as number] =
           deltaTool as StoreToolCall; // the store StoreToolCall is same as OpenAI ToolCall. translator needed for other llm formats
-
-        if (isFirstParam) {
-          const msg = "isFirstParam still true in subsequent tool chunks";
-          log.debug("llm", msg, JSON.stringify({ chunk, botText, botTool })); // if this fires, it means there's an issue with the logic of this method
-          throw Error(msg);
-        }
       }
 
       // handles subsequent chunks of all tool completions
@@ -173,76 +154,77 @@ export class OpenAIConsciousLoop
         tool.function.name += toolDelta.function.name ?? "";
         tool.function.arguments += toolDelta.function.arguments ?? "";
       }
-
-      // tracking a bug
-      if (idx === 0) {
-        if (!params) {
-          log.error(
-            "llm",
-            "No params created on first iteration",
-            JSON.stringify(
-              {
-                chunk,
-                isFirstParam,
-                botText: botText ?? "undefined",
-                botTool: botTool ?? "undefined",
-                params: params ?? "undefined",
-                idx,
-              },
-              null,
-              2
-            )
-          );
-        }
-      }
     }
 
-    this.logStream.write("\n");
+    /****************************************************
+     Handle Completion Finish
+    ****************************************************/
+    if (finish_reason === "stop") {
+      if (!botText) throw Error("finished for 'stop' but no BotText"); // should be unreachable
 
-    if (botTool && finish_reason === "tool_calls") {
-      // todo: add filler phrasing
+      this.emit("text-chunk", "", true, botText.content);
+    }
 
-      const results = await Promise.all(
-        botTool.tool_calls.map(async (tool) => {
-          try {
-            this.emit("tool.starting", botTool, tool);
-            const result = {
-              tool,
-              data: await this.agent.executeTool(
-                tool.function.name,
-                tool.function.arguments
-              ),
-            };
-
-            return result;
-          } catch (error) {
-            log.warn("llm", "Error while executing a tool", error);
-            return {
-              tool,
-              data: {
-                status: "error",
-                error: "unknown error",
-              } as ToolResponse,
-            };
-          }
-        })
-      );
-
-      for (const result of results) {
-        // todo: add abort logic
-        this.store.turns.setToolResult(result.tool.id, result.data);
-        if (result.data.status === "success")
-          this.emit("tool.success", botTool, result.tool, result.data);
-
-        if (result.data.status === "error")
-          this.emit("tool.error", botTool, result.tool, result.data);
-      }
-
+    if (finish_reason === "tool_calls") {
+      if (!botTool) throw Error("finished for tool_calls but no BotTool"); // should be unreachable
+      await this.handleToolExecution(botTool);
       this.stream = undefined;
       return this.doCompletion();
     }
 
+    // todo: add handlers for these situations
+    if (finish_reason === "content_filter")
+      log.warn("llm", `Unusual finish reason ${finish_reason}`);
+    if (finish_reason === "function_call")
+      log.warn("llm", `Unusual finish reason ${finish_reason}`);
+    if (finish_reason === "length")
+      log.warn("llm", `Unusual finish reason ${finish_reason}`);
+
+    /****************************************************
+     Clean Up Completion
+    ****************************************************/
+    this.logStream.write("\n");
     this.stream = undefined;
+  };
+
+  handleToolExecution = async (botTool: BotToolTurn) => {
+    const results = await Promise.all(
+      botTool.tool_calls.map(async (tool) => {
+        try {
+          this.emit("tool.starting", botTool, tool);
+          const result = {
+            tool,
+            data: await this.agent.executeTool(
+              tool.function.name,
+              tool.function.arguments
+            ),
+          };
+
+          return result;
+        } catch (error) {
+          log.warn("llm", "Error while executing a tool", error);
+          return {
+            tool,
+            data: {
+              status: "error",
+              error: "unknown error",
+            } as ToolResponse,
+          };
+        }
+      })
+    );
+
+    for (const result of results) {
+      // todo: add abort logic
+      this.store.turns.setToolResult(result.tool.id, result.data);
+      if (result.data.status === "success")
+        this.emit("tool.success", botTool, result.tool, result.data);
+
+      if (result.data.status === "error")
+        this.emit("tool.error", botTool, result.tool, result.data);
+    }
+
+    this.logStream.write("\n");
   };
 
   handleRetry = async (attempt: number) =>
