@@ -199,3 +199,34 @@ export class StopwatchLogger {
 
 const log = new StopwatchLogger();
 export default log;
+
+export const createLogStreamer = (fileName: string) => {
+  // Ensure path is within logs directory
+  const filePath = path.join(__dirname, "../logs", fileName);
+
+  // Delete existing file if it exists
+  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+
+  // Create directory if it doesn't exist
+  const dir = path.dirname(filePath);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  // Create write stream
+  const stream = fs.createWriteStream(filePath);
+
+  return {
+    write: (...messages: any[]) => {
+      const line =
+        messages
+          .map((msg) =>
+            typeof msg === "object" ? JSON.stringify(msg) : String(msg)
+          )
+          .join(" ") + "\n";
+
+      stream.write(line);
+    },
+    close: () => {
+      stream.end();
+    },
+  };
+};

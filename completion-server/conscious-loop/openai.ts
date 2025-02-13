@@ -16,6 +16,7 @@ import type { IAgentRuntime } from "../agent-runtime/types";
 import type { SessionStore } from "../session-store";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter";
 import type { ConsciousLoopEvents, IConsciousLoop } from "./types";
+import { createLogStreamer } from "../../lib/logger";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
@@ -69,11 +70,13 @@ export class OpenAIConsciousLoop
     let textTurn: BotTextTurn | undefined;
     let toolTurn: BotToolTurn | undefined;
 
+    const logStream = createLogStreamer("chunks");
+
     for await (const chunk of this.stream) {
       const choice = chunk.choices[0];
       const delta = choice.delta;
 
-      log.debug("llm", "chunk", JSON.stringify(delta, null, 2));
+      logStream.write(chunk);
     }
   };
 
