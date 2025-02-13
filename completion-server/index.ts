@@ -115,7 +115,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const agent = new AgentRuntime(
     relay,
     store,
-    { model: "gpt-4" },
+    { model: "gpt-3.5-turbo" },
     {
       instructionTemplate: "You are a friendly robot who likes to tell jokes",
       tools: [

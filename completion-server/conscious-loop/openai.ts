@@ -238,8 +238,11 @@ export class OpenAIConsciousLoop
           this.emit("tool.error", botTool, result.tool, result.data);
       }
 
+      this.stream = undefined;
       return this.doCompletion();
     }
+
+    this.stream = undefined;
   };
 
   handleRetry = async (attempt: number) =>
@@ -355,6 +358,8 @@ export class OpenAIConsciousLoop
 
         msgs.push({ role: "tool", content, tool_call_id: tool.id });
       }
+
+      return msgs;
     }
 
     log.warn(
