@@ -28,9 +28,9 @@ export class OpenAIConsciousLoop
     >
 {
   constructor(
-    private store: SessionStore,
-    private agent: IAgentRuntime,
-    private relay: ConversationRelayAdapter
+    public store: SessionStore,
+    public agent: IAgentRuntime,
+    public relay: ConversationRelayAdapter
   ) {
     this.eventEmitter = new TypedEventEmitter<ConsciousLoopEvents>();
   }

@@ -1,4 +1,7 @@
 import type { BotToolTurn, ToolCall } from "../../shared/turns";
+import { IAgentRuntime } from "../agent-runtime/types";
+import { SessionStore } from "../session-store";
+import { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter";
 
 export interface IConsciousLoop<TConfig, TToolManifest, TTurns> {
   run(): Promise<undefined | Promise<any>>;
@@ -12,6 +15,10 @@ export interface IConsciousLoop<TConfig, TToolManifest, TTurns> {
     event: K,
     listener: ConsciousLoopEvents[K]
   ): void;
+
+  store: SessionStore;
+  agent: IAgentRuntime;
+  relay: ConversationRelayAdapter;
 }
 
 export interface ConsciousLoopEvents {

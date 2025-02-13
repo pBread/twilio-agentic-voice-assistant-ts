@@ -1,6 +1,7 @@
 import log from "../../lib/logger";
 import type { RequestTool, ToolDefinition } from "../../shared/tools";
 import type { ContextStore, TurnStore } from "../session-store";
+import { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter";
 import type {
   AgentRuntimeParams,
   IAgentRuntime,
@@ -10,6 +11,7 @@ import type {
 
 export class AgentRuntime implements IAgentRuntime {
   constructor(
+    protected readonly relay: ConversationRelayAdapter,
     protected readonly store: { context: ContextStore; turns: TurnStore },
     protected readonly config: LLMConfig,
     public params: AgentRuntimeParams

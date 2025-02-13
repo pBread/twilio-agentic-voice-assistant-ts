@@ -68,6 +68,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const store = new SessionStore(callSid);
 
   const agent = new AgentRuntime(
+    relay,
     store,
     { model: "gpt-4" },
     {
@@ -89,7 +90,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
             type: "object",
             properties: { userEmail: { type: "string" } },
           },
-          execute: async (args) => {
+          execute: async (args, deps) => {
             log.debug("args", args);
           },
         },
