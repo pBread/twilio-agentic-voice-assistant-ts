@@ -5,11 +5,16 @@ import {
   TWILIO_API_KEY,
   TWILIO_API_SECRET,
 } from "../../lib/env";
+import { CallListInstanceCreateOptions } from "twilio/lib/rest/api/v2010/account/call";
 
 const client = twilio(TWILIO_API_KEY, TWILIO_API_SECRET, { accountSid });
 
 export async function endCall(callSid: string) {
   return client.calls(callSid).update({ status: "completed" });
+}
+
+export async function placeCall(params: CallListInstanceCreateOptions) {
+  return client.calls.create(params);
 }
 
 /**

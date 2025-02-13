@@ -1,6 +1,6 @@
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
-import { HOSTNAME } from "../lib/env";
+import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../lib/env";
 import log from "../lib/logger";
 import { AgentRuntime } from "./agent-runtime";
 import { OpenAIConsciousLoop } from "./conscious-loop/openai";
@@ -10,7 +10,11 @@ import {
   HandoffData,
 } from "./twilio/conversation-relay-adapter";
 import { makeConversationRelayTwiML } from "./twilio/twiml";
-import { endCall, type TwilioCallWebhookPayload } from "./twilio/voice";
+import {
+  endCall,
+  placeCall,
+  type TwilioCallWebhookPayload,
+} from "./twilio/voice";
 
 const router = Router();
 
@@ -44,13 +48,50 @@ router.post("/call-status", async (req, res) => {
 /****************************************************
  Outbound Calling Routes
 ****************************************************/
-router.post("/place-call/:to", async (req, res) => {
-  log.debug("/place-call", "Not Implemented");
-  const to = req.params.to;
-});
+const outboundCallHandler: RequestHandler = async (req, res) => {
+  const to = req.query?.to ?? req.body?.to;
+  const from = req.query?.from ?? req.body?.from ?? DEFAULT_TWILIO_NUMBER;
 
-router.post("/place-call/on-answer", async (req, res) => {
-  log.debug("/place-call", "Not Implemented");
+  log.info(`/outbound`, `from ${from} to ${to}`);
+
+  if (!to) {
+    res.status(400).send({ status: "failed", error: "No to number defined" });
+    return;
+  }
+
+  if (!from) {
+    res.status(400).send({ status: "failed", error: "No from number defined" });
+    return;
+  }
+
+  try {
+    const call = await placeCall({
+      from,
+      to,
+      url: `https://${HOSTNAME}/outbound/answer`, // The URL is executed when the callee answers and that endpoint (below) returns TwiML. It's possible to simply include TwiML in the call creation request but the websocket route includes the callSid as a param. This could be simplified a bit, but this is fine.
+    });
+
+    res.status(200).json(call);
+  } catch (error) {
+    log.error(`/outbound, Error: `, error);
+    res.status(500).json({ status: "failed", error });
+  }
+};
+
+router.get("/outbound", outboundCallHandler);
+router.post("/outbound", outboundCallHandler);
+
+router.post("/outbound/answer", async (req, res) => {
+  const { CallSid: callSid } = req.body as TwilioCallWebhookPayload;
+  log.info(`/outbound/answer`, `CallSid ${callSid}`);
+
+  try {
+    const twiml = makeConversationRelayTwiML({ callSid, context: {} });
+    res.status(200).type("text/xml").end(twiml);
+  } catch (error) {
+    log.error("/incoming-call", "unknown error", error);
+    res.status(500).json({ status: "failed", error });
+  }
 });
 
 /****************************************************
@@ -78,7 +119,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
           type: "request",
           name: "getUserProfile",
           endpoint: {
-            url: `https://www.${HOSTNAME}/get-user`,
+            url: `https://${HOSTNAME}/get-user`,
             method: "POST",
             contentType: "json",
           },
@@ -118,6 +159,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     log.info(`relay.interrupt`, `human interrupted bot`);
 
     consciousLoop.abort();
+    store.redactInterruption(ev.utteranceUntilInterrupt);
   });
 
   relay.onDTMF((ev) => {
@@ -162,7 +204,7 @@ router.post("/call-wrapup", async (req, res) => {
   const callSid = req.body.CallSid;
 
   if (!isHandoff) {
-    log.warn(`/call-wrapup`, "call completed w/out handoff data");
+    log.info(`/call-wrapup`, "call completed w/out handoff data");
     res.status(200).send("complete");
     return;
   }
