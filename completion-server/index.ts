@@ -25,7 +25,11 @@ router.post("/incoming-call", async (req, res) => {
   const { CallSid: callSid } = req.body as TwilioCallWebhookPayload;
 
   try {
-    const twiml = makeConversationRelayTwiML({ callSid, context: {} });
+    const twiml = makeConversationRelayTwiML({
+      callSid,
+      context: {},
+      welcomeGreeting: "Hello there. I am a voice bot",
+    });
     res.status(200).type("text/xml").end(twiml);
   } catch (error) {
     log.error("/incoming-call", "unknown error", error);
@@ -186,10 +190,10 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     log.info(
       "relay",
       "conversation relay ws closed.",
-      "session turns:\n",
-      JSON.stringify(store.turns.list()),
-      "session context:\n",
-      JSON.stringify(store.context)
+      "\n/** session turns **/\n",
+      JSON.stringify(store.turns.list(), null, 2),
+      "\n/** session context **/\n",
+      JSON.stringify(store.context, null, 2)
     );
   });
 };

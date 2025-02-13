@@ -94,7 +94,7 @@ export class OpenAIConsciousLoop
       logStream.write(chunk);
 
       const content =
-        delta.content || (delta.content === null ? "" : undefined); // bugfix-text: does delta.content being null cause the first iteration to misfire?
+        delta.content || (delta.content === null ? "" : delta.content); // bugfix-text: does delta.content being null cause the first iteration to misfire?
 
       const isTextDelta = content !== undefined;
       const isToolDelta = "tool_calls" in delta;
@@ -118,29 +118,32 @@ export class OpenAIConsciousLoop
 
       // handle the first text chunk of a botText completion
       if (isFirstTextDelta) {
+        log.debug("llm", "isFirstTextDelta");
         params = { content, id: chunk.id };
         botText = this.store.turns.addBotText(params);
         isFirstParam = false;
+        this.emit("text-chunk", content, !!finish_reason, botText.content);
       }
 
       // handle subsequent chunks of botText completion
       if (isTextDelta && !isFirstTextDelta) {
         if (botText?.type !== "text") throw Error("Expected text"); // type guard, should be unreachable
         botText.content += delta.content;
-
         this.emit("text-chunk", content, !!finish_reason, botText.content);
       }
 
-      // handles the first chunk of the first tool
-      if (isFirstToolDelta) {
-        if (!("tool_calls" in delta)) throw Error("No tool_calls in 1st delta"); // should be unreachable
-        params = {
-          id: chunk.id,
-          tool_calls: delta.tool_calls as StoreToolCall[],
-        }; // isFirstToolDelta
-        botTool = this.store.turns.addBotTool(params);
-        isFirstParam = false;
-      }
+      if (isTextDelta)
+        if (isFirstToolDelta) {
+          // handles the first chunk of the first tool
+          if (!("tool_calls" in delta))
+            throw Error("No tool_calls in 1st delta"); // should be unreachable
+          params = {
+            id: chunk.id,
+            tool_calls: delta.tool_calls as StoreToolCall[],
+          }; // isFirstToolDelta
+          botTool = this.store.turns.addBotTool(params);
+          isFirstParam = false;
+        }
 
       // handles the first chunk of subsequent tools
       if (isToolDelta && !isFirstToolDelta && isNewTool) {
@@ -177,7 +180,14 @@ export class OpenAIConsciousLoop
             "llm",
             "No params created on first iteration",
             JSON.stringify(
-              { chunk, isFirstParam, botText, botTool, params },
+              {
+                chunk,
+                isFirstParam,
+                botText: botText ?? "undefined",
+                botTool: botTool ?? "undefined",
+                params: params ?? "undefined",
+                idx,
+              },
               null,
               2
             )
