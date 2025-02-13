@@ -216,6 +216,8 @@ export class OpenAIConsciousLoop
         // todo: add abort logic
         this.store.turns.setToolResult(result.toolId, result.result);
       }
+
+      return this.doCompletion();
     }
   };
 
