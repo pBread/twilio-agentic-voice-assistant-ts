@@ -43,7 +43,10 @@ export class OpenAIConsciousLoop
     public relay: ConversationRelayAdapter
   ) {
     this.eventEmitter = new TypedEventEmitter<ConsciousLoopEvents>();
+    this.logStream = createLogStreamer("chunks");
   }
+
+  logStream: ReturnType<typeof createLogStreamer>;
 
   stream?: Stream<ChatCompletionChunk>;
   run = async (): Promise<undefined | Promise<any>> => {
@@ -84,14 +87,12 @@ export class OpenAIConsciousLoop
 
     let finish_reason: Finish_Reason | null = null;
 
-    const logStream = createLogStreamer("chunks");
-
     for await (const chunk of this.stream) {
       idx++;
       const choice = chunk.choices[0];
       const delta = choice.delta;
 
-      logStream.write(chunk);
+      this.logStream.write(chunk);
 
       const content =
         delta.content || (delta.content === null ? "" : delta.content); // bugfix-text: does delta.content being null cause the first iteration to misfire?
@@ -195,6 +196,8 @@ export class OpenAIConsciousLoop
         }
       }
     }
+
+    this.logStream.write("\n");
 
     if (botTool && finish_reason === "tool_calls") {
       // todo: add filler phrasing
