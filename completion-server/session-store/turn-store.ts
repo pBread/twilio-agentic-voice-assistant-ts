@@ -74,6 +74,7 @@ export class TurnStore {
     );
 
     this.turnMap.set(turn.id, turn);
+    this.eventEmitter.emit("turnAdded", turn);
     return turn;
   };
 
@@ -96,6 +97,7 @@ export class TurnStore {
     );
 
     this.turnMap.set(turn.id, turn);
+    this.eventEmitter.emit("turnAdded", turn);
     return turn;
   };
 
@@ -117,6 +119,7 @@ export class TurnStore {
     );
 
     this.turnMap.set(turn.id, turn);
+    this.eventEmitter.emit("turnAdded", turn);
     return turn;
   };
 
@@ -138,6 +141,7 @@ export class TurnStore {
     );
 
     this.turnMap.set(turn.id, turn);
+    this.eventEmitter.emit("turnAdded", turn);
     return turn;
   };
 
@@ -159,6 +163,7 @@ export class TurnStore {
     );
 
     this.turnMap.set(turn.id, turn);
+    this.eventEmitter.emit("turnAdded", turn);
     return turn;
   };
 
@@ -179,6 +184,7 @@ export class TurnStore {
     );
 
     this.turnMap.set(turn.id, turn);
+    this.eventEmitter.emit("turnAdded", turn);
     return turn;
   };
 
