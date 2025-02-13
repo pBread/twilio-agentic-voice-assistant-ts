@@ -6,6 +6,7 @@ import type {
   ChatCompletionTool,
 } from "openai/resources";
 import type { Stream } from "openai/streaming";
+import { z } from "zod";
 import { LLM_MAX_RETRY_ATTEMPTS, OPENAI_API_KEY } from "../../lib/env";
 import { TypedEventEmitter } from "../../lib/events";
 import log from "../../lib/logger";
@@ -15,7 +16,6 @@ import type { IAgentRuntime } from "../agent-runtime/types";
 import type { SessionStore } from "../session-store";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter";
 import type { ConsciousLoopEvents, IConsciousLoop } from "./types";
-import { z } from "zod";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
