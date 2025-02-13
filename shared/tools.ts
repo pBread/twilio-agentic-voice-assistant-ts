@@ -1,7 +1,7 @@
 import type { z } from "zod";
 import type { SessionStore } from "../completion-server/session-store";
 import type { IAgentRuntime } from "../completion-server/agent-runtime/types";
-import { ConversationRelayAdapter } from "../completion-server/twilio/conversation-relay-adapter";
+import type { ConversationRelayAdapter } from "../completion-server/twilio/conversation-relay-adapter";
 
 export type ToolDefinition<T extends z.ZodObject<any> = any> =
   | FunctionTool<T>
