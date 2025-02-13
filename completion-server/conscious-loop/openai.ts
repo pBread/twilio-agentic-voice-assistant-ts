@@ -18,7 +18,7 @@ import type {
   BotToolTurnParams,
   StoreToolCall,
   TurnRecord,
-} from "../../shared/turns";
+} from "../../shared/session";
 import type { IAgentRuntime } from "../agent-runtime/types";
 import { ToolResponse } from "../agent-runtime/types";
 import type { SessionStore } from "../session-store";

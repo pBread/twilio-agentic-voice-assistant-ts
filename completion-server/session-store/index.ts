@@ -1,6 +1,6 @@
 import { TypedEventEmitter } from "../../lib/events";
 import log from "../../lib/logger";
-import type { BotTextTurn, TurnEvents, TurnRecord } from "../../shared/turns";
+import type { BotTextTurn, TurnEvents, TurnRecord } from "../../shared/session";
 import { ContextStore } from "./context-store";
 import { TurnStore } from "./turn-store";
 

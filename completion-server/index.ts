@@ -103,6 +103,16 @@ router.post("/outbound/answer", async (req, res) => {
   }
 });
 
+interface Turn {
+  id: string; // unique
+  version: number; // every update will increment this value
+}
+
+interface WebhookDefinition {
+  url: string;
+  events: ("turnAdded" | "turnDeleted" | "turnUpdated")[];
+}
+
 /****************************************************
  Conversation Relay Websocket
 ****************************************************/
@@ -117,9 +127,11 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const relay = new ConversationRelayAdapter(ws);
   const store = new SessionStore(callSid);
   store.on("turnAdded", (turn) => log.debug("store", "turnAdded", turn));
-  store.on("turnUpdated", (turnId) =>
-    log.debug("store", "turnUpdated", store.turns.get(turnId))
-  );
+
+  store.on("turnUpdated", (turnId) => {
+    const turn = store.turns.get(turnId);
+    log.debug("store", "turnUpdated", `${turn?.version} ${turnId}`);
+  });
   store.on("turnDeleted", (turnId, turn) => {
     log.debug("store", "turnDeleted", turnId, turn);
   });

@@ -1,3 +1,17 @@
+export type SessionEventTypes = ContextEventTypes | TurnEventTypes;
+
+/****************************************************
+ Context
+****************************************************/
+export interface ContextEvents {
+  // contextUpdated: () => void;
+}
+
+export type ContextEventTypes = keyof ContextEvents;
+
+/****************************************************
+ Turn Records
+****************************************************/
 export type TurnRecord =
   | BotDTMFTurn
   | BotTextTurn
@@ -147,3 +161,5 @@ export interface TurnEvents {
   turnDeleted: (turnId: string, turn?: TurnRecord) => void;
   turnUpdated: (id: string) => void;
 }
+
+export type TurnEventTypes = keyof TurnEvents;
