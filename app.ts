@@ -7,8 +7,8 @@ import {
   completionServerRoutes,
   conversationRelayWebsocketHandler,
 } from "./completion-server";
-import log from "./lib/logger";
 import { parseE164 } from "./lib/e164";
+import log from "./lib/logger";
 
 const { DEFAULT_TWILIO_NUMBER, HOSTNAME, PORT } = env;
 
