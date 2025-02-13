@@ -8,6 +8,7 @@ import {
   conversationRelayWebsocketHandler,
 } from "./completion-server";
 import log from "./lib/logger";
+import { parseE164 } from "./lib/e164";
 
 const { DEFAULT_TWILIO_NUMBER, HOSTNAME, PORT } = env;
 
@@ -24,6 +25,12 @@ app.ws(CONVERSATION_RELAY_WS_ROUTE, conversationRelayWebsocketHandler);
 app.listen(PORT, () => {
   log.green(`server running on http://localhost:${PORT}`);
   log.green(`public base URL https://${HOSTNAME}`);
-  if (env.DEFAULT_TWILIO_NUMBER)
-    log.green(`default phone number: ${DEFAULT_TWILIO_NUMBER}`);
+  if (DEFAULT_TWILIO_NUMBER) {
+    log.green(
+      `default phone number: ${
+        parseE164(DEFAULT_TWILIO_NUMBER)?.formatted.international ??
+        DEFAULT_TWILIO_NUMBER
+      }`
+    );
+  }
 });
