@@ -15,7 +15,9 @@ try {
 }
 
 // clean up old log files
-const LOG_FILE_LIMIT = parseInt(process.env.LOG_FILE_LIMIT ?? "") || 25;
+const LOG_FILE_LIMIT = process.env.LOG_FILE_LIMIT
+  ? parseInt(process.env.LOG_FILE_LIMIT)
+  : 25;
 
 try {
   const filesToDelete = fs
