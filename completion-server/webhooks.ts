@@ -15,10 +15,10 @@ export interface WebhookDefinition {
 }
 
 export class WebhookService {
+  private pendingUpdates: Map<string, number> = new Map(); // Prevents updates from stacking. Updates occur much more quickly than the webhooks resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
   private queues: Map<string, PQueue> = new Map();
   private store: SessionStore;
   private subscribers: WebhookDefinition[];
-  private pendingUpdates: Map<string, number> = new Map(); // Prevents updates from stacking. Updates occur much more quickly than the webhooks resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
 
   constructor(store: SessionStore, subscribers: WebhookDefinition[] = []) {
     this.store = store;
