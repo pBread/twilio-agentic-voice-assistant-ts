@@ -9,7 +9,7 @@ import type {
 } from "../shared/session.js";
 import type { SessionStore } from "./session-store/index.js";
 
-interface WebhookDefinition {
+export interface WebhookDefinition {
   url: string;
   events: SessionEventTypes[];
 }
