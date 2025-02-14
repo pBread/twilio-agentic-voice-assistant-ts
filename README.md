@@ -4,7 +4,28 @@
 
 ### Supabase
 
+#### Get
+
 <img src="./docs/supabase-service-role-key.png">
+
+#### Create exec_sql
+
+Go to SQL editor
+
+Run this...
+
+```sql
+-- Create the exec_sql function if it doesn't exist
+CREATE OR REPLACE FUNCTION exec_sql(query text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  EXECUTE query;
+END;
+$$;
+```
 
 ## Development
 
