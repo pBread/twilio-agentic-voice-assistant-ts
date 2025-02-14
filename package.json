@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon --exec tsx app.ts",
     "grok": "tsx scripts/ngrok.ts",
+    "setup": "yarn setup:supabase",
     "setup:supabase": "tsx scripts/supabase/setup.ts"
   },
   "dependencies": {
@@ -25,6 +26,7 @@
     "@types/express-ws": "^3.0.5",
     "@types/node": "^22.13.1",
     "@types/p-queue": "^3.2.1",
+    "@types/pg": "^8.11.11",
     "@types/twilio": "^3.19.3",
     "@types/ws": "^8.5.14",
     "nodemon": "^3.1.9",
