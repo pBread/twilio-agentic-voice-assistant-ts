@@ -6,13 +6,6 @@ import type { WebSocket } from "ws";
  * speech-to-text, text-to-speech, DTMF tones, interruptions, and call control.
  */
 
-export type HandoffData = HandoffDueToError;
-
-interface HandoffDueToError {
-  reason: "error";
-  message: string;
-}
-
 export class ConversationRelayAdapter {
   constructor(public ws: WebSocket) {}
 
@@ -221,3 +214,13 @@ type SetupMessage = {
   to: string;
   type: "setup";
 };
+
+/****************************************************
+ Call Wrapup
+****************************************************/
+export type HandoffData = HandoffDueToError;
+
+interface HandoffDueToError {
+  reason: "error";
+  message: string;
+}
