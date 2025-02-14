@@ -5,9 +5,11 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "nodemon --exec tsx app.ts",
-    "grok": "nodemon --exec tsx scripts/ngrok.ts"
+    "grok": "tsx scripts/ngrok.ts",
+    "setup:supabase": "tsx scripts/supabase/setup.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.48.1",
     "dotenv-flow": "^4.1.0",
     "express": "^4.21.2",
     "express-ws": "^5.0.2",
