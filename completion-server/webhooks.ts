@@ -9,6 +9,10 @@ import type {
 } from "../shared/session.js";
 import type { SessionStore } from "./session-store/index.js";
 
+// todo: add webhook retry
+// todo: add service-level queue to ensure one call doesn't affect others
+// todo: add global queue to ensure the webhook executions don't affect the other services
+
 export interface WebhookDefinition {
   url: string;
   events: SessionEventTypes[];
@@ -118,7 +122,6 @@ export class WebhookService {
       );
     } catch (error) {
       log.error("webhook", `Failed to queue webhook for ${queueKey}:`, error);
-      throw error;
     }
 
     // Clean up queue if empty
@@ -164,6 +167,6 @@ export class WebhookService {
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response.ok) throw new Error(`HTTP error, status ${response.status}`);
   }
 }
