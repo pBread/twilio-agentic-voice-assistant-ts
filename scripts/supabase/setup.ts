@@ -15,10 +15,7 @@ if (!SUPABASE_PROJECT_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 // Create Supabase client with service role key for full database access
 const supabase = createClient(SUPABASE_PROJECT_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
+  auth: { autoRefreshToken: false, persistSession: false },
 });
 
 const __filename = fileURLToPath(import.meta.url);
@@ -30,20 +27,30 @@ async function executeSqlFile(fileName: string) {
   const sqlPath = path.join(sqlDir, fileName);
   const sqlContent = readFileSync(sqlPath, "utf-8");
 
-  // Split the SQL content into individual statements
-  const statements = sqlContent
-    .split(";")
-    .map((statement) => statement.trim())
-    .filter((statement) => statement.length > 0);
-
   try {
-    for (const statement of statements) {
-      const { error } = await supabase.query(statement);
-      if (error) throw error;
+    const { data, error } = await supabase.from("_setup").select("*").limit(1);
+
+    if (error) {
+      console.error("Detailed error:", {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
+      throw error;
     }
+
+    console.log(`Test query response:`, data);
     console.log(`Completed ${fileName}`);
-  } catch (error) {
-    console.error(`Error in ${fileName}:`, error);
+  } catch (error: any) {
+    console.error(`Error in ${fileName}:`, {
+      message: error.message,
+      details: error?.details,
+      hint: error?.hint,
+      code: error?.code,
+      name: error?.name,
+      stack: error?.stack,
+    });
     throw error;
   }
 }
@@ -52,14 +59,11 @@ async function setupDatabase() {
   try {
     const files = [
       "config.sql", // first
-
       "users.sql", // before catalog
       "catalog.sql",
     ];
 
-    for (const file of files) {
-      await executeSqlFile(file);
-    }
+    for (const file of files) await executeSqlFile(file);
 
     console.log("Database setup completed successfully");
   } catch (error) {

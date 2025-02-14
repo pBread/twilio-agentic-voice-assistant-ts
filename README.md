@@ -1,5 +1,11 @@
 # Twilio Conversation Relay
 
+## Setup
+
+### Supabase
+
+<img src="./docs/supabase-service-role-key.png">
+
 ## Development
 
 ## Agent Runtime
