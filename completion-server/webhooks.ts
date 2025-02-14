@@ -114,7 +114,7 @@ export class WebhookService {
         { priority: event === "turnAdded" ? 1 : 0 }
       );
     } catch (error) {
-      log.error(`Failed to queue webhook for ${queueKey}:`, error);
+      log.error("webhook", `Failed to queue webhook for ${queueKey}:`, error);
       throw error;
     }
 
@@ -139,12 +139,13 @@ export class WebhookService {
       // Add monitoring
       queue.on("active", () => {
         log.debug(
+          "webhook",
           `Queue ${queueKey} size: ${queue?.size} pending: ${queue?.pending}`
         );
       });
 
       queue.on("error", (error) => {
-        log.error(`Queue ${queueKey} error:`, error);
+        log.error("webhook", `Queue ${queueKey} error:`, error);
       });
 
       this.queues.set(queueKey, queue);
