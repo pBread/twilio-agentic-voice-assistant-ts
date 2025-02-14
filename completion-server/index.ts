@@ -184,6 +184,8 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     const context = "context" in params ? JSON.parse(params.context) : {};
 
     const turn = store.turns.addHumanText({ content: "hello", id: "myid" });
+    turn.content += "world";
+    turn.content += "Nope!";
     store.turns.delete(turn.id);
   });
 

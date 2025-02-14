@@ -15,12 +15,12 @@ interface WebhookDefinition {
 }
 
 export class WebhookService {
-  private queues: Map<string, PQueue>;
+  private queues: Map<string, PQueue> = new Map();
   private store: SessionStore;
   private subscribers: WebhookDefinition[];
+  private pendingUpdates: Map<string, number> = new Map(); // Prevents updates from stacking. Updates occur much more quickly than the webhooks resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
 
   constructor(store: SessionStore, subscribers: WebhookDefinition[] = []) {
-    this.queues = new Map();
     this.store = store;
     this.subscribers = subscribers;
 
@@ -68,14 +68,20 @@ export class WebhookService {
     );
 
     await Promise.all(
-      relevantSubscribers.map((subscriber) =>
-        this.queueWebhook(subscriber.url, "turnUpdated", {
+      relevantSubscribers.map((subscriber) => {
+        const queueKey = `${subscriber.url}:${turnId}`;
+
+        this.pendingUpdates.set(
+          queueKey,
+          (this.pendingUpdates.get(queueKey) || 0) + 1
+        );
+        return this.queueWebhook(subscriber.url, "turnUpdated", {
           event: "turnUpdated",
           turnId,
           // data will be fetched right before sending
           timestamp: new Date().toISOString(),
-        })
-      )
+        });
+      })
     );
   };
 
@@ -95,17 +101,14 @@ export class WebhookService {
     try {
       await queue.add(
         async () => {
-          // For turnUpdated, get the latest version right before sending
           if (event === "turnUpdated") {
-            const latestTurn = this.store.turns.get(payload.turnId);
-            if (!latestTurn) {
-              log.debug(
-                "webhook",
-                "turnUpdated turn not found",
-                payload.turnId
-              );
-              return;
-            }
+            //  skip every update except for the latest
+            const pendingCount = this.pendingUpdates.get(queueKey) || 0;
+            if (pendingCount > 1)
+              return this.pendingUpdates.set(queueKey, pendingCount - 1);
+
+            this.pendingUpdates.delete(queueKey); // clear the counter on the last update
+            const latestTurn = this.store.turns.get(payload.turnId); // get the latest version right before sending
             payload.data = latestTurn;
           }
 
@@ -134,14 +137,6 @@ export class WebhookService {
         interval: 1000, // Interval in ms
         carryoverConcurrencyCount: true, // Carries over pending promises to the next interval
         timeout: 10000, // 10s timeout for each webhook call
-      });
-
-      // Add monitoring
-      queue.on("active", () => {
-        log.debug(
-          "webhook",
-          `Queue ${queueKey} size: ${queue?.size} pending: ${queue?.pending}`
-        );
       });
 
       queue.on("error", (error) => {
