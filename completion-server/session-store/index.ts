@@ -4,7 +4,7 @@ import type {
   BotTextTurn,
   TurnEvents,
   TurnRecord,
-} from "../../shared/session.js";
+} from "../../shared/turns.js";
 import { ContextStore } from "./context-store.js";
 import { TurnStore } from "./turn-store.js";
 

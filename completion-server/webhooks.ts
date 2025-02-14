@@ -6,7 +6,7 @@ import type {
   TurnEventTypes,
   TurnRecord,
   TurnUpdatedHandler,
-} from "../shared/session.js";
+} from "../shared/turns.js";
 import type { SessionStore } from "./session-store/index.js";
 
 // todo: add webhook retry

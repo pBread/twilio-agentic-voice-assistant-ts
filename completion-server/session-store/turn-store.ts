@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import { TypedEventEmitter } from "../../lib/events.js";
 import type {
   BotDTMFTurn,
@@ -14,9 +15,8 @@ import type {
   SystemTurnParams,
   TurnEvents,
   TurnRecord,
-} from "../../shared/session.js";
+} from "../../shared/turns.js";
 import { createVersionedObject } from "./versioning.js";
-import { v4 as uuidv4 } from "uuid";
 
 export class TurnStore {
   private callSid: string;
