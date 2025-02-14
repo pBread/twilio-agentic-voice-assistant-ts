@@ -23,6 +23,7 @@ async function executeSql(file: string) {
   try {
     const query = await fsp.readFile(filePath, "utf-8");
     const { data, error } = await supabase.rpc("exec_sql", { query });
+
     if (error) throw error;
     console.log(`Successfully executed ${file}`);
   } catch (error) {
