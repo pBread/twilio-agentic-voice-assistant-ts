@@ -1,11 +1,11 @@
 import twilio from "twilio";
-import type { RecordingListInstanceCreateOptions } from "twilio/lib/rest/api/v2010/account/call/recording";
+import { CallListInstanceCreateOptions } from "twilio/lib/rest/api/v2010/account/call.js";
+import type { RecordingListInstanceCreateOptions } from "twilio/lib/rest/api/v2010/account/call/recording.js";
 import {
   TWILIO_ACCOUNT_SID as accountSid,
   TWILIO_API_KEY,
   TWILIO_API_SECRET,
-} from "../../lib/env";
-import { CallListInstanceCreateOptions } from "twilio/lib/rest/api/v2010/account/call";
+} from "../../lib/env.js";
 
 const client = twilio(TWILIO_API_KEY, TWILIO_API_SECRET, { accountSid });
 

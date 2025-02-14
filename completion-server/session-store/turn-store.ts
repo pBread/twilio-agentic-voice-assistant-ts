@@ -1,5 +1,5 @@
-import { TypedEventEmitter } from "../../lib/events";
-import { makeId } from "../../lib/ids";
+import { TypedEventEmitter } from "../../lib/events.js";
+import { makeId } from "../../lib/ids.js";
 import type {
   BotDTMFTurn,
   BotDTMFTurnParams,
@@ -15,8 +15,8 @@ import type {
   SystemTurnParams,
   TurnEvents,
   TurnRecord,
-} from "../../shared/session";
-import { createVersionedObject } from "./versioning";
+} from "../../shared/session.js";
+import { createVersionedObject } from "./versioning.js";
 
 export class TurnStore {
   private callSid: string;

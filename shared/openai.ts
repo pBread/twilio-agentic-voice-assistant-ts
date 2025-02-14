@@ -1,4 +1,4 @@
-import type { ChatCompletionCreateParamsStreaming } from "openai/resources";
+import type { ChatCompletionCreateParamsStreaming } from "openai/resources/index";
 
 export interface OpenAIConfig
   extends Omit<

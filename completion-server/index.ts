@@ -1,21 +1,21 @@
 import { RequestHandler, Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
-import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../lib/env";
-import log from "../lib/logger";
-import { AgentRuntime } from "./agent-runtime";
-import { OpenAIConsciousLoop } from "./conscious-loop/openai";
-import { SessionStore } from "./session-store";
+import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../lib/env.js";
+import log from "../lib/logger.js";
+import { AgentRuntime } from "./agent-runtime/index.js";
+import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
+import { SessionStore } from "./session-store/index.js";
 import {
   ConversationRelayAdapter,
   HandoffData,
-} from "./twilio/conversation-relay-adapter";
-import { makeConversationRelayTwiML } from "./twilio/twiml";
+} from "./twilio/conversation-relay-adapter.js";
+import { makeConversationRelayTwiML } from "./twilio/twiml.js";
 import {
   endCall,
   placeCall,
   type TwilioCallWebhookPayload,
-} from "./twilio/voice";
-import { WebhookService } from "./webhooks";
+} from "./twilio/voice.js";
+import { WebhookService } from "./webhooks.js";
 
 const router = Router();
 

@@ -1,4 +1,4 @@
-import * as env from "./lib/env";
+import * as env from "./lib/env.js";
 
 import express from "express";
 import ExpressWs from "express-ws";
@@ -6,10 +6,10 @@ import {
   CONVERSATION_RELAY_WS_ROUTE,
   completionServerRoutes,
   conversationRelayWebsocketHandler,
-} from "./completion-server";
-import { intergrationServerRoutes } from "./integration-server";
-import { parseE164 } from "./lib/e164";
-import log from "./lib/logger";
+} from "./completion-server/index.js";
+import { intergrationServerRoutes } from "./integration-server/index.js";
+import { parseE164 } from "./lib/e164.js";
+import log from "./lib/logger.js";
 
 const { DEFAULT_TWILIO_NUMBER, HOSTNAME, PORT } = env;
 

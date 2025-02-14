@@ -1,11 +1,15 @@
-import { TypedEventEmitter } from "../../lib/events";
-import log from "../../lib/logger";
-import type { BotTextTurn, TurnEvents, TurnRecord } from "../../shared/session";
-import { ContextStore } from "./context-store";
-import { TurnStore } from "./turn-store";
+import { TypedEventEmitter } from "../../lib/events.js";
+import log from "../../lib/logger.js";
+import type {
+  BotTextTurn,
+  TurnEvents,
+  TurnRecord,
+} from "../../shared/session.js";
+import { ContextStore } from "./context-store.js";
+import { TurnStore } from "./turn-store.js";
 
-export type * from "./context-store";
-export type * from "./turn-store";
+export type * from "./context-store.js";
+export type * from "./turn-store.js";
 
 export class SessionStore {
   context: ContextStore;

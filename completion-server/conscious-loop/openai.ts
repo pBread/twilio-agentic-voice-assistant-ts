@@ -4,13 +4,13 @@ import type {
   ChatCompletionChunk,
   ChatCompletionMessageParam,
   ChatCompletionTool,
-} from "openai/resources";
+} from "openai/resources/index";
 import type { Stream } from "openai/streaming";
 import { z } from "zod";
-import { LLM_MAX_RETRY_ATTEMPTS, OPENAI_API_KEY } from "../../lib/env";
-import { TypedEventEmitter } from "../../lib/events";
-import log, { createLogStreamer } from "../../lib/logger";
-import type { OpenAIConfig } from "../../shared/openai";
+import { LLM_MAX_RETRY_ATTEMPTS, OPENAI_API_KEY } from "../../lib/env.js";
+import { TypedEventEmitter } from "../../lib/events.js";
+import log, { createLogStreamer } from "../../lib/logger.js";
+import type { OpenAIConfig } from "../../shared/openai.js";
 import type {
   BotTextTurn,
   BotTextTurnParams,
@@ -18,12 +18,12 @@ import type {
   BotToolTurnParams,
   StoreToolCall,
   TurnRecord,
-} from "../../shared/session";
-import type { IAgentRuntime } from "../agent-runtime/types";
-import { ToolResponse } from "../agent-runtime/types";
-import type { SessionStore } from "../session-store";
-import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter";
-import type { ConsciousLoopEvents, IConsciousLoop } from "./types";
+} from "../../shared/session.js";
+import type { IAgentRuntime } from "../agent-runtime/types.js";
+import { ToolResponse } from "../agent-runtime/types.js";
+import type { SessionStore } from "../session-store/index.js";
+import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
+import type { ConsciousLoopEvents, IConsciousLoop } from "./types.js";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 

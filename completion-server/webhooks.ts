@@ -1,13 +1,13 @@
 import PQueue from "p-queue";
-import log from "../lib/logger";
+import log from "../lib/logger.js";
 import type {
   SessionEventTypes,
   TurnAddedHandler,
   TurnDeletedHandler,
   TurnRecord,
   TurnUpdatedHandler,
-} from "../shared/session";
-import type { SessionStore } from "./session-store";
+} from "../shared/session.js";
+import type { SessionStore } from "./session-store/index.js";
 
 interface WebhookDefinition {
   url: string;

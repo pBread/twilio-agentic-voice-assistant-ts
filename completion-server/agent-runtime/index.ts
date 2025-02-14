@@ -1,13 +1,13 @@
-import log from "../../lib/logger";
-import type { RequestTool, ToolDefinition } from "../../shared/tools";
-import type { ContextStore, TurnStore } from "../session-store";
-import { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter";
+import log from "../../lib/logger.js";
+import type { RequestTool, ToolDefinition } from "../../shared/tools.js";
+import type { ContextStore, TurnStore } from "../session-store/index.js";
+import { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
 import type {
   AgentRuntimeParams,
   IAgentRuntime,
   LLMConfig,
   ToolResponse,
-} from "./types";
+} from "./types.js";
 
 export class AgentRuntime implements IAgentRuntime {
   constructor(

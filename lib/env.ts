@@ -1,5 +1,5 @@
 import "dotenv-flow/config";
-import log from "./logger";
+import log from "./logger.js";
 
 // Validate and export environment variables
 
