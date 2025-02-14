@@ -1,26 +1,27 @@
-require("dotenv-flow/config");
+import "dotenv-flow/config";
+import { spawn, ChildProcess } from "child_process";
 
 const { HOSTNAME, PORT = "3333" } = process.env;
 
-async function execNgrok(args = []) {
-  return new Promise((resolve, reject) => {
-    const { spawn } = require("child_process");
-    const process = spawn("ngrok", args, {
+async function execNgrok(args: string[] = []): Promise<number> {
+  return new Promise((resolve) => {
+    const process: ChildProcess = spawn("ngrok", args, {
       stdio: "inherit",
     });
 
-    process.on("exit", (code) => resolve(code));
+    process.on("exit", (code: number | null) => resolve(code ?? 1));
   });
 }
 
 (async () => {
-  const baseArgs = ["http", PORT];
+  const baseArgs: string[] = ["http", PORT];
 
-  let exitCode = 1; // 0 = success, 1 = error
+  let exitCode: number = 1; // 0 = success, 1 = error
 
   // try legacy syntax
-  if (HOSTNAME)
+  if (HOSTNAME) {
     exitCode = await execNgrok([...baseArgs, "--hostname=" + HOSTNAME]); // ngrok v1 & v2 uses hostname
+  }
 
   // try v3+ syntax if it fails
   if (HOSTNAME && exitCode) {
@@ -39,5 +40,7 @@ async function execNgrok(args = []) {
   }
 
   // start ngrok w/out hostname if hostname was invalid or undefined
-  if (exitCode) exitCode = await execNgrok(baseArgs);
+  if (exitCode) {
+    exitCode = await execNgrok(baseArgs);
+  }
 })();

@@ -2,12 +2,11 @@
   "author": "https://github.com/pBread",
   "name": "twilio-conversation-relay-ts",
   "type": "module",
+  "version": "1.0.0",
   "scripts": {
     "dev": "nodemon --exec tsx app.ts",
-    "debug": "nodemon shared/tools.ts",
-    "grok": "node scripts/ngrok.js"
+    "grok": "nodemon --exec tsx scripts/ngrok.ts"
   },
-  "version": "1.0.0",
   "dependencies": {
     "dotenv-flow": "^4.1.0",
     "express": "^4.21.2",
@@ -26,7 +25,6 @@
     "@types/twilio": "^3.19.3",
     "@types/ws": "^8.5.14",
     "nodemon": "^3.1.9",
-    "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   }
