@@ -104,16 +104,6 @@ router.post("/outbound/answer", async (req, res) => {
   }
 });
 
-interface Turn {
-  id: string; // unique
-  version: number; // every update will increment this value
-}
-
-interface WebhookDefinition {
-  url: string;
-  events: ("turnAdded" | "turnDeleted" | "turnUpdated")[];
-}
-
 /****************************************************
  Conversation Relay Websocket
 ****************************************************/
@@ -128,7 +118,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const relay = new ConversationRelayAdapter(ws);
   const store = new SessionStore(callSid);
 
-  const webhookSvc = new WebhookService(store, [
+  new WebhookService(store, [
     {
       events: ["turnAdded", "turnDeleted", "turnUpdated"],
       url: `http://${HOSTNAME}/store-webhook`,
