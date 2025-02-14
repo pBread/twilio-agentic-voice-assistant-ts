@@ -1,14 +1,3 @@
-export type SessionEventTypes = ContextEventTypes | TurnEventTypes;
-
-/****************************************************
- Context
-****************************************************/
-export interface ContextEvents {
-  // contextUpdated: () => void;
-}
-
-export type ContextEventTypes = keyof ContextEvents;
-
 /****************************************************
  Turn Records
 ****************************************************/

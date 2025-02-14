@@ -1,9 +1,9 @@
 import PQueue from "p-queue";
 import log from "../lib/logger.js";
 import type {
-  SessionEventTypes,
   TurnAddedHandler,
   TurnDeletedHandler,
+  TurnEventTypes,
   TurnRecord,
   TurnUpdatedHandler,
 } from "../shared/session.js";
@@ -15,7 +15,7 @@ import type { SessionStore } from "./session-store/index.js";
 
 export interface WebhookDefinition {
   url: string;
-  events: SessionEventTypes[];
+  events: TurnEventTypes[];
 }
 
 export class WebhookService {
@@ -92,9 +92,9 @@ export class WebhookService {
 
   private async queueWebhook(
     url: string,
-    event: SessionEventTypes,
+    event: TurnEventTypes,
     payload: {
-      event: SessionEventTypes;
+      event: TurnEventTypes;
       turnId: string;
       data?: TurnRecord;
       timestamp: string;
@@ -156,7 +156,7 @@ export class WebhookService {
   private async executeWebhook(
     url: string,
     payload: {
-      event: SessionEventTypes;
+      event: TurnEventTypes;
       turnId: string;
       data?: TurnRecord;
       timestamp: string;
