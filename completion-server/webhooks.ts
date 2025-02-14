@@ -22,11 +22,11 @@ export class WebhookService {
   private pendingUpdates: Map<string, number> = new Map(); // Prevents updates from stacking. Updates occur much more quickly than the webhooks resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
   private queues: Map<string, PQueue> = new Map();
   private store: SessionStore;
-  private subscribers: WebhookDefinition[];
+  private webhooks: WebhookDefinition[];
 
-  constructor(store: SessionStore, subscribers: WebhookDefinition[] = []) {
+  constructor(store: SessionStore, webhooks: WebhookDefinition[] = []) {
     this.store = store;
-    this.subscribers = subscribers;
+    this.webhooks = webhooks;
 
     this.store.on("turnAdded", this.handleTurnAdded);
     this.store.on("turnDeleted", this.handleTurnDeleted);
@@ -34,12 +34,12 @@ export class WebhookService {
   }
 
   private handleTurnAdded: TurnAddedHandler = async (turn) => {
-    const relevantSubscribers = this.subscribers.filter((sub) =>
+    const relevantwebhooks = this.webhooks.filter((sub) =>
       sub.events.includes("turnAdded")
     );
 
     await Promise.all(
-      relevantSubscribers.map((subscriber) =>
+      relevantwebhooks.map((subscriber) =>
         this.queueWebhook(subscriber.url, "turnAdded", {
           event: "turnAdded",
           turnId: turn.id,
@@ -51,12 +51,12 @@ export class WebhookService {
   };
 
   private handleTurnDeleted: TurnDeletedHandler = async (turnId, turn) => {
-    const relevantSubscribers = this.subscribers.filter((sub) =>
+    const relevantwebhooks = this.webhooks.filter((sub) =>
       sub.events.includes("turnDeleted")
     );
 
     await Promise.all(
-      relevantSubscribers.map((subscriber) =>
+      relevantwebhooks.map((subscriber) =>
         this.queueWebhook(subscriber.url, "turnDeleted", {
           event: "turnDeleted",
           turnId,
@@ -68,12 +68,12 @@ export class WebhookService {
   };
 
   private handleTurnUpdated: TurnUpdatedHandler = async (turnId) => {
-    const relevantSubscribers = this.subscribers.filter((sub) =>
+    const relevantwebhooks = this.webhooks.filter((sub) =>
       sub.events.includes("turnUpdated")
     );
 
     await Promise.all(
-      relevantSubscribers.map((subscriber) => {
+      relevantwebhooks.map((subscriber) => {
         const queueKey = `${subscriber.url}:${turnId}`;
 
         this.pendingUpdates.set(
