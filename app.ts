@@ -7,6 +7,7 @@ import {
   completionServerRoutes,
   conversationRelayWebsocketHandler,
 } from "./completion-server";
+import { intergrationServerRoutes } from "./integration-server";
 import { parseE164 } from "./lib/e164";
 import log from "./lib/logger";
 
@@ -18,6 +19,9 @@ app.use(express.urlencoded({ extended: true })).use(express.json());
 // completion server
 app.use(completionServerRoutes);
 app.ws(CONVERSATION_RELAY_WS_ROUTE, conversationRelayWebsocketHandler);
+
+// integration server
+app.use(intergrationServerRoutes);
 
 /****************************************************
  Start Server

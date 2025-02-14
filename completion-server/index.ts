@@ -15,6 +15,7 @@ import {
   placeCall,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice";
+import { WebhookService } from "./webhooks";
 
 const router = Router();
 
@@ -126,6 +127,14 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
 
   const relay = new ConversationRelayAdapter(ws);
   const store = new SessionStore(callSid);
+
+  const webhookSvc = new WebhookService(store, [
+    {
+      events: ["turnAdded", "turnDeleted", "turnUpdated"],
+      url: `https://${HOSTNAME}/hello-world`,
+    },
+  ]);
+
   store.on("turnAdded", (turn) => log.debug("store", "turnAdded", turn));
 
   store.on("turnUpdated", (turnId) => {
