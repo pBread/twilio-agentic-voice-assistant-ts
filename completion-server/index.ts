@@ -131,7 +131,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const webhookSvc = new WebhookService(store, [
     {
       events: ["turnAdded", "turnDeleted", "turnUpdated"],
-      url: `https://${HOSTNAME}/hello-world`,
+      url: `http://${HOSTNAME}/store-webhook`,
     },
   ]);
 
