@@ -7,7 +7,7 @@ import type {
 } from "openai/resources/index";
 import type { Stream } from "openai/streaming";
 import { z } from "zod";
-import { LLM_MAX_RETRY_ATTEMPTS, OPENAI_API_KEY } from "../../lib/env.js";
+import { OPENAI_API_KEY } from "../../lib/env.js";
 import { TypedEventEmitter } from "../../lib/events.js";
 import log, { createLogStreamer } from "../../lib/logger.js";
 import type { OpenAIConfig } from "../../shared/openai.js";
@@ -26,6 +26,7 @@ import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adap
 import type { ConsciousLoopEvents, IConsciousLoop } from "./types.js";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+const LLM_MAX_RETRY_ATTEMPTS = 3;
 
 export class OpenAIConsciousLoop
   implements

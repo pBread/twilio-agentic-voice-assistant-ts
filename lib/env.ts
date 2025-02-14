@@ -1,71 +1,70 @@
 import "dotenv-flow/config";
 import log from "./logger.js";
 
-// Validate and export environment variables
+const errors: string[] = [];
+const addError = (msg: string) => {
+  log.red(msg);
+  errors.push(msg);
+};
+const missingRequired = (env: string) =>
+  addError(`Missing environment variable ${env}`);
 
-const required = {
-  HOSTNAME: process.env.HOSTNAME,
-  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-  TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
-  TWILIO_API_KEY: process.env.TWILIO_API_KEY,
-  TWILIO_API_SECRET: process.env.TWILIO_API_SECRET,
-} as const;
+const warn = (msg: string) => log.yellow(msg);
+const warnMissing = (env: string) =>
+  warn(`(warning) Missing environment variable ${env}`);
 
-const validatedEnv = validateEnvVariables();
-
-export const {
-  HOSTNAME,
-  OPENAI_API_KEY,
-  TWILIO_ACCOUNT_SID,
-  TWILIO_API_KEY,
-  TWILIO_API_SECRET,
-} = validatedEnv;
-
-// Optional, but include warnings
-export const DEFAULT_TWILIO_NUMBER = process.env.DEFAULT_TWILIO_NUMBER;
-export const LLM_MAX_RETRY_ATTEMPTS = process.env.LLM_MAX_RETRY_ATTEMPTS
-  ? parseInt(process.env.LLM_MAX_RETRY_ATTEMPTS)
-  : 3;
-
-if (!DEFAULT_TWILIO_NUMBER)
-  log.yellow(`(warning) Missing environment variable DEFAULT_TWILIO_NUMBER`);
-
-// Optional
-export const PORT = process.env.PORT ?? "3333";
-
-function validateEnvVariables() {
-  const errors: string[] = [];
-
-  // Check for missing required variables
-  Object.entries(required).forEach(([key, value]) => {
-    if (!value) {
-      const errorMsg = `Missing environment variable ${key}`;
-      log.red(errorMsg);
-      errors.push(errorMsg);
-    }
-  });
-
-  // Special validation for HOSTNAME
-  if (required.HOSTNAME && !isValidHostname(required.HOSTNAME)) {
-    const errorMsg = `Invalid HOSTNAME. Only include the hostname, e.g. domain.com or sub.domain.com, not the other URL elements, e.g. http://`;
-    log.warn(errorMsg);
-  }
-
-  // Throw combined error if any validation failed
-  if (errors.length > 0)
-    throw new Error(
-      `Environment validation failed with the following errors:\n${errors
-        .map((err, idx) => `\t(${idx + 1}) ${err}`)
-        .join("\n")}`
-    );
-
-  // Export validated variables
-  return required;
+/****************************************************
+ Required Env Variables
+****************************************************/
+export const HOSTNAME = process.env.HOSTNAME as string;
+if (!HOSTNAME) missingRequired("HOSTNAME");
+else if (!isValidHostname(HOSTNAME)) {
+  warn(
+    "Invalid HOSTNAME. Only include the hostname, e.g. domain.com or sub.domain.com, not the other URL elements, e.g. http://"
+  );
 }
 
+export const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
+if (!OPENAI_API_KEY) missingRequired("OPENAI_API_KEY");
+
+export const SUPABASE_API_KEY = process.env.SUPABASE_API_KEY as string;
+export const SUPABASE_PROJECT_URL = process.env.SUPABASE_PROJECT_URL as string;
+if (!SUPABASE_API_KEY) missingRequired("SUPABASE_API_KEY");
+if (!SUPABASE_PROJECT_URL) missingRequired("SUPABASE_PROJECT_URL");
+
+export const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID as string;
+export const TWILIO_API_KEY = process.env.TWILIO_API_KEY as string;
+export const TWILIO_API_SECRET = process.env.TWILIO_API_SECRET as string;
+if (!TWILIO_ACCOUNT_SID) missingRequired("TWILIO_ACCOUNT_SID");
+if (!TWILIO_API_KEY) missingRequired("TWILIO_API_KEY");
+if (!TWILIO_API_SECRET) missingRequired("TWILIO_API_SECRET");
+
+/****************************************************
+ Optional Env Variables
+****************************************************/
+export const DEFAULT_TWILIO_NUMBER = process.env.DEFAULT_TWILIO_NUMBER;
+if (!DEFAULT_TWILIO_NUMBER) warnMissing("DEFAULT_TWILIO_NUMBER");
+
+/****************************************************
+ Environment Configuration
+****************************************************/
+export const PORT = process.env.PORT ?? "3333";
+
+/****************************************************
+ Validation Helpers
+****************************************************/
 // Helper function to validate hostname using RFC-1123
 function isValidHostname(hostname: string): boolean {
-  return /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-zA-z0-9\-]*[A-Za-z0-9])$/.test(
+  return /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/.test(
     hostname
+  );
+}
+
+// throw if any required variables are missing
+if (errors.length) {
+  throw Error(
+    `Environment validation failed with the following errors:\n${errors
+      .map((err, idx) => `\t(${idx + 1}) ${err}`)
+      .join("\n")}`
   );
 }

@@ -30,6 +30,7 @@ app.listen(PORT, () => {
   log.green(`server running on http://localhost:${PORT}`);
   log.green(`public base URL https://${HOSTNAME}`);
   if (DEFAULT_TWILIO_NUMBER) {
+    // todo: validate whether this is configured to handle incoming calls
     log.green(
       `default phone number: ${
         parseE164(DEFAULT_TWILIO_NUMBER)?.formatted.international ??
