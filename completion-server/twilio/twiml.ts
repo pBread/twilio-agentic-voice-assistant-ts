@@ -20,7 +20,6 @@ export function makeConversationRelayTwiML({
   const connect = response.connect({
     // action endpoint will be executed when an 'end' action is dispatched to the ConversationRelay websocket
     // https://www.twilio.com/docs/voice/twiml/connect/conversationrelay#end-session-message
-    //
     // In this implementation, we use the action for transfering conversations to a human agent
     action: `https://${HOSTNAME}/call-wrapup`,
   });
