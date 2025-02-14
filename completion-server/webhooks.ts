@@ -49,6 +49,7 @@ export class WebhookService {
       )
     );
   };
+
   private handleTurnDeleted: TurnDeletedHandler = async (turnId, turn) => {
     const relevantSubscribers = this.subscribers.filter((sub) =>
       sub.events.includes("turnDeleted")
