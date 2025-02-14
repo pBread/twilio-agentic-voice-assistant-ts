@@ -1,5 +1,4 @@
 import { TypedEventEmitter } from "../../lib/events.js";
-import { makeId } from "../../lib/ids.js";
 import type {
   BotDTMFTurn,
   BotDTMFTurnParams,
@@ -17,6 +16,7 @@ import type {
   TurnRecord,
 } from "../../shared/session.js";
 import { createVersionedObject } from "./versioning.js";
+import { v4 as uuidv4 } from "uuid";
 
 export class TurnStore {
   private callSid: string;
@@ -61,7 +61,7 @@ export class TurnStore {
    Turn Record Creators
   ****************************************************/
   addBotDTMF = (params: BotDTMFTurnParams): BotDTMFTurn => {
-    const id = params.id ?? makeId("bot");
+    const id = params.id ?? uuidv4();
 
     const turn: BotDTMFTurn = createVersionedObject(
       {
@@ -84,7 +84,7 @@ export class TurnStore {
   };
 
   addBotText = (params: BotTextTurnParams): BotTextTurn => {
-    const id = params.id ?? makeId("bot");
+    const id = params.id ?? uuidv4();
 
     const turn: BotTextTurn = createVersionedObject(
       {
@@ -107,7 +107,7 @@ export class TurnStore {
   };
 
   addBotTool = (params: BotToolTurnParams): BotToolTurn => {
-    const id = params.id ?? makeId("bot");
+    const id = params.id ?? uuidv4();
 
     const turn: BotToolTurn = createVersionedObject(
       {
@@ -129,7 +129,7 @@ export class TurnStore {
   };
 
   addHumanDTMF = (params: HumanDTMFTurnParams): HumanDTMFTurn => {
-    const id = params.id ?? makeId("hum");
+    const id = params.id ?? uuidv4();
 
     const turn: HumanDTMFTurn = createVersionedObject(
       {
@@ -151,7 +151,7 @@ export class TurnStore {
   };
 
   addHumanText = (params: HumanTextTurnParams): HumanTextTurn => {
-    const id = params.id ?? makeId("hum");
+    const id = params.id ?? uuidv4();
 
     const turn: HumanTextTurn = createVersionedObject(
       {
@@ -173,7 +173,7 @@ export class TurnStore {
   };
 
   addSystem = (params: SystemTurnParams): SystemTurn => {
-    const id = params.id ?? makeId("sys");
+    const id = params.id ?? uuidv4();
 
     const turn: SystemTurn = createVersionedObject(
       {
