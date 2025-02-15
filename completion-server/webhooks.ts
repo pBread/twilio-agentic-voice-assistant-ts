@@ -1,5 +1,11 @@
 import PQueue from "p-queue";
 import log from "../lib/logger.js";
+import {
+  ContextDiff,
+  ContextEventTypes,
+  ContextUpdatedHandler,
+  SessionContext,
+} from "../shared/context.js";
 import type {
   TurnAddedHandler,
   TurnDeletedHandler,
@@ -8,12 +14,6 @@ import type {
   TurnUpdatedHandler,
 } from "../shared/turns.js";
 import type { SessionStore } from "./session-store/index.js";
-import {
-  ContextDiff,
-  ContextEventTypes,
-  ContextUpdatedHandler,
-  SessionContext,
-} from "../shared/context.js";
 
 // todo: add webhook retry
 // todo: add service-level queue to ensure one call doesn't affect others
@@ -46,52 +46,50 @@ export class WebhookService {
     context,
     diff
   ) => {
-    const relevantwebhooks = this.webhooks.filter((sub) =>
+    const releventWebhooks = this.webhooks.filter((sub) =>
       sub.events.includes("contextUpdated")
-    );
-  };
-
-  private handleTurnAdded: TurnAddedHandler = async (turn) => {
-    const relevantwebhooks = this.webhooks.filter((sub) =>
-      sub.events.includes("turnAdded")
     );
 
     await Promise.all(
-      relevantwebhooks.map((subscriber) =>
-        this.queueWebhook(subscriber.url, "turnAdded", {
-          event: "turnAdded",
-          turnId: turn.id,
-          data: turn,
-          timestamp: new Date().toISOString(),
-        })
+      releventWebhooks.map((subscriber) =>
+        this.queueWebhook(subscriber.url, "contextUpdated", { context, diff })
       )
     );
   };
 
-  private handleTurnDeleted: TurnDeletedHandler = async (turnId, turn) => {
-    const relevantwebhooks = this.webhooks.filter((sub) =>
+  private handleTurnAdded: TurnAddedHandler = async (turn) => {
+    const releventWebhooks = this.webhooks.filter((sub) =>
+      sub.events.includes("turnAdded")
+    );
+
+    const turnId = turn.id;
+
+    await Promise.all(
+      releventWebhooks.map((subscriber) =>
+        this.queueWebhook(subscriber.url, "turnAdded", { turnId, turn })
+      )
+    );
+  };
+
+  private handleTurnDeleted: TurnDeletedHandler = async (turnId, turn?) => {
+    const releventWebhooks = this.webhooks.filter((sub) =>
       sub.events.includes("turnDeleted")
     );
 
     await Promise.all(
-      relevantwebhooks.map((subscriber) =>
-        this.queueWebhook(subscriber.url, "turnDeleted", {
-          event: "turnDeleted",
-          turnId,
-          data: turn, // might be undefined, which is expected
-          timestamp: new Date().toISOString(),
-        })
+      releventWebhooks.map((subscriber) =>
+        this.queueWebhook(subscriber.url, "turnDeleted", { turnId, turn })
       )
     );
   };
 
   private handleTurnUpdated: TurnUpdatedHandler = async (turnId) => {
-    const relevantwebhooks = this.webhooks.filter((sub) =>
+    const releventWebhooks = this.webhooks.filter((sub) =>
       sub.events.includes("turnUpdated")
     );
 
     await Promise.all(
-      relevantwebhooks.map((subscriber) => {
+      releventWebhooks.map((subscriber) => {
         const queueKey = `${subscriber.url}:${turnId}`;
 
         this.pendingUpdates.set(
@@ -99,10 +97,8 @@ export class WebhookService {
           (this.pendingUpdates.get(queueKey) || 0) + 1
         );
         return this.queueWebhook(subscriber.url, "turnUpdated", {
-          event: "turnUpdated",
           turnId,
-          // data will be fetched right before sending
-          timestamp: new Date().toISOString(),
+          turn: undefined, // Will be fetched right before sending
         });
       })
     );
@@ -113,24 +109,26 @@ export class WebhookService {
     event: WebhookEvents,
     payload: InternalPayload
   ): Promise<void> {
-    const queueKey = `${url}:${payload.turnId}`;
+    const queueKey = `${url}:${
+      "turnId" in payload ? payload.turnId : "context"
+    }`;
     const queue = this.getQueue(queueKey);
 
     try {
       await queue.add(
         async () => {
-          if (event === "turnUpdated") {
-            //  skip every update except for the latest
+          if (event === "turnUpdated" && "turnId" in payload) {
             const pendingCount = this.pendingUpdates.get(queueKey) || 0;
-            if (pendingCount > 1)
+            if (pendingCount > 1) {
               return this.pendingUpdates.set(queueKey, pendingCount - 1);
+            }
 
-            this.pendingUpdates.delete(queueKey); // clear the counter on the last update
-            const latestTurn = this.store.turns.get(payload.turnId); // get the latest version right before sending
-            payload.data = latestTurn;
+            this.pendingUpdates.delete(queueKey);
+            const latestTurn = this.store.turns.get(payload.turnId);
+            payload.turn = latestTurn;
           }
 
-          await this.executeWebhook(url, payload);
+          await this.executeWebhook(url, event, payload);
         },
         { priority: event === "turnAdded" ? 1 : 0 }
       );
@@ -138,7 +136,6 @@ export class WebhookService {
       log.error("webhook", `Failed to queue webhook for ${queueKey}:`, error);
     }
 
-    // Clean up queue if empty
     if (queue.size === 0 && queue.pending === 0) {
       queue.removeAllListeners();
       this.queues.delete(queueKey);
@@ -149,11 +146,11 @@ export class WebhookService {
     let queue = this.queues.get(queueKey);
     if (!queue) {
       queue = new PQueue({
-        concurrency: 1, // Ensure sequential processing per subscriber, i.e. turnId
-        intervalCap: 100, // Maximum number of requests per interval
-        interval: 1000, // Interval in ms
-        carryoverConcurrencyCount: true, // Carries over pending promises to the next interval
-        timeout: 10000, // 10s timeout for each webhook call
+        concurrency: 1,
+        intervalCap: 100,
+        interval: 1000,
+        carryoverConcurrencyCount: true,
+        timeout: 10000,
       });
 
       queue.on("error", (error) => {
@@ -180,12 +177,6 @@ export class WebhookService {
     if (!response.ok) throw new Error(`HTTP error, status ${response.status}`);
   }
 }
-
-type InternalPayload =
-  | Omit<ContextUpdatedEvent, "callSid" | "event">
-  | Omit<TurnAddedEvent, "callSid" | "event">
-  | Omit<TurnDeletedEvent, "callSid" | "event">
-  | Omit<TurnUpdatedEvent, "callSid" | "event">;
 
 export interface ContextUpdatedEvent {
   callSid: string;
@@ -214,3 +205,9 @@ export interface TurnUpdatedEvent {
   turn: TurnRecord;
   event: "turnUpdated";
 }
+
+type InternalPayload =
+  | Omit<ContextUpdatedEvent, "callSid" | "event">
+  | Omit<TurnAddedEvent, "callSid" | "event">
+  | Omit<TurnDeletedEvent, "callSid" | "event">
+  | Omit<TurnUpdatedEvent, "callSid" | "event">;
