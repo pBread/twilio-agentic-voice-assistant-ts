@@ -2,6 +2,7 @@ import { RequestHandler, Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
 import log from "../lib/logger.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
+import { CallDetails } from "../shared/session/context.js";
 import { AgentRuntime } from "./agent-runtime/index.js";
 import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
 import { SessionStore } from "./session-store/index.js";
@@ -16,7 +17,6 @@ import {
   placeCall,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
-import { CallDetails } from "../shared/session/context.js";
 
 const router = Router();
 
