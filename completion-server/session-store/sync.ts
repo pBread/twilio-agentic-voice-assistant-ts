@@ -182,10 +182,12 @@ export class SyncQueueService {
             `context item ${key} is not an object and could not be sent to sync. value: `,
             value
           );
-          return;
         }
+
         const ctxMap = await this.ctxMapPromise;
-        await ctxMap.set(key, value as unknown as Record<string, unknown>);
+        if (value === null || value === undefined)
+          await ctxMap.remove(key); // removed undefined properties
+        else await ctxMap.set(key, value as unknown as Record<string, unknown>);
       });
     } catch (error) {
       log.error(
@@ -225,7 +227,7 @@ export class SyncQueueService {
     this.cleanupQueue(queue, queueKey);
   };
 
-  async addTurn(turn: TurnRecord): Promise<void> {
+  addTurn = async (turn: TurnRecord): Promise<void> => {
     const queueKey = `${this.callSid}:turn:${turn.id}`;
     const queue = this.getQueue(queueKey);
 
@@ -249,7 +251,7 @@ export class SyncQueueService {
     }
 
     this.cleanupQueue(queue, queueKey);
-  }
+  };
 
   deleteTurn = async (turnId: string): Promise<void> => {
     const queueKey = `${this.callSid}:turn:${turnId}`;

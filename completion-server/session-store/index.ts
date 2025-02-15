@@ -4,6 +4,11 @@ import { TypedEventEmitter } from "../../lib/events.js";
 import log from "../../lib/logger.js";
 import type { SessionContext } from "../../shared/session/context.js";
 import type { TurnEvents } from "../../shared/session/turns.js";
+import {
+  MapItemAddedEvent,
+  MapItemRemovedEvent,
+  MapItemUpdatedEvent,
+} from "../../shared/sync/types.js";
 import { getSyncClient, SyncQueueService } from "./sync.js";
 import { TurnStore } from "./turn-store.js";
 
@@ -49,6 +54,24 @@ export class SessionStore {
     // send initial context to sync
     for (const key in this.context)
       this.syncQueue.updateContext(key as SessionContextKey);
+
+    this.syncQueue.ctxMapPromise.then((ctxMap) => {
+      ctxMap.on("itemAdded", (ev: MapItemAddedEvent) => {
+        if (ev.isLocal) return;
+        log.info("sync", `context added ${ev.item.key}`);
+        this.setContext({ [ev.item.key]: ev.item.data }, false);
+      });
+      ctxMap.on("itemRemoved", (ev: MapItemRemovedEvent) => {
+        if (ev.isLocal) return;
+        log.info("sync", `context removed ${ev.key}`);
+        this.setContext({ [ev.key]: undefined }, false);
+      });
+      ctxMap.on("itemUpdated", (ev: MapItemUpdatedEvent) => {
+        if (ev.isLocal) return;
+        log.info("sync", `context updated ${ev.item.key}`);
+        this.setContext({ [ev.item.key]: ev.item.data }, false);
+      });
+    });
   }
 
   /****************************************************
@@ -56,13 +79,8 @@ export class SessionStore {
   ****************************************************/
   setContext = (update: Partial<SessionContext>, sendToSync = true) => {
     const prev = this.context;
-    const _update = Object.fromEntries(
-      Object.entries(update).filter(
-        ([key, value]) => value !== null && value !== undefined
-      )
-    );
 
-    const context = { ...this.context, ..._update };
+    const context = { ...this.context, ...update };
 
     const diff = deepDiff(prev, context);
     if (!diff) return;
