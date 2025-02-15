@@ -149,8 +149,8 @@ export class SyncQueueService {
   private queueCounts: Map<string, number> = new Map(); // Prevents updates from stacking. Updates occur much more quickly than the update requests resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
   private queues: Map<string, PQueue> = new Map();
 
-  private ctxMapPromise: Promise<SyncMap>;
-  private turnMapPromise: Promise<SyncMap>;
+  public ctxMapPromise: Promise<SyncMap>;
+  public turnMapPromise: Promise<SyncMap>;
 
   constructor(
     private callSid: string,
@@ -162,7 +162,9 @@ export class SyncQueueService {
     this.turnMapPromise = this.sync.map(makeTurnMapName(callSid));
   }
 
-  async updateContext<K extends keyof SessionContext>(key: K): Promise<void> {
+  updateContext = async <K extends keyof SessionContext>(
+    key: K
+  ): Promise<void> => {
     const queueKey = `${this.callSid}:context:${key}`;
     const queue = this.getQueue(queueKey);
 
@@ -194,9 +196,9 @@ export class SyncQueueService {
     }
 
     this.cleanupQueue(queue, queueKey);
-  }
+  };
 
-  async updateTurn(turnId: string): Promise<void> {
+  updateTurn = async (turnId: string): Promise<void> => {
     const queueKey = `${this.callSid}:turn:${turnId}`;
     const queue = this.getQueue(queueKey);
 
@@ -221,7 +223,7 @@ export class SyncQueueService {
     }
 
     this.cleanupQueue(queue, queueKey);
-  }
+  };
 
   async addTurn(turn: TurnRecord): Promise<void> {
     const queueKey = `${this.callSid}:turn:${turn.id}`;
@@ -249,7 +251,7 @@ export class SyncQueueService {
     this.cleanupQueue(queue, queueKey);
   }
 
-  async deleteTurn(turnId: string): Promise<void> {
+  deleteTurn = async (turnId: string): Promise<void> => {
     const queueKey = `${this.callSid}:turn:${turnId}`;
     const queue = this.getQueue(queueKey);
 
@@ -267,9 +269,9 @@ export class SyncQueueService {
     }
 
     this.cleanupQueue(queue, queueKey);
-  }
+  };
 
-  private getQueue(queueKey: string): PQueue {
+  private getQueue = (queueKey: string): PQueue => {
     let queue = this.queues.get(queueKey);
     if (!queue) {
       queue = new PQueue({
@@ -288,12 +290,12 @@ export class SyncQueueService {
     }
 
     return queue;
-  }
+  };
 
-  private cleanupQueue(queue: PQueue, queueKey: string): void {
+  private cleanupQueue = (queue: PQueue, queueKey: string): void => {
     if (queue.size !== 0 || queue.pending !== 0) return; // do nothing if queue has items pending
 
     queue.removeAllListeners();
     this.queues.delete(queueKey);
-  }
+  };
 }
