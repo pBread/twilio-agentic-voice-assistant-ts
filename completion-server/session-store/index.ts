@@ -1,11 +1,11 @@
+import deepDiff from "deep-diff";
 import type { SyncClient, SyncMap } from "twilio-sync";
 import { TypedEventEmitter } from "../../lib/events.js";
 import type { SessionContext } from "../../shared/session/context.js";
-import type { TurnEvents } from "../../shared/session/turns.js";
+import type { TurnEvents, TurnRecord } from "../../shared/session/turns.js";
+import { makeContextMapName, makeTurnMapName } from "../../shared/sync/ids.js";
 import { getSyncClient } from "./sync.js";
 import { TurnStore } from "./turn-store.js";
-import { makeContextMapName, makeTurnMapName } from "../../shared/sync/ids.js";
-import deepDiff from "deep-diff";
 
 export type * from "./turn-store.js";
 
@@ -18,7 +18,7 @@ export class SessionStore {
   private turnMapPromise: Promise<SyncMap>;
 
   constructor(public callSid: string) {
-    this.context = { today: new Date(), version: 0 };
+    this.context = {};
     this.turns = new TurnStore(callSid);
 
     this.sync = getSyncClient(callSid);
@@ -44,14 +44,18 @@ export class SessionStore {
   ****************************************************/
   setContext = (update: Partial<SessionContext>) => {
     const prev = this.context;
-    const context = { ...this.context, ...update };
+    const _update = Object.fromEntries(
+      Object.entries(update).filter(
+        ([key, value]) => value !== null && value !== undefined
+      )
+    );
+
+    const context = { ...this.context, ..._update };
 
     const diff = deepDiff(prev, context);
     if (!diff) return;
 
-    this.context = Object.assign(context, {
-      version: prev.version + 1,
-    });
+    this.context = context;
 
     const updates = diff.map(({ path }) => path![0]) as SessionContextKey[];
     this.eventEmitter.emit("contextUpdated", { context, prev, updates });
@@ -60,10 +64,27 @@ export class SessionStore {
   /****************************************************
    Sync
   ****************************************************/
-  setSyncContextItem = async <K extends SessionContextKey>(
+  private setSyncContextItem = async <K extends SessionContextKey>(
     key: K,
-    value: SessionContext[K]
-  ) => {};
+    value: NonNullable<SessionContext[K]>
+  ) => {
+    const ctxMap = await this.ctxMapPromise;
+    const item = await ctxMap.set(
+      key,
+      value as unknown as Record<string, unknown>
+    );
+    return item.data;
+  };
+
+  private setSyncTurnItem = async (turn: TurnRecord) => {
+    const turnMap = await this.turnMapPromise;
+    const item = await turnMap.set(
+      turn.id,
+      turn as unknown as Record<string, unknown>
+    );
+
+    return item.data;
+  };
 
   /****************************************************
    Event Typing

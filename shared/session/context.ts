@@ -2,9 +2,6 @@ import deepDiff from "deep-diff";
 import type { UserRecord } from "../db-entities.js";
 
 export interface SessionContext {
-  today: Date;
-  version: number;
-
   user?: UserRecord;
   call?: CallDetails;
 }
@@ -14,6 +11,7 @@ interface CallDetails {
   from: string; // e164
   to: string; // e164
 
+  date: Date;
   startTime: string; // 24 hour format, 13:00
   userPhone: string; // e164
 }
