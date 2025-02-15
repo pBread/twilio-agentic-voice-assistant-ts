@@ -141,11 +141,13 @@ export class SyncSession {
 
   setContextItem = async (key: string, value: any) => {
     const ctxMap = await this.ctxMapPromise;
-    await ctxMap.set(key, value);
+    const item = await ctxMap.set(key, value);
+    return item.data;
   };
 
   setTurn = async (turnId: string, turn: TurnRecord) => {
     const turnMap = await this.turnMapPromise;
-    await turnMap.set(turnId, turn as Record<string, any>);
+    const item = await turnMap.set(turnId, turn as Record<string, any>);
+    return item.data;
   };
 }
