@@ -141,18 +141,3 @@ export type SystemTurnParams = Omit<
   SystemTurn,
   "callSid" | "createdAt" | "id" | "order" | "role"
 > & { id?: string };
-
-/****************************************************
- Turn Events
-****************************************************/
-export interface TurnEvents {
-  turnAdded: (turn: TurnRecord) => void;
-  turnDeleted: (turnId: string, turn?: TurnRecord) => void;
-  turnUpdated: (turnId: string) => void;
-}
-export type TurnEventTypes = keyof TurnEvents;
-
-type EventHandler<T, K extends keyof T> = T[K];
-export type TurnAddedHandler = EventHandler<TurnEvents, "turnAdded">;
-export type TurnDeletedHandler = EventHandler<TurnEvents, "turnDeleted">;
-export type TurnUpdatedHandler = EventHandler<TurnEvents, "turnUpdated">;

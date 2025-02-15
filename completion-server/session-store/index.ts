@@ -3,13 +3,13 @@ import type { SyncClient } from "twilio-sync";
 import { TypedEventEmitter } from "../../lib/events.js";
 import log from "../../lib/logger.js";
 import type { SessionContext } from "../../shared/session/context.js";
-import type { TurnEvents } from "../../shared/session/turns.js";
 import {
   MapItemAddedEvent,
   MapItemRemovedEvent,
   MapItemUpdatedEvent,
 } from "../../shared/sync/types.js";
 import { getSyncClient, SyncQueueService } from "./sync.js";
+import type { TurnEvents } from "./turn-store.js";
 import { TurnStore } from "./turn-store.js";
 
 export type * from "./turn-store.js";
@@ -55,6 +55,9 @@ export class SessionStore {
     for (const key in this.context)
       this.syncQueue.updateContext(key as SessionContextKey);
 
+    // subscribe to context changes from sync and update local state accordingly
+    // this is how subconscious processes communicate with the application
+    // note: turns are not bidirectional. turn data is only sent to sync
     this.syncQueue.ctxMapPromise.then((ctxMap) => {
       ctxMap.on("itemAdded", (ev: MapItemAddedEvent) => {
         if (ev.isLocal) return;

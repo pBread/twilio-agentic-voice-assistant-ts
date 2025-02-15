@@ -14,7 +14,6 @@ import type {
   HumanTextTurnParams,
   SystemTurn,
   SystemTurnParams,
-  TurnEvents,
   TurnRecord,
 } from "../../shared/session/turns.js";
 import { createVersionedObject } from "./versioning.js";
@@ -254,4 +253,10 @@ export class TurnStore {
     this.turnMap.set(toolTurn.id, toolTurn);
     return toolTurn;
   };
+}
+
+export interface TurnEvents {
+  turnAdded: (turn: TurnRecord) => void;
+  turnDeleted: (turnId: string, turn?: TurnRecord) => void;
+  turnUpdated: (turnId: string) => void;
 }
