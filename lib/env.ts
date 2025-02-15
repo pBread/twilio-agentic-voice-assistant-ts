@@ -39,6 +39,9 @@ if (!TWILIO_ACCOUNT_SID) missingRequired("TWILIO_ACCOUNT_SID");
 if (!TWILIO_API_KEY) missingRequired("TWILIO_API_KEY");
 if (!TWILIO_API_SECRET) missingRequired("TWILIO_API_SECRET");
 
+export const TWILIO_SYNC_SVC_SID = process.env.TWILIO_SYNC_SVC_SID as string;
+if (!TWILIO_SYNC_SVC_SID) missingRequired("TWILIO_SYNC_SVC_SID");
+
 /****************************************************
  Optional Env Variables
 ****************************************************/
