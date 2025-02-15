@@ -16,6 +16,7 @@ import {
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
 import { WebhookService } from "./webhooks.js";
+import { setupSyncSession } from "./session-store/sync.js";
 
 const router = Router();
 
@@ -28,6 +29,8 @@ router.post("/incoming-call", async (req, res) => {
   log.setCallSid(callSid);
 
   try {
+    await setupSyncSession(callSid); // ensure the sync session is setup before connecting to Conversation Relay
+
     const twiml = makeConversationRelayTwiML({
       callSid,
       context: {},
@@ -96,6 +99,8 @@ router.post("/outbound/answer", async (req, res) => {
   log.info(`/outbound/answer`, `CallSid ${callSid}`);
 
   try {
+    await setupSyncSession(callSid); // ensure the sync session is setup before connecting to Conversation Relay
+
     const twiml = makeConversationRelayTwiML({ callSid, context: {} });
     res.status(200).type("text/xml").end(twiml);
   } catch (error) {

@@ -24,8 +24,13 @@ export function getSyncClient(callSid: string) {
   return entry.sync;
 }
 
-export async function initSyncClient(callSid: string) {
-  const sync = await createSyncClient(callSid);
+export async function setupSyncSession(callSid: string) {
+  const sync = await createSyncClient(callSid); // initialize client and wait for connection
+
+  await Promise.all([
+    sync.map(makeContextMapName(callSid)), // create sync records for call
+    sync.map(makeTurnMapName(callSid)),
+  ]);
 
   const timeout = setTimeout(() => {
     // delete unaccessed sync clients after 5 minutes to avoid memory leaks
