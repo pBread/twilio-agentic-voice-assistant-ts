@@ -18,7 +18,7 @@ import type {
   BotToolTurnParams,
   StoreToolCall,
   TurnRecord,
-} from "../../shared/turns.js";
+} from "../../shared/session-turns.js";
 import type { IAgentRuntime } from "../agent-runtime/types.js";
 import { ToolResponse } from "../agent-runtime/types.js";
 import type { SessionStore } from "../session-store/index.js";

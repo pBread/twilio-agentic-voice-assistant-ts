@@ -1,7 +1,10 @@
 import deepdiff from "deep-diff";
 import { TypedEventEmitter } from "../../lib/events.js";
-import type { ContextEvents, SessionContext } from "../../shared/context.js";
-import type { TurnEvents } from "../../shared/turns.js";
+import type {
+  ContextEvents,
+  SessionContext,
+} from "../../shared/session-context.js";
+import type { TurnEvents } from "../../shared/session-turns.js";
 import { TurnStore } from "./turn-store.js";
 
 export type * from "./turn-store.js";

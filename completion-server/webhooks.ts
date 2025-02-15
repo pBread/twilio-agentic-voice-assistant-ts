@@ -5,14 +5,14 @@ import {
   ContextEventTypes,
   ContextUpdatedHandler,
   SessionContext,
-} from "../shared/context.js";
+} from "../shared/session-context.js";
 import type {
   TurnAddedHandler,
   TurnDeletedHandler,
   TurnEventTypes,
   TurnRecord,
   TurnUpdatedHandler,
-} from "../shared/turns.js";
+} from "../shared/session-turns.js";
 import type { SessionStore } from "./session-store/index.js";
 
 // todo: add webhook retry

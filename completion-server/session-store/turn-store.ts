@@ -16,7 +16,7 @@ import type {
   SystemTurnParams,
   TurnEvents,
   TurnRecord,
-} from "../../shared/turns.js";
+} from "../../shared/session-turns.js";
 import { createVersionedObject } from "./versioning.js";
 
 export class TurnStore {

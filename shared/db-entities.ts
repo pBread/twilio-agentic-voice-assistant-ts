@@ -4,6 +4,9 @@ interface BaseRecord {
   updated_at: Date;
 }
 
+/****************************************************
+ Users
+****************************************************/
 export interface UserRecord extends BaseRecord {
   first_name: string;
   last_name: string;
@@ -26,6 +29,9 @@ interface PaymentMethod extends BaseRecord {
   type: "card";
 }
 
+/****************************************************
+ Orders
+****************************************************/
 export interface Order extends BaseRecord {
   user_id: string;
   lines: OrderLine[];
@@ -52,6 +58,9 @@ interface OrderLine extends BaseRecord {
   net_total: number;
 }
 
+/****************************************************
+ Products
+****************************************************/
 interface Product extends BaseRecord {
   name: string;
   description: string;
