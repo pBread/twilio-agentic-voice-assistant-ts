@@ -10,6 +10,13 @@ const tempSyncClientCache = new Map<
   string,
   { sync: SyncClient; timeout: NodeJS.Timeout }
 >();
+
+/**
+ * Retrieves and removes a Sync client from the temporary cache.
+ * @param callSid - The unique identifier for the call session
+ * @returns The cached Sync client
+ * @throws {Error} If no Sync client is found for the given callSid
+ */
 export function getSyncClient(callSid: string) {
   const entry = tempSyncClientCache.get(callSid);
   if (!entry) {
@@ -24,6 +31,15 @@ export function getSyncClient(callSid: string) {
   return entry.sync;
 }
 
+/**
+ * Sets up a complete Sync session for a call, including the client and data structures.
+ * Creates a Sync client and initializes required map containers for the call session.
+ * The client is temporarily cached and will be cleaned up if not retrieved within 5 minutes.
+ *
+ * @param callSid - The unique identifier for the call session
+ * @returns A connected Sync client ready for use
+ * @throws {Error} If client connection fails or map creation fails
+ */
 export async function setupSyncSession(callSid: string) {
   const sync = await createSyncClient(callSid); // initialize client and wait for connection
 
@@ -50,6 +66,20 @@ export async function setupSyncSession(callSid: string) {
   return sync;
 }
 
+/**
+ * Creates and initializes a new Sync client with automatic token management.
+ * Waits for the client to establish a connection before resolving.
+ *
+ * @param callSid - The unique identifier for the call session
+ * @returns A Promise that resolves to a connected Sync client
+ * @throws {Error} If connection is denied or encounters an error
+ *
+ * @remarks
+ * The client includes automatic token refresh handling and will:
+ * - Update the token when it's about to expire
+ * - Attempt token refresh when expired
+ * - Log all connection state changes and errors
+ */
 async function createSyncClient(callSid: string): Promise<SyncClient> {
   const getSyncToken = () => createSyncToken(`completion-server-${callSid}`);
 
