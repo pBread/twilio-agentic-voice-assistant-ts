@@ -172,8 +172,16 @@ export class SyncQueueService {
         if (count > 1) return this.queueCounts.set(queueKey, count - 1);
 
         const value = this.getContext()[key]; // get latest version of the context value
-
         this.queueCounts.delete(queueKey);
+
+        if (typeof value !== "object") {
+          log.warn(
+            "sync-queue",
+            `context item ${key} is not an object and could not be sent to sync. value: `,
+            value
+          );
+          return;
+        }
         const ctxMap = await this.ctxMapPromise;
         await ctxMap.set(key, value as unknown as Record<string, unknown>);
       });
@@ -198,8 +206,9 @@ export class SyncQueueService {
         if (count > 1) return this.queueCounts.set(queueKey, count - 1);
 
         const turn = this.getTurn(turnId); // get latest version of the turn
-
         this.queueCounts.delete(queueKey);
+        if (!turn) return; // the turn may have been deleted by the time this update was triggered
+
         const turnMap = await this.turnMapPromise;
         await turnMap.set(turnId, turn as unknown as Record<string, unknown>);
       });
