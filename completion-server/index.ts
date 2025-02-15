@@ -110,7 +110,7 @@ router.post("/outbound/answer", async (req, res) => {
   const dt = new Date();
   const call: CallDetails = {
     callSid: body.CallSid,
-    direction: "inbound",
+    direction: "outbound",
     from: body.From,
     to: body.To,
     participantPhone: body.From,

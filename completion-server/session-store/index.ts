@@ -16,8 +16,8 @@ export class SessionStore {
   private syncClient: SyncClient;
   private syncQueue: SyncQueueService;
 
-  constructor(public callSid: string) {
-    this.context = {};
+  constructor(public callSid: string, context?: SessionContext) {
+    this.context = context ?? {};
     this.turns = new TurnStore(callSid);
 
     this.syncClient = getSyncClient(callSid);
@@ -29,10 +29,6 @@ export class SessionStore {
     );
 
     this.eventEmitter = new TypedEventEmitter<TurnEvents>();
-    this.registerEvents();
-  }
-
-  registerEvents = () => {
     // bubble up the events from turn store
     this.turns.on("turnAdded", (...args) =>
       this.eventEmitter.emit("turnAdded", ...args)
@@ -44,32 +40,21 @@ export class SessionStore {
       this.eventEmitter.emit("turnUpdated", ...args)
     );
 
-    // send data to sync
-    this.on("contextUpdated", ({ keys }) => {
-      log.debug("store", `contextUpdated: ${keys.join(", ")}`);
-      keys.forEach((key) => this.syncQueue.updateContext(key));
-    });
+    // send data to sync when local updates are made
+    this.on("turnAdded", this.syncQueue.addTurn);
+    this.on("turnDeleted", this.syncQueue.deleteTurn);
+    this.on("turnUpdated", this.syncQueue.updateTurn);
+    // note: contextUpdates are sent to sync w/in the setContext method
 
-    this.on("turnAdded", (turn) => {
-      log.debug("store", `turnAdded: `, turn);
-      this.syncQueue.addTurn(turn);
-    });
-
-    this.on("turnDeleted", (turnId) => {
-      log.debug("store", `turnDeleted: ${turnId}`);
-      this.syncQueue.deleteTurn(turnId);
-    });
-
-    this.on("turnUpdated", (turnId) => {
-      log.debug("store", `turnUpdated: ${turnId}`);
-      this.syncQueue.updateTurn(turnId);
-    });
-  };
+    // send initial context to sync
+    for (const key in this.context)
+      this.syncQueue.updateContext(key as SessionContextKey);
+  }
 
   /****************************************************
    Session Context
   ****************************************************/
-  setContext = (update: Partial<SessionContext>) => {
+  setContext = (update: Partial<SessionContext>, sendToSync = true) => {
     const prev = this.context;
     const _update = Object.fromEntries(
       Object.entries(update).filter(
@@ -86,6 +71,7 @@ export class SessionStore {
 
     const keys = diff.map(({ path }) => path![0]) as SessionContextKey[];
     this.eventEmitter.emit("contextUpdated", { context, prev, keys });
+    if (sendToSync) keys.forEach(this.syncQueue.updateContext);
   };
 
   /****************************************************
