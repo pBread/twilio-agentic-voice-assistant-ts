@@ -1,27 +1,29 @@
 import { TypedEventEmitter } from "../../lib/events.js";
 import log from "../../lib/logger.js";
+import type { SessionContext, ContextEvents } from "../../shared/context.js";
 import type {
   BotTextTurn,
   TurnEvents,
   TurnRecord,
 } from "../../shared/turns.js";
-import { ContextStore } from "./context-store.js";
 import { TurnStore } from "./turn-store.js";
+import { createVersionedObject } from "./versioning.js";
+import deepdiff from "deep-diff";
 
 export type * from "./context-store.js";
 export type * from "./turn-store.js";
 
 export class SessionStore {
-  context: ContextStore;
+  public context: SessionContext;
   turns: TurnStore;
 
   constructor(public callSid: string) {
-    this.context = new ContextStore();
+    this.context = { today: new Date(), version: 0 };
     this.turns = new TurnStore(callSid);
 
-    // bubble up the events from each child
     this.eventEmitter = new TypedEventEmitter<TurnEvents>();
 
+    // bubble up the events from turn store
     this.turns.on("turnAdded", (...args) =>
       this.eventEmitter.emit("turnAdded", ...args)
     );
@@ -33,50 +35,26 @@ export class SessionStore {
     );
   }
 
-  redactInterruption = (interruptedClause: string) => {
-    // LLMs generate text responses much faster than the words are spoken to the user. When an interruption occurs, there are messages stored in local state that were not and never will be communicated. These records need to be cleaned up or else the bot will think it said things it did not and the conversation will discombobulate.
+  /****************************************************
+   Session Context
+  ****************************************************/
+  setContext = (ctx: Partial<SessionContext>) => {
+    const prev = this.context;
+    const nextContext = { ...this.context, ...ctx };
+    const diff = deepdiff(nextContext, this.context);
+    if (!diff) return;
 
-    // Step 1: Find the local message record that was interrupted. Convo Relay tells you what chunk of text, typically a sentence or clause, was interrupted. That clause is used to find the interrupted message.
-    const turnsDecending = this.turns.list().reverse();
-    const interruptedTurn = turnsDecending.find(
-      (turn) =>
-        turn.role === "bot" &&
-        turn.type === "text" &&
-        turn.content.includes(interruptedClause)
-    ) as BotTextTurn | undefined;
+    this.context = Object.assign(nextContext, {
+      version: nextContext.version + 1,
+    });
 
-    if (!interruptedTurn) return;
-
-    let deletedTurns: TurnRecord[] = [];
-
-    turnsDecending
-      .filter(
-        (turn) =>
-          turn.order > interruptedTurn.order && // only delete messages after the interrupted messages
-          turn.role === "bot" // delete bot messages, both text & tools. note: system messages will not be deleted
-      )
-      .forEach((turn) => {
-        this.turns.delete(turn.id);
-        deletedTurns.push(turn);
-      });
-
-    // Step 3: Update the interrupted message to reflect what was actually spoken. Note, sometimes the interruptedClause is very long. The bot may have spoken some or most of it. So, the question is, should the interrupted clause be included or excluded. Here, it is being included but it's a judgement call.
-    const curContent = interruptedTurn.content as string;
-    const [newContent] = curContent.split(interruptedClause);
-    interruptedTurn.content = `${newContent} ${interruptedClause}`.trim();
-    interruptedTurn.interrupted = true;
-
-    log.info(
-      "store",
-      `local state updated to reflect interruption: `,
-      interruptedTurn.content
-    );
+    this.eventEmitter.emit("contextUpdated", this.context, prev, diff);
   };
 
   /****************************************************
    Event Typing
   ****************************************************/
-  private eventEmitter: TypedEventEmitter<TurnEvents>;
+  private eventEmitter: TypedEventEmitter<TurnEvents & ContextEvents>;
   public on: TypedEventEmitter<TurnEvents>["on"] = (...args) =>
     this.eventEmitter.on(...args);
 }

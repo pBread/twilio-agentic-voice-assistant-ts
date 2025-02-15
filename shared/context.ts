@@ -1,10 +1,12 @@
+import deepDiff from "deep-diff";
 import type { UserRecord } from "./db-entities.js";
 
-export interface Context {
+export interface SessionContext {
   today: Date;
+  version: number;
 
   user?: UserRecord;
-  call: CallDetails;
+  call?: CallDetails;
 }
 
 interface CallDetails {
@@ -15,3 +17,22 @@ interface CallDetails {
   startTime: string; // 24 hour format, 13:00
   userPhone: string; // e164
 }
+
+export interface ContextEvents {
+  contextUpdated: (
+    context: SessionContext,
+    prev: SessionContext,
+    diff: ReturnType<typeof deepDiff<SessionContext, SessionContext>>
+  ) => void;
+}
+export type ContextEventTypes = keyof ContextEvents;
+
+type EventHandler<T, K extends keyof T> = T[K];
+export type ContextUpdatedHandler = EventHandler<
+  ContextEvents,
+  "contextUpdated"
+>;
+
+export type ContextDiff = ReturnType<
+  typeof deepDiff<SessionContext, SessionContext>
+>;

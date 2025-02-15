@@ -191,7 +191,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     log.info(`relay.interrupt`, `human interrupted bot`);
 
     consciousLoop.abort();
-    store.redactInterruption(ev.utteranceUntilInterrupt);
+    store.turns.redactInterruption(ev.utteranceUntilInterrupt);
   });
 
   relay.onDTMF((ev) => {
