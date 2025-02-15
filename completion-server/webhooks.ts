@@ -8,7 +8,12 @@ import type {
   TurnUpdatedHandler,
 } from "../shared/turns.js";
 import type { SessionStore } from "./session-store/index.js";
-import { ContextEventTypes, ContextUpdatedHandler } from "../shared/context.js";
+import {
+  ContextDiff,
+  ContextEventTypes,
+  ContextUpdatedHandler,
+  SessionContext,
+} from "../shared/context.js";
 
 // todo: add webhook retry
 // todo: add service-level queue to ensure one call doesn't affect others
@@ -106,12 +111,7 @@ export class WebhookService {
   private async queueWebhook(
     url: string,
     event: WebhookEvents,
-    payload: {
-      event: WebhookEvents;
-      turnId: string;
-      data?: TurnRecord;
-      timestamp: string;
-    }
+    payload: InternalPayload
   ): Promise<void> {
     const queueKey = `${url}:${payload.turnId}`;
     const queue = this.getQueue(queueKey);
@@ -168,19 +168,49 @@ export class WebhookService {
 
   private async executeWebhook(
     url: string,
-    payload: {
-      event: WebhookEvents;
-      turnId: string;
-      data?: TurnRecord;
-      timestamp: string;
-    }
+    event: WebhookEvents,
+    payload: InternalPayload
   ): Promise<void> {
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...payload, callSid: this.store.callSid }),
+      body: JSON.stringify({ ...payload, event, callSid: this.store.callSid }),
     });
 
     if (!response.ok) throw new Error(`HTTP error, status ${response.status}`);
   }
+}
+
+type InternalPayload =
+  | Omit<ContextUpdatedEvent, "callSid" | "event">
+  | Omit<TurnAddedEvent, "callSid" | "event">
+  | Omit<TurnDeletedEvent, "callSid" | "event">
+  | Omit<TurnUpdatedEvent, "callSid" | "event">;
+
+export interface ContextUpdatedEvent {
+  callSid: string;
+  context: SessionContext;
+  diff: ContextDiff;
+  event: "contextUpdated";
+}
+
+export interface TurnAddedEvent {
+  callSid: string;
+  turnId: string;
+  turn: TurnRecord;
+  event: "turnAdded";
+}
+
+export interface TurnDeletedEvent {
+  callSid: string;
+  turnId: string;
+  turn?: TurnRecord;
+  event: "turnDeleted";
+}
+
+export interface TurnUpdatedEvent {
+  callSid: string;
+  turnId: string;
+  turn: TurnRecord;
+  event: "turnUpdated";
 }
