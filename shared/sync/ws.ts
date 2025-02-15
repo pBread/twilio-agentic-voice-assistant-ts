@@ -1,6 +1,6 @@
-import type { SyncClient, SyncMap, SyncMapItem } from "twilio-sync";
-import { makeContextMapName, makeTurnMapName } from "./ids.js";
+import type { SyncClient, SyncMap } from "twilio-sync";
 import { TurnRecord } from "../session/turns.js";
+import { makeContextMapName, makeTurnMapName } from "./ids.js";
 
 export class SyncSession {
   private ctxMapPromise: Promise<SyncMap>;
