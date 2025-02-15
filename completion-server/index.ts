@@ -16,7 +16,6 @@ import {
   placeCall,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
-import { WebhookService } from "./webhooks.js";
 
 const router = Router();
 
@@ -123,23 +122,6 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const relay = new ConversationRelayAdapter(ws);
   const store = new SessionStore(callSid);
 
-  new WebhookService(store, [
-    {
-      events: ["contextUpdated", "turnAdded", "turnDeleted", "turnUpdated"],
-      url: `http://${HOSTNAME}/integration-server/data-intake`,
-    },
-  ]);
-
-  store.on("turnAdded", (turn) => log.debug("store", "turnAdded", turn));
-
-  store.on("turnUpdated", (turnId) => {
-    const turn = store.turns.get(turnId);
-    log.debug("store", "turnUpdated", `${turn?.version} ${turnId}`);
-  });
-  store.on("turnDeleted", (turnId, turn) => {
-    log.debug("store", "turnDeleted", turnId, turn);
-  });
-
   const agent = new AgentRuntime(
     relay,
     store,
@@ -177,6 +159,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     // handle setup
     const params = ev.customParameters ?? {};
     const context = "context" in params ? JSON.parse(params.context) : {};
+    store.setContext(context);
 
     const turn = store.turns.addHumanText({ content: "hello", id: "myid" });
     turn.content += "world";

@@ -1,9 +1,9 @@
 import deepDiff from "deep-diff";
-import type { SyncClient, SyncMap } from "twilio-sync";
+import type { SyncClient } from "twilio-sync";
 import { TypedEventEmitter } from "../../lib/events.js";
+import log from "../../lib/logger.js";
 import type { SessionContext } from "../../shared/session/context.js";
-import type { TurnEvents, TurnRecord } from "../../shared/session/turns.js";
-import { makeContextMapName, makeTurnMapName } from "../../shared/sync/ids.js";
+import type { TurnEvents } from "../../shared/session/turns.js";
 import { getSyncClient, SyncQueueService } from "./sync.js";
 import { TurnStore } from "./turn-store.js";
 
@@ -43,6 +43,27 @@ export class SessionStore {
     this.turns.on("turnUpdated", (...args) =>
       this.eventEmitter.emit("turnUpdated", ...args)
     );
+
+    // send data to sync
+    this.on("contextUpdated", ({ keys }) => {
+      log.debug("store", `contextUpdated: ${keys.join(", ")}`);
+      keys.forEach((key) => this.syncQueue.updateContext(key));
+    });
+
+    this.on("turnAdded", (turn) => {
+      log.debug("store", `turnAdded: `, turn);
+      this.syncQueue.addTurn(turn);
+    });
+
+    this.on("turnDeleted", (turnId) => {
+      log.debug("store", `turnDeleted: ${turnId}`);
+      this.syncQueue.deleteTurn(turnId);
+    });
+
+    this.on("turnUpdated", (turnId) => {
+      log.debug("store", `turnUpdated: ${turnId}`);
+      this.syncQueue.updateTurn(turnId);
+    });
   };
 
   /****************************************************
@@ -63,8 +84,8 @@ export class SessionStore {
 
     this.context = context;
 
-    const updates = diff.map(({ path }) => path![0]) as SessionContextKey[];
-    this.eventEmitter.emit("contextUpdated", { context, prev, updates });
+    const keys = diff.map(({ path }) => path![0]) as SessionContextKey[];
+    this.eventEmitter.emit("contextUpdated", { context, prev, keys });
   };
 
   /****************************************************
@@ -81,6 +102,6 @@ export interface ContextEvents {
   contextUpdated: (payload: {
     context: SessionContext;
     prev: SessionContext;
-    updates: SessionContextKey[];
+    keys: SessionContextKey[];
   }) => void;
 }
