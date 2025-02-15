@@ -5,15 +5,14 @@ function parseCallSid(idOrSid: string) {
   return match[0];
 }
 
-// session context objects are all stored in a single Sync Map
-export const SYNC_SESSION_CONTEXT_MAP = "session-context";
-export function makeContextItemId(callSid: string) {
+// each session's turns are stored in their own map
+export function makeContextMapName(callSid: string) {
   const sid = parseCallSid(callSid);
-  return `ctx-${sid}`;
+  return `context-${sid}`;
 }
 
 // each session's turns are stored in their own map
-export function makeSessionTurnMapName(callSid: string) {
+export function makeTurnMapName(callSid: string) {
   const sid = parseCallSid(callSid);
   return `turns-${sid}`;
 }

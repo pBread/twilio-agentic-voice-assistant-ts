@@ -11,7 +11,7 @@ export type * from "./turn-store.js";
 
 export class SessionStore {
   public context: SessionContext;
-  turns: TurnStore;
+  public turns: TurnStore;
 
   constructor(public callSid: string) {
     this.context = { today: new Date(), version: 0 };
@@ -37,7 +37,7 @@ export class SessionStore {
   setContext = (ctx: Partial<SessionContext>) => {
     const prev = this.context;
     const nextContext = { ...this.context, ...ctx };
-    const diff = deepdiff(nextContext, this.context);
+    const diff = deepdiff(nextContext, prev);
     if (!diff) return;
 
     this.context = Object.assign(nextContext, {
