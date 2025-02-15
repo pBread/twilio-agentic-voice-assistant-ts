@@ -1,4 +1,4 @@
-import * as env from "./shared/env-server.js";
+import * as env from "./shared/env/server.js";
 
 import express from "express";
 import ExpressWs from "express-ws";

@@ -7,9 +7,9 @@ import type {
 } from "openai/resources/index";
 import type { Stream } from "openai/streaming";
 import { z } from "zod";
-import { OPENAI_API_KEY } from "../../shared/env-server.js";
 import { TypedEventEmitter } from "../../lib/events.js";
 import log, { createLogStreamer } from "../../lib/logger.js";
+import { OPENAI_API_KEY } from "../../shared/env/server.js";
 import type { OpenAIConfig } from "../../shared/openai.js";
 import type {
   BotTextTurn,
@@ -18,7 +18,7 @@ import type {
   BotToolTurnParams,
   StoreToolCall,
   TurnRecord,
-} from "../../shared/session-turns.js";
+} from "../../shared/session/turns.js";
 import type { IAgentRuntime } from "../agent-runtime/types.js";
 import { ToolResponse } from "../agent-runtime/types.js";
 import type { SessionStore } from "../session-store/index.js";

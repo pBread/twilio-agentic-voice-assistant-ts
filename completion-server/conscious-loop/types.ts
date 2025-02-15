@@ -1,4 +1,4 @@
-import type { BotToolTurn, StoreToolCall } from "../../shared/session-turns.js";
+import type { BotToolTurn, StoreToolCall } from "../../shared/session/turns.js";
 import { IAgentRuntime } from "../agent-runtime/types.js";
 import { SessionStore } from "../session-store/index.js";
 import { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";

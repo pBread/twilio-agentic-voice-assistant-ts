@@ -1,6 +1,6 @@
 import twilio from "twilio";
 import { ConversationRelayAttributes } from "twilio/lib/twiml/VoiceResponse.js";
-import { HOSTNAME } from "../../shared/env-server.js";
+import { HOSTNAME } from "../../shared/env/server.js";
 
 interface MakeConversationRelayTwiML
   extends Omit<ConversationRelayAttributes, "url"> {

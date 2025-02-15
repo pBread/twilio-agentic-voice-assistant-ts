@@ -1,5 +1,5 @@
 import deepDiff from "deep-diff";
-import type { UserRecord } from "./db-entities.js";
+import type { UserRecord } from "../db-entities.js";
 
 export interface SessionContext {
   today: Date;
