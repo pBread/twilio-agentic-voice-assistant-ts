@@ -16,6 +16,7 @@ import {
   placeCall,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
+import { CallDetails } from "../shared/session/context.js";
 
 const router = Router();
 
@@ -23,16 +24,29 @@ const router = Router();
  Phone Number Webhooks
 ****************************************************/
 router.post("/incoming-call", async (req, res) => {
-  const { CallSid: callSid } = req.body as TwilioCallWebhookPayload;
+  const body = req.body as TwilioCallWebhookPayload;
+
+  const dt = new Date();
+  const call: CallDetails = {
+    callSid: body.CallSid,
+    direction: "inbound",
+    from: body.From,
+    to: body.To,
+    participantPhone: body.From,
+    startedAt: dt.toISOString(),
+    localStartDate: dt.toLocaleDateString(),
+    localStartTime: dt.toLocaleTimeString(),
+  };
+
   log.reset();
-  log.setCallSid(callSid);
+  log.setCallSid(call.callSid);
 
   try {
-    await setupSyncSession(callSid); // ensure the sync session is setup before connecting to Conversation Relay
+    await setupSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
 
     const twiml = makeConversationRelayTwiML({
-      callSid,
-      context: {},
+      callSid: call.callSid,
+      context: { call },
       welcomeGreeting: "Hello there. I am a voice bot",
     });
     res.status(200).type("text/xml").end(twiml);
@@ -91,16 +105,32 @@ router.get("/outbound", outboundCallHandler);
 router.post("/outbound", outboundCallHandler);
 
 router.post("/outbound/answer", async (req, res) => {
-  const { CallSid: callSid } = req.body as TwilioCallWebhookPayload;
-  log.reset();
-  log.setCallSid(callSid);
+  const body = req.body as TwilioCallWebhookPayload;
 
-  log.info(`/outbound/answer`, `CallSid ${callSid}`);
+  const dt = new Date();
+  const call: CallDetails = {
+    callSid: body.CallSid,
+    direction: "inbound",
+    from: body.From,
+    to: body.To,
+    participantPhone: body.From,
+    startedAt: dt.toISOString(),
+    localStartDate: dt.toLocaleDateString(),
+    localStartTime: dt.toLocaleTimeString(),
+  };
+
+  log.reset();
+  log.setCallSid(call.callSid);
+
+  log.info(`/outbound/answer`, `CallSid ${call.callSid}`);
 
   try {
-    await setupSyncSession(callSid); // ensure the sync session is setup before connecting to Conversation Relay
+    await setupSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
 
-    const twiml = makeConversationRelayTwiML({ callSid, context: {} });
+    const twiml = makeConversationRelayTwiML({
+      callSid: call.callSid,
+      context: { call },
+    });
     res.status(200).type("text/xml").end(twiml);
   } catch (error) {
     log.error("/incoming-call", "unknown error", error);
