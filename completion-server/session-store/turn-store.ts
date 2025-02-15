@@ -17,23 +17,15 @@ import type {
   TurnRecord,
 } from "../../shared/session/turns.js";
 import { createVersionedObject } from "./versioning.js";
+import type { StoreEventEmitter } from "./index.js";
 
 export class TurnStore {
-  private callSid: string;
-  private turnMap: Map<string, TurnRecord>; // map order enforces turn ordering, not the order property on the turns
+  private turnMap: Map<string, TurnRecord> = new Map(); // map order enforces turn ordering, not the order property on the turns
 
-  constructor(callSid: string) {
-    this.callSid = callSid;
-    this.turnMap = new Map();
-    this.eventEmitter = new TypedEventEmitter<TurnEvents>();
-  }
-
-  /****************************************************
-   Events
-  ****************************************************/
-  private eventEmitter: TypedEventEmitter<TurnEvents>;
-  public on: TypedEventEmitter<TurnEvents>["on"] = (...args) =>
-    this.eventEmitter.on(...args);
+  constructor(
+    private callSid: string,
+    private eventEmitter: StoreEventEmitter
+  ) {}
 
   /****************************************************
    Turn Sequential Ordering
@@ -253,10 +245,4 @@ export class TurnStore {
     this.turnMap.set(toolTurn.id, toolTurn);
     return toolTurn;
   };
-}
-
-export interface TurnEvents {
-  turnAdded: (turn: TurnRecord) => void;
-  turnDeleted: (turnId: string, turn?: TurnRecord) => void;
-  turnUpdated: (turnId: string) => void;
 }

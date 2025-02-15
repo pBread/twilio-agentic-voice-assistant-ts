@@ -3,13 +3,13 @@ import type { SyncClient } from "twilio-sync";
 import { TypedEventEmitter } from "../../lib/events.js";
 import log from "../../lib/logger.js";
 import type { SessionContext } from "../../shared/session/context.js";
+import { TurnRecord } from "../../shared/session/turns.js";
 import {
   MapItemAddedEvent,
   MapItemRemovedEvent,
   MapItemUpdatedEvent,
 } from "../../shared/sync/types.js";
 import { getSyncClient, SyncQueueService } from "./sync.js";
-import type { TurnEvents } from "./turn-store.js";
 import { TurnStore } from "./turn-store.js";
 
 export type * from "./turn-store.js";
@@ -22,8 +22,10 @@ export class SessionStore {
   private syncQueue: SyncQueueService;
 
   constructor(public callSid: string, context?: SessionContext) {
+    this.eventEmitter = new TypedEventEmitter<TurnEvents>();
+
     this.context = context ?? {};
-    this.turns = new TurnStore(callSid);
+    this.turns = new TurnStore(callSid, this.eventEmitter); // turn events are emitted in the turn store
 
     this.syncClient = getSyncClient(callSid);
     this.syncQueue = new SyncQueueService(
@@ -31,18 +33,6 @@ export class SessionStore {
       this.syncClient,
       () => this.context,
       (turnId: string) => this.turns.get(turnId)
-    );
-
-    this.eventEmitter = new TypedEventEmitter<TurnEvents>();
-    // bubble up the events from turn store
-    this.turns.on("turnAdded", (...args) =>
-      this.eventEmitter.emit("turnAdded", ...args)
-    );
-    this.turns.on("turnDeleted", (...args) =>
-      this.eventEmitter.emit("turnDeleted", ...args)
-    );
-    this.turns.on("turnUpdated", (...args) =>
-      this.eventEmitter.emit("turnUpdated", ...args)
     );
 
     // send data to sync when local updates are made
@@ -53,7 +43,7 @@ export class SessionStore {
 
     // send initial context to sync
     for (const key in this.context)
-      this.syncQueue.updateContext(key as SessionContextKey);
+      this.syncQueue.updateContext(key as keyof SessionContext);
 
     // subscribe to context changes from sync and update local state accordingly
     // this is how subconscious processes communicate with the application
@@ -90,7 +80,7 @@ export class SessionStore {
 
     this.context = context;
 
-    const keys = diff.map(({ path }) => path![0]) as SessionContextKey[];
+    const keys = diff.map(({ path }) => path![0]) as (keyof SessionContext)[];
     this.eventEmitter.emit("contextUpdated", { context, prev, keys });
     if (sendToSync) keys.forEach(this.syncQueue.updateContext);
   };
@@ -98,17 +88,23 @@ export class SessionStore {
   /****************************************************
    Event Typing
   ****************************************************/
-  private eventEmitter: TypedEventEmitter<TurnEvents & ContextEvents>;
+  private eventEmitter: StoreEventEmitter;
   public on: (typeof this.eventEmitter)["on"] = (...args) =>
     this.eventEmitter.on(...args);
 }
 
-type SessionContextKey = keyof SessionContext;
+export type StoreEventEmitter = TypedEventEmitter<TurnEvents & ContextEvents>;
 
 export interface ContextEvents {
   contextUpdated: (payload: {
     context: SessionContext;
     prev: SessionContext;
-    keys: SessionContextKey[];
+    keys: (keyof SessionContext)[];
   }) => void;
+}
+
+export interface TurnEvents {
+  turnAdded: (turn: TurnRecord) => void;
+  turnDeleted: (turnId: string, turn?: TurnRecord) => void;
+  turnUpdated: (turnId: string) => void;
 }
