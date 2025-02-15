@@ -1,9 +1,15 @@
+import PQueue from "p-queue";
 import { SyncClient, SyncMap } from "twilio-sync";
 import log from "../../lib/logger.js";
+import type { SessionContext } from "../../shared/session/context.js";
 import type { TurnRecord } from "../../shared/session/turns.js";
 import { createSyncToken } from "../../shared/sync/create-token.js";
 import { makeContextMapName, makeTurnMapName } from "../../shared/sync/ids.js";
+import { SessionStore } from "./index.js";
 
+/****************************************************
+ Sync Client
+****************************************************/
 // Cache holds sync clients between call initiation, which occurs in a webhook or rest API request, and the websocket initiliazation.
 // note: To prevent memory leaks, the sync client is removed from the cache after it is retrieved the first time.
 const tempSyncClientCache = new Map<
@@ -21,7 +27,7 @@ export function getSyncClient(callSid: string) {
   const entry = tempSyncClientCache.get(callSid);
   if (!entry) {
     const error = `No sync client found for ${callSid}.`;
-    log.error("sync", error);
+    log.error("sync-client", error);
     throw new Error(error);
   }
 
@@ -58,7 +64,7 @@ export async function setupSyncSession(callSid: string) {
     sync.shutdown();
 
     tempSyncClientCache.delete(callSid);
-    log.warn("sync", `cleaned up unused sync client for ${callSid}`);
+    log.warn("sync-client", `cleaned up unused sync client for ${callSid}`);
   }, 5 * 60 * 1000);
 
   tempSyncClientCache.set(callSid, { sync, timeout });
@@ -89,7 +95,11 @@ async function createSyncClient(callSid: string): Promise<SyncClient> {
 
     // Error handling
     sync.on("connectionError", (error) => {
-      log.error("sync", `sync client connection error ${callSid}`, error);
+      log.error(
+        "sync-client",
+        `sync client connection error ${callSid}`,
+        error
+      );
       if (!isResolved) {
         reject(error); // Reject with the error instead of the sync client
       }
@@ -98,7 +108,7 @@ async function createSyncClient(callSid: string): Promise<SyncClient> {
     // Token management
     sync.on("tokenAboutToExpire", () => sync.updateToken(getSyncToken()));
     sync.on("tokenExpired", () => {
-      log.warn("sync", `sync token expired ${callSid}`);
+      log.warn("sync-client", `sync token expired ${callSid}`);
       sync.updateToken(getSyncToken());
     });
 
@@ -107,7 +117,7 @@ async function createSyncClient(callSid: string): Promise<SyncClient> {
         case "connecting":
           return;
         case "connected":
-          log.info("sync", `sync client initialized for ${callSid}`);
+          log.info("sync-client", `sync client initialized for ${callSid}`);
           isResolved = true;
           resolve(sync);
           return;
@@ -130,24 +140,153 @@ async function createSyncClient(callSid: string): Promise<SyncClient> {
   });
 }
 
-export class SyncSession {
+/****************************************************
+ Sync Queue Service
+****************************************************/
+// todo: add service-level queue to ensure one call doesn't affect others
+// todo: add global queue to ensure the webhook executions don't affect the other services
+
+export class SyncQueueService {
+  private queueCounts: Map<string, number> = new Map(); // Prevents updates from stacking. Updates occur much more quickly than the update requests resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
+  private queues: Map<string, PQueue> = new Map();
+
+  private store: SessionStore;
+  private sync: SyncClient;
+
   private ctxMapPromise: Promise<SyncMap>;
   private turnMapPromise: Promise<SyncMap>;
 
-  constructor(private sync: SyncClient, private callSid: string) {
-    this.ctxMapPromise = this.sync.map(makeContextMapName(callSid)); // creates a sync map
-    this.turnMapPromise = this.sync.map(makeTurnMapName(callSid)); // creates a sync map
+  constructor(store: SessionStore, sync: SyncClient) {
+    this.store = store;
+    this.sync = sync;
+
+    this.ctxMapPromise = this.sync.map(makeContextMapName(store.callSid));
+    this.turnMapPromise = this.sync.map(makeTurnMapName(store.callSid));
   }
 
-  setContextItem = async (key: string, value: any) => {
-    const ctxMap = await this.ctxMapPromise;
-    const item = await ctxMap.set(key, value);
-    return item.data;
-  };
+  async updateContext<K extends keyof SessionContext>(key: K): Promise<void> {
+    const queueKey = `${this.store.callSid}:context:${key}`;
+    const queue = this.getQueue(queueKey);
 
-  setTurn = async (turnId: string, turn: TurnRecord) => {
-    const turnMap = await this.turnMapPromise;
-    const item = await turnMap.set(turnId, turn as Record<string, any>);
-    return item.data;
-  };
+    try {
+      await queue.add(async () => {
+        const count = this.queueCounts.get(queueKey) || 0;
+        if (count > 1) return this.queueCounts.set(queueKey, count - 1);
+
+        const value = this.store.context[key]; // get latest version of the context value
+
+        this.queueCounts.delete(queueKey);
+        const ctxMap = await this.ctxMapPromise;
+        await ctxMap.set(key, value as unknown as Record<string, unknown>);
+      });
+    } catch (error) {
+      log.error(
+        "sync-queue",
+        `Failed to queue context update for ${queueKey}:`,
+        error
+      );
+    }
+
+    this.cleanupQueue(queue, queueKey);
+  }
+
+  async updateTurn(turnId: string): Promise<void> {
+    const queueKey = `${this.store.callSid}:turn:${turnId}`;
+    const queue = this.getQueue(queueKey);
+
+    try {
+      await queue.add(async () => {
+        const count = this.queueCounts.get(queueKey) || 0;
+        if (count > 1) return this.queueCounts.set(queueKey, count - 1);
+
+        const turn = this.store.turns.get(turnId);
+
+        this.queueCounts.delete(queueKey);
+        const turnMap = await this.turnMapPromise;
+        await turnMap.set(turnId, turn as unknown as Record<string, unknown>);
+      });
+    } catch (error) {
+      log.error(
+        "sync-queue",
+        `Failed to queue turn update for ${queueKey}:`,
+        error
+      );
+    }
+
+    this.cleanupQueue(queue, queueKey);
+  }
+
+  async addTurn(turn: TurnRecord): Promise<void> {
+    const queueKey = `${this.store.callSid}:turn:${turn.id}`;
+    const queue = this.getQueue(queueKey);
+
+    try {
+      await queue.add(
+        async () => {
+          const turnMap = await this.turnMapPromise;
+          await turnMap.set(
+            turn.id,
+            turn as unknown as Record<string, unknown>
+          );
+        },
+        { priority: 1 } // Higher priority for new turns
+      );
+    } catch (error) {
+      log.error(
+        "sync-queue",
+        `Failed to queue turn addition for ${queueKey}:`,
+        error
+      );
+    }
+
+    this.cleanupQueue(queue, queueKey);
+  }
+
+  async deleteTurn(turnId: string): Promise<void> {
+    const queueKey = `${this.store.callSid}:turn:${turnId}`;
+    const queue = this.getQueue(queueKey);
+
+    try {
+      await queue.add(async () => {
+        const turnMap = await this.turnMapPromise;
+        await turnMap.remove(turnId);
+      });
+    } catch (error) {
+      log.error(
+        "sync-queue",
+        `Failed to queue turn deletion for ${queueKey}:`,
+        error
+      );
+    }
+
+    this.cleanupQueue(queue, queueKey);
+  }
+
+  private getQueue(queueKey: string): PQueue {
+    let queue = this.queues.get(queueKey);
+    if (!queue) {
+      queue = new PQueue({
+        concurrency: 1,
+        intervalCap: 100,
+        interval: 1000,
+        carryoverConcurrencyCount: true,
+        timeout: 10000,
+      });
+
+      queue.on("error", (error) => {
+        log.error("sync-queue", `Queue ${queueKey} error:`, error);
+      });
+
+      this.queues.set(queueKey, queue);
+    }
+
+    return queue;
+  }
+
+  private cleanupQueue(queue: PQueue, queueKey: string): void {
+    if (queue.size !== 0 || queue.pending !== 0) return; // do nothing if queue has items pending
+
+    queue.removeAllListeners();
+    this.queues.delete(queueKey);
+  }
 }
