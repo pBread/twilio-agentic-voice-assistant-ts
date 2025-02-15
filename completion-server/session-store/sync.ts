@@ -5,7 +5,6 @@ import type { SessionContext } from "../../shared/session/context.js";
 import type { TurnRecord } from "../../shared/session/turns.js";
 import { createSyncToken } from "../../shared/sync/create-token.js";
 import { makeContextMapName, makeTurnMapName } from "../../shared/sync/ids.js";
-import { SessionStore } from "./index.js";
 
 /****************************************************
  Sync Client
@@ -150,22 +149,21 @@ export class SyncQueueService {
   private queueCounts: Map<string, number> = new Map(); // Prevents updates from stacking. Updates occur much more quickly than the update requests resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
   private queues: Map<string, PQueue> = new Map();
 
-  private store: SessionStore;
-  private sync: SyncClient;
-
   private ctxMapPromise: Promise<SyncMap>;
   private turnMapPromise: Promise<SyncMap>;
 
-  constructor(store: SessionStore, sync: SyncClient) {
-    this.store = store;
-    this.sync = sync;
-
-    this.ctxMapPromise = this.sync.map(makeContextMapName(store.callSid));
-    this.turnMapPromise = this.sync.map(makeTurnMapName(store.callSid));
+  constructor(
+    private callSid: string,
+    private sync: SyncClient,
+    private getContext: () => SessionContext,
+    private getTurn: (turnId: string) => TurnRecord | undefined
+  ) {
+    this.ctxMapPromise = this.sync.map(makeContextMapName(callSid));
+    this.turnMapPromise = this.sync.map(makeTurnMapName(callSid));
   }
 
   async updateContext<K extends keyof SessionContext>(key: K): Promise<void> {
-    const queueKey = `${this.store.callSid}:context:${key}`;
+    const queueKey = `${this.callSid}:context:${key}`;
     const queue = this.getQueue(queueKey);
 
     try {
@@ -173,7 +171,7 @@ export class SyncQueueService {
         const count = this.queueCounts.get(queueKey) || 0;
         if (count > 1) return this.queueCounts.set(queueKey, count - 1);
 
-        const value = this.store.context[key]; // get latest version of the context value
+        const value = this.getContext()[key]; // get latest version of the context value
 
         this.queueCounts.delete(queueKey);
         const ctxMap = await this.ctxMapPromise;
@@ -191,7 +189,7 @@ export class SyncQueueService {
   }
 
   async updateTurn(turnId: string): Promise<void> {
-    const queueKey = `${this.store.callSid}:turn:${turnId}`;
+    const queueKey = `${this.callSid}:turn:${turnId}`;
     const queue = this.getQueue(queueKey);
 
     try {
@@ -199,7 +197,7 @@ export class SyncQueueService {
         const count = this.queueCounts.get(queueKey) || 0;
         if (count > 1) return this.queueCounts.set(queueKey, count - 1);
 
-        const turn = this.store.turns.get(turnId);
+        const turn = this.getTurn(turnId); // get latest version of the turn
 
         this.queueCounts.delete(queueKey);
         const turnMap = await this.turnMapPromise;
@@ -217,7 +215,7 @@ export class SyncQueueService {
   }
 
   async addTurn(turn: TurnRecord): Promise<void> {
-    const queueKey = `${this.store.callSid}:turn:${turn.id}`;
+    const queueKey = `${this.callSid}:turn:${turn.id}`;
     const queue = this.getQueue(queueKey);
 
     try {
@@ -243,7 +241,7 @@ export class SyncQueueService {
   }
 
   async deleteTurn(turnId: string): Promise<void> {
-    const queueKey = `${this.store.callSid}:turn:${turnId}`;
+    const queueKey = `${this.callSid}:turn:${turnId}`;
     const queue = this.getQueue(queueKey);
 
     try {
