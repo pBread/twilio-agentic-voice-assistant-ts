@@ -27,11 +27,6 @@ else if (!isValidHostname(HOSTNAME)) {
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
 if (!OPENAI_API_KEY) missingRequired("OPENAI_API_KEY");
 
-export const SUPABASE_API_KEY = process.env.SUPABASE_API_KEY as string;
-export const SUPABASE_PROJECT_URL = process.env.SUPABASE_PROJECT_URL as string;
-if (!SUPABASE_API_KEY) missingRequired("SUPABASE_API_KEY");
-if (!SUPABASE_PROJECT_URL) missingRequired("SUPABASE_PROJECT_URL");
-
 export const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID as string;
 export const TWILIO_API_KEY = process.env.TWILIO_API_KEY as string;
 export const TWILIO_API_SECRET = process.env.TWILIO_API_SECRET as string;
