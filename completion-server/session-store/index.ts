@@ -1,9 +1,11 @@
-import type { SyncClient } from "twilio-sync";
+import type { SyncClient, SyncMap } from "twilio-sync";
 import { TypedEventEmitter } from "../../lib/events.js";
 import type { SessionContext } from "../../shared/session/context.js";
 import type { TurnEvents } from "../../shared/session/turns.js";
 import { getSyncClient } from "./sync.js";
 import { TurnStore } from "./turn-store.js";
+import { makeContextMapName, makeTurnMapName } from "../../shared/sync/ids.js";
+import deepDiff from "deep-diff";
 
 export type * from "./turn-store.js";
 
@@ -12,11 +14,16 @@ export class SessionStore {
   public turns: TurnStore;
   private sync: SyncClient;
 
+  private ctxMapPromise: Promise<SyncMap>;
+  private turnMapPromise: Promise<SyncMap>;
+
   constructor(public callSid: string) {
     this.context = { today: new Date(), version: 0 };
     this.turns = new TurnStore(callSid);
 
     this.sync = getSyncClient(callSid);
+    this.ctxMapPromise = this.sync.map(makeContextMapName(callSid));
+    this.turnMapPromise = this.sync.map(makeTurnMapName(callSid));
 
     this.eventEmitter = new TypedEventEmitter<TurnEvents>();
 
@@ -36,28 +43,27 @@ export class SessionStore {
    Session Context
   ****************************************************/
   setContext = (update: Partial<SessionContext>) => {
-    const prevCtx = this.context;
-    const nextCtx = { ...this.context, ...update };
+    const prev = this.context;
+    const context = { ...this.context, ...update };
 
-    this.context = Object.assign(nextCtx, {
-      version: prevCtx.version + 1,
+    const diff = deepDiff(prev, context);
+    if (!diff) return;
+
+    this.context = Object.assign(context, {
+      version: prev.version + 1,
     });
 
-    const updatedKeys = Object.keys(update) as SessionContextKey[]; // assert type
-    for (const key of updatedKeys) {
-      const prev = prevCtx[key];
-      const value = nextCtx[key];
-
-      if (prev === value) continue;
-
-      this.eventEmitter.emit("contextItemUpdated", { key, value, prev });
-    }
-
-    this.eventEmitter.emit("contextUpdated", {
-      context: nextCtx,
-      prev: prevCtx,
-    });
+    const updates = diff.map(({ path }) => path![0]) as SessionContextKey[];
+    this.eventEmitter.emit("contextUpdated", { context, prev, updates });
   };
+
+  /****************************************************
+   Sync
+  ****************************************************/
+  setSyncContextItem = async <K extends SessionContextKey>(
+    key: K,
+    value: SessionContext[K]
+  ) => {};
 
   /****************************************************
    Event Typing
@@ -73,11 +79,6 @@ export interface ContextEvents {
   contextUpdated: (payload: {
     context: SessionContext;
     prev: SessionContext;
-  }) => void;
-
-  contextItemUpdated: <K extends keyof SessionContext>(payload: {
-    key: K;
-    value: SessionContext[K];
-    prev: SessionContext[K];
+    updates: SessionContextKey[];
   }) => void;
 }
