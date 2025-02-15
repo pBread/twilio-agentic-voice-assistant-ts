@@ -7,7 +7,7 @@ import type {
 } from "openai/resources/index";
 import type { Stream } from "openai/streaming";
 import { z } from "zod";
-import { OPENAI_API_KEY } from "../../lib/env.js";
+import { OPENAI_API_KEY } from "../../shared/env-server.js";
 import { TypedEventEmitter } from "../../lib/events.js";
 import log, { createLogStreamer } from "../../lib/logger.js";
 import type { OpenAIConfig } from "../../shared/openai.js";

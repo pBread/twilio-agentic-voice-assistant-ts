@@ -1,5 +1,5 @@
 import "dotenv-flow/config";
-import log from "./logger.js";
+import log from "../lib/logger.js";
 
 const errors: string[] = [];
 const addError = (msg: string) => {

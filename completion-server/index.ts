@@ -1,7 +1,7 @@
 import { RequestHandler, Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
-import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../lib/env.js";
 import log from "../lib/logger.js";
+import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env-server.js";
 import { AgentRuntime } from "./agent-runtime/index.js";
 import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
 import { SessionStore } from "./session-store/index.js";

@@ -4,7 +4,7 @@ import {
   TWILIO_API_KEY,
   TWILIO_API_SECRET,
   TWILIO_SYNC_SVC_SID,
-} from "../lib/env.js";
+} from "./env-server.js";
 
 export function createSyncToken(identity: string) {
   const AccessToken = Twilio.jwt.AccessToken;
