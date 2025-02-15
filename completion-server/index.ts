@@ -120,7 +120,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
 
   new WebhookService(store, [
     {
-      events: ["turnAdded", "turnDeleted", "turnUpdated"],
+      events: ["contextUpdated", "turnAdded", "turnDeleted", "turnUpdated"],
       url: `http://${HOSTNAME}/integration-server/data-intake`,
     },
   ]);

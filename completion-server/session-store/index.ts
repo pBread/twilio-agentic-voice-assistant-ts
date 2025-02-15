@@ -1,14 +1,8 @@
-import { TypedEventEmitter } from "../../lib/events.js";
-import log from "../../lib/logger.js";
-import type { SessionContext, ContextEvents } from "../../shared/context.js";
-import type {
-  BotTextTurn,
-  TurnEvents,
-  TurnRecord,
-} from "../../shared/turns.js";
-import { TurnStore } from "./turn-store.js";
-import { createVersionedObject } from "./versioning.js";
 import deepdiff from "deep-diff";
+import { TypedEventEmitter } from "../../lib/events.js";
+import type { ContextEvents, SessionContext } from "../../shared/context.js";
+import type { TurnEvents } from "../../shared/turns.js";
+import { TurnStore } from "./turn-store.js";
 
 export type * from "./context-store.js";
 export type * from "./turn-store.js";
@@ -48,13 +42,13 @@ export class SessionStore {
       version: nextContext.version + 1,
     });
 
-    this.eventEmitter.emit("contextUpdated", this.context, prev, diff);
+    this.eventEmitter.emit("contextUpdated", this.context, diff);
   };
 
   /****************************************************
    Event Typing
   ****************************************************/
   private eventEmitter: TypedEventEmitter<TurnEvents & ContextEvents>;
-  public on: TypedEventEmitter<TurnEvents>["on"] = (...args) =>
+  public on: (typeof this.eventEmitter)["on"] = (...args) =>
     this.eventEmitter.on(...args);
 }

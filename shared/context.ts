@@ -21,7 +21,6 @@ interface CallDetails {
 export interface ContextEvents {
   contextUpdated: (
     context: SessionContext,
-    prev: SessionContext,
     diff: ReturnType<typeof deepDiff<SessionContext, SessionContext>>
   ) => void;
 }

@@ -8,6 +8,7 @@ import type {
   TurnUpdatedHandler,
 } from "../shared/turns.js";
 import type { SessionStore } from "./session-store/index.js";
+import { ContextEventTypes, ContextUpdatedHandler } from "../shared/context.js";
 
 // todo: add webhook retry
 // todo: add service-level queue to ensure one call doesn't affect others
@@ -15,8 +16,10 @@ import type { SessionStore } from "./session-store/index.js";
 
 export interface WebhookDefinition {
   url: string;
-  events: TurnEventTypes[];
+  events: WebhookEvents[];
 }
+
+type WebhookEvents = TurnEventTypes | ContextEventTypes;
 
 export class WebhookService {
   private pendingUpdates: Map<string, number> = new Map(); // Prevents updates from stacking. Updates occur much more quickly than the webhooks resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
@@ -28,10 +31,20 @@ export class WebhookService {
     this.store = store;
     this.webhooks = webhooks;
 
+    this.store.on("contextUpdated", this.handleContextUpdated);
     this.store.on("turnAdded", this.handleTurnAdded);
     this.store.on("turnDeleted", this.handleTurnDeleted);
     this.store.on("turnUpdated", this.handleTurnUpdated);
   }
+
+  private handleContextUpdated: ContextUpdatedHandler = async (
+    context,
+    diff
+  ) => {
+    const relevantwebhooks = this.webhooks.filter((sub) =>
+      sub.events.includes("contextUpdated")
+    );
+  };
 
   private handleTurnAdded: TurnAddedHandler = async (turn) => {
     const relevantwebhooks = this.webhooks.filter((sub) =>
@@ -92,9 +105,9 @@ export class WebhookService {
 
   private async queueWebhook(
     url: string,
-    event: TurnEventTypes,
+    event: WebhookEvents,
     payload: {
-      event: TurnEventTypes;
+      event: WebhookEvents;
       turnId: string;
       data?: TurnRecord;
       timestamp: string;
@@ -156,7 +169,7 @@ export class WebhookService {
   private async executeWebhook(
     url: string,
     payload: {
-      event: TurnEventTypes;
+      event: WebhookEvents;
       turnId: string;
       data?: TurnRecord;
       timestamp: string;
@@ -165,7 +178,7 @@ export class WebhookService {
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, callSid: this.store.callSid }),
     });
 
     if (!response.ok) throw new Error(`HTTP error, status ${response.status}`);
