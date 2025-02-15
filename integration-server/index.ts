@@ -3,9 +3,9 @@ import log from "../lib/logger.js";
 
 const router = Router();
 
-router.post("/store-webhook", async (req, res) => {
+router.post("/integration-server/data-intake", async (req, res) => {
   const payload = req.body;
-  log.info("/store-webhook", payload);
+  log.info("data-intake", payload);
 
   res.status(200).send({ status: "success" });
 });
