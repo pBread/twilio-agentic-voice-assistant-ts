@@ -5,6 +5,7 @@ import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
 import { AgentRuntime } from "./agent-runtime/index.js";
 import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
 import { SessionStore } from "./session-store/index.js";
+import { setupSyncSession } from "./session-store/sync.js";
 import {
   ConversationRelayAdapter,
   HandoffData,
@@ -16,7 +17,6 @@ import {
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
 import { WebhookService } from "./webhooks.js";
-import { setupSyncSession } from "./session-store/sync.js";
 
 const router = Router();
 
