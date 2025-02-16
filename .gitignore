@@ -25,9 +25,3 @@ coverage
 
 # misc
 /local
-
-# no fancy formatting, only the default
-.prettierrc.json
-.prettierrc
-.prettier.config.js
-prettier.config.js
