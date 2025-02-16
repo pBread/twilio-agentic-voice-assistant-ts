@@ -16,4 +16,13 @@ export interface CallDetails {
   startedAt: string; // ISO 8601 timestamp
   localStartDate: string; // Date().toLocaleDateString()
   localStartTime: string; // Date().toLocaleTimeString()
+
+  status:
+    | "queued"
+    | "ringing"
+    | "in-progress"
+    | "completed"
+    | "busy"
+    | "failed"
+    | "no-answer";
 }

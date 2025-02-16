@@ -6,7 +6,7 @@ import { CallDetails } from "../shared/session/context.js";
 import { AgentRuntime } from "./agent-runtime/index.js";
 import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
 import { SessionStore } from "./session-store/index.js";
-import { setupSyncSession } from "./session-store/sync.js";
+import { setupSyncSession, updateCallStatus } from "./session-store/sync.js";
 import {
   ConversationRelayAdapter,
   HandoffData,
@@ -36,6 +36,7 @@ router.post("/incoming-call", async (req, res) => {
     startedAt: dt.toISOString(),
     localStartDate: dt.toLocaleDateString(),
     localStartTime: dt.toLocaleTimeString(),
+    status: body.CallStatus,
   };
 
   log.reset();
@@ -57,13 +58,23 @@ router.post("/incoming-call", async (req, res) => {
 });
 
 router.post("/call-status", async (req, res) => {
-  const callSid = req.body.CallSid;
-  const callStatus = req.body.CallStatus;
+  const callSid = req.body.CallSid as TwilioCallWebhookPayload["CallSid"];
+  const callStatus = req.body
+    .CallStatus as TwilioCallWebhookPayload["CallStatus"];
 
   log.info(
     "/call-status",
     `call status updated to ${callStatus}, CallSid ${callSid}`
   );
+
+  try {
+    await updateCallStatus(callSid, callStatus);
+  } catch (error) {
+    log.warn(
+      "/call-status",
+      `unable to update call status in Sync, CallSid ${callSid}`
+    );
+  }
 
   res.status(200).send();
 });
@@ -117,6 +128,7 @@ router.post("/outbound/answer", async (req, res) => {
     startedAt: dt.toISOString(),
     localStartDate: dt.toLocaleDateString(),
     localStartTime: dt.toLocaleTimeString(),
+    status: body.CallStatus,
   };
 
   log.reset();

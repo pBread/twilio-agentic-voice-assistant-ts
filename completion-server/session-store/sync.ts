@@ -1,7 +1,15 @@
 import PQueue from "p-queue";
+import twilio from "twilio";
 import { SyncClient, SyncMap } from "twilio-sync";
 import log from "../../lib/logger.js";
+import {
+  TWILIO_ACCOUNT_SID as accountSid,
+  TWILIO_API_KEY,
+  TWILIO_API_SECRET,
+  TWILIO_SYNC_SVC_SID,
+} from "../../shared/env/server.js";
 import type { SessionContext } from "../../shared/session/context.js";
+import { CallDetails } from "../../shared/session/context.js";
 import type { TurnRecord } from "../../shared/session/turns.js";
 import { createSyncToken } from "../../shared/sync/create-token.js";
 import { makeContextMapName, makeTurnMapName } from "../../shared/sync/ids.js";
@@ -300,4 +308,43 @@ export class SyncQueueService {
     queue.removeAllListeners();
     this.queues.delete(queueKey);
   };
+}
+
+/****************************************************
+ REST API Methods
+****************************************************/
+/**
+ * Updates the status of a Twilio Sync Map Item that holds the "call" details.
+ *
+ * This function fetches the current call details from a Twilio Sync Map, preserves all existing call data, and updates only the status field.
+ * Each call has its own dedicated Sync Map identified by the callSid
+ *
+ * @param {string} callSid - The unique identifier of the Twilio call to update
+ * @param {string} status - The new status for the call
+ */
+export async function updateCallStatus(
+  callSid: string,
+  status:
+    | "queued"
+    | "ringing"
+    | "in-progress"
+    | "completed"
+    | "busy"
+    | "failed"
+    | "no-answer"
+) {
+  const client = twilio(TWILIO_API_KEY, TWILIO_API_SECRET, { accountSid });
+
+  const syncMapItemApi = client.sync.v1
+    .services(TWILIO_SYNC_SVC_SID)
+    .syncMaps(makeContextMapName(callSid))
+    .syncMapItems("call");
+
+  const oldData = await syncMapItemApi
+    .fetch()
+    .then((res) => res.data as CallDetails);
+
+  const data = { ...oldData, status };
+
+  return await syncMapItemApi.update({ data });
 }
