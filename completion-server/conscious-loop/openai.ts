@@ -9,8 +9,8 @@ import type { Stream } from "openai/streaming";
 import { z } from "zod";
 import { TypedEventEmitter } from "../../lib/events.js";
 import {
-  getMakeLogger,
   createLogStreamer,
+  getMakeLogger,
   StopwatchLogger,
 } from "../../lib/logger.js";
 import { OPENAI_API_KEY } from "../../shared/env/server.js";
