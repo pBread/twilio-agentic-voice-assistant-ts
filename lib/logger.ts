@@ -73,20 +73,17 @@ export class StopwatchLogger {
   logPath?: string;
   private _logStream?: fs.WriteStream;
 
-  constructor() {
+  constructor(callSid?: string) {
     this.date = new Date();
     this.prev = Date.now();
     this.start = Date.now();
 
+    this.callSid = callSid;
+
     this.reset();
   }
 
-  callSid: string | null = null;
-  setCallSid = (callSid: string | null) => {
-    if (callSid === this.callSid) return;
-    this.callSid = callSid;
-    this.reset();
-  };
+  callSid?: string;
 
   reset = () => {
     this.date = new Date();
@@ -233,3 +230,20 @@ export const createLogStreamer = (fileName: string) => {
     },
   };
 };
+
+const loggerCache = new Map<string, StopwatchLogger>();
+export function getMakeLogger(callSid?: string) {
+  if (!callSid) return new StopwatchLogger();
+
+  let log = loggerCache.get(callSid);
+  if (log) return log;
+
+  log = new StopwatchLogger(callSid);
+  loggerCache.set(callSid, log);
+
+  return log;
+}
+
+export function clearLogger(callSid: string) {
+  loggerCache.delete(callSid);
+}

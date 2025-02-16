@@ -1,7 +1,7 @@
 import deepDiff from "deep-diff";
 import type { SyncClient } from "twilio-sync";
 import { TypedEventEmitter } from "../../lib/events.js";
-import log from "../../lib/logger.js";
+import { getMakeLogger, StopwatchLogger } from "../../lib/logger.js";
 import type { SessionContext } from "../../shared/session/context.js";
 import { TurnRecord } from "../../shared/session/turns.js";
 import {
@@ -20,11 +20,13 @@ export class SessionStore {
 
   private syncClient: SyncClient;
   private syncQueue: SyncQueueService;
+  private log: StopwatchLogger;
 
   constructor(
     public callSid: string,
     context?: SessionContext,
   ) {
+    this.log = getMakeLogger(callSid);
     this.eventEmitter = new TypedEventEmitter<TurnEvents>();
 
     this.context = context ?? {};
@@ -54,17 +56,17 @@ export class SessionStore {
     this.syncQueue.ctxMapPromise.then((ctxMap) => {
       ctxMap.on("itemAdded", (ev: MapItemAddedEvent) => {
         if (ev.isLocal) return;
-        log.info("sync", `context added ${ev.item.key}`);
+        this.log.info("sync", `context added ${ev.item.key}`);
         this.setContext({ [ev.item.key]: ev.item.data }, false);
       });
       ctxMap.on("itemRemoved", (ev: MapItemRemovedEvent) => {
         if (ev.isLocal) return;
-        log.info("sync", `context removed ${ev.key}`);
+        this.log.info("sync", `context removed ${ev.key}`);
         this.setContext({ [ev.key]: undefined }, false);
       });
       ctxMap.on("itemUpdated", (ev: MapItemUpdatedEvent) => {
         if (ev.isLocal) return;
-        log.info("sync", `context updated ${ev.item.key}`);
+        this.log.info("sync", `context updated ${ev.item.key}`);
         this.setContext({ [ev.item.key]: ev.item.data }, false);
       });
     });

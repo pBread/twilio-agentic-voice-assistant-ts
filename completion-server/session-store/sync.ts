@@ -1,7 +1,7 @@
 import PQueue from "p-queue";
 import twilio from "twilio";
 import { SyncClient, SyncMap } from "twilio-sync";
-import log from "../../lib/logger.js";
+import { getMakeLogger, StopwatchLogger } from "../../lib/logger.js";
 import {
   TWILIO_ACCOUNT_SID as accountSid,
   TWILIO_API_KEY,
@@ -31,6 +31,7 @@ const tempSyncClientCache = new Map<
  * @throws {Error} If no Sync client is found for the given callSid
  */
 export function getSyncClient(callSid: string) {
+  const log = getMakeLogger(callSid);
   const entry = tempSyncClientCache.get(callSid);
   if (!entry) {
     const error = `No sync client found for ${callSid}.`;
@@ -54,6 +55,7 @@ export function getSyncClient(callSid: string) {
  * @throws {Error} If client connection fails or map creation fails
  */
 export async function setupSyncSession(callSid: string) {
+  const log = getMakeLogger(callSid);
   const sync = await createSyncClient(callSid); // initialize client and wait for connection
 
   await Promise.all([
@@ -97,6 +99,7 @@ export async function setupSyncSession(callSid: string) {
  * - Log all connection state changes and errors
  */
 async function createSyncClient(callSid: string): Promise<SyncClient> {
+  const log = getMakeLogger(callSid);
   const getSyncToken = () => createSyncToken(`completion-server-${callSid}`);
 
   return new Promise((resolve, reject) => {
@@ -162,6 +165,7 @@ export class SyncQueueService {
 
   public ctxMapPromise: Promise<SyncMap>;
   public turnMapPromise: Promise<SyncMap>;
+  private log: StopwatchLogger;
 
   constructor(
     private callSid: string,
@@ -169,6 +173,7 @@ export class SyncQueueService {
     private getContext: () => SessionContext,
     private getTurn: (turnId: string) => TurnRecord | undefined,
   ) {
+    this.log = new StopwatchLogger(callSid);
     this.ctxMapPromise = this.sync.map(makeContextMapName(callSid));
     this.turnMapPromise = this.sync.map(makeTurnMapName(callSid));
   }
@@ -188,7 +193,7 @@ export class SyncQueueService {
         this.queueCounts.delete(queueKey);
 
         if (typeof value !== "object") {
-          log.warn(
+          this.log.warn(
             "sync-queue",
             `context item ${key} is not an object and could not be sent to sync. value: `,
             value,
@@ -201,7 +206,7 @@ export class SyncQueueService {
         else await ctxMap.set(key, value as unknown as Record<string, unknown>);
       });
     } catch (error) {
-      log.error(
+      this.log.error(
         "sync-queue",
         `Failed to queue context update for ${queueKey}:`,
         error,
@@ -228,7 +233,7 @@ export class SyncQueueService {
         await turnMap.set(turnId, turn as unknown as Record<string, unknown>);
       });
     } catch (error) {
-      log.error(
+      this.log.error(
         "sync-queue",
         `Failed to queue turn update for ${queueKey}:`,
         error,
@@ -254,7 +259,7 @@ export class SyncQueueService {
         { priority: 1 }, // Higher priority for new turns
       );
     } catch (error) {
-      log.error(
+      this.log.error(
         "sync-queue",
         `Failed to queue turn addition for ${queueKey}:`,
         error,
@@ -274,7 +279,7 @@ export class SyncQueueService {
         await turnMap.remove(turnId);
       });
     } catch (error) {
-      log.error(
+      this.log.error(
         "sync-queue",
         `Failed to queue turn deletion for ${queueKey}:`,
         error,
@@ -296,7 +301,7 @@ export class SyncQueueService {
       });
 
       queue.on("error", (error) => {
-        log.error("sync-queue", `Queue ${queueKey} error:`, error);
+        this.log.error("sync-queue", `Queue ${queueKey} error:`, error);
       });
 
       this.queues.set(queueKey, queue);

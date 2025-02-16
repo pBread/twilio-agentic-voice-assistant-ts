@@ -1,4 +1,4 @@
-import log from "../../lib/logger.js";
+import { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
 import type { RequestTool, ToolDefinition } from "../../shared/agent-tools.js";
 import type { SessionStore } from "../session-store/index.js";
 import { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
@@ -10,12 +10,14 @@ import type {
 } from "./types.js";
 
 export class AgentResolver implements IAgentResolver {
+  private log: StopwatchLogger;
   constructor(
     protected readonly relay: ConversationRelayAdapter,
     protected readonly store: SessionStore,
     protected readonly config: LLMConfig,
     public params: AgentResolverParams,
   ) {
+    this.log = getMakeLogger(store.callSid);
     this.toolMap = new Map(params.tools.map((tool) => [tool.name, tool]));
   }
 
@@ -41,7 +43,7 @@ export class AgentResolver implements IAgentResolver {
   ): Promise<ToolResponse> => {
     const tool = this.toolMap.get(toolName);
     if (!tool) {
-      log.warn(
+      this.log.warn(
         "agent",
         `LLM attempted to execute a tool (${toolName}) that does not exist.`,
       );
@@ -53,7 +55,7 @@ export class AgentResolver implements IAgentResolver {
       (tool) => toolName === tool.name,
     );
     if (!isToolAvailable) {
-      log.warn(
+      this.log.warn(
         "agent",
         `LLM attempted to execute a tool (${toolName}) that it is not authorized to use.`,
       );

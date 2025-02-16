@@ -1,6 +1,6 @@
 import { RequestHandler, Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
-import log from "../lib/logger.js";
+import { getMakeLogger } from "../lib/logger.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
 import { CallDetails } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";
@@ -39,8 +39,7 @@ router.post("/incoming-call", async (req, res) => {
     status: body.CallStatus,
   };
 
-  log.reset();
-  log.setCallSid(call.callSid);
+  const log = getMakeLogger(call.callSid);
 
   try {
     await setupSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
@@ -62,6 +61,8 @@ router.post("/call-status", async (req, res) => {
   const callSid = req.body.CallSid as TwilioCallWebhookPayload["CallSid"];
   const callStatus = req.body
     .CallStatus as TwilioCallWebhookPayload["CallStatus"];
+
+  const log = getMakeLogger(callSid);
 
   log.info(
     "/call-status",
@@ -87,7 +88,7 @@ const outboundCallHandler: RequestHandler = async (req, res) => {
   const to = req.query?.to ?? req.body?.to;
   const from = req.query?.from ?? req.body?.from ?? DEFAULT_TWILIO_NUMBER;
 
-  log.info(`/outbound`, `from ${from} to ${to}`);
+  const log = getMakeLogger();
 
   if (!to) {
     res.status(400).send({ status: "failed", error: "No to number defined" });
@@ -132,8 +133,7 @@ router.post("/outbound/answer", async (req, res) => {
     status: body.CallStatus,
   };
 
-  log.reset();
-  log.setCallSid(call.callSid);
+  const log = getMakeLogger(call.callSid);
 
   log.info(`/outbound/answer`, `CallSid ${call.callSid}`);
 
@@ -160,6 +160,8 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   req,
 ) => {
   const { callSid } = req.params;
+
+  const log = getMakeLogger(callSid);
   log.info("/convo-relay", `websocket initializing, CallSid ${callSid}`);
 
   const relay = new ConversationRelayAdapter(ws);
@@ -269,6 +271,8 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
 router.post("/call-wrapup", async (req, res) => {
   const isHandoff = "HandoffData" in req.body;
   const callSid = req.body.CallSid;
+
+  const log = getMakeLogger(callSid);
 
   if (!isHandoff) {
     log.info(`/call-wrapup`, "call completed w/out handoff data");

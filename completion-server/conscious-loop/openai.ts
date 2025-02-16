@@ -8,7 +8,11 @@ import type {
 import type { Stream } from "openai/streaming";
 import { z } from "zod";
 import { TypedEventEmitter } from "../../lib/events.js";
-import log, { createLogStreamer } from "../../lib/logger.js";
+import {
+  getMakeLogger,
+  createLogStreamer,
+  StopwatchLogger,
+} from "../../lib/logger.js";
 import { OPENAI_API_KEY } from "../../shared/env/server.js";
 import type { OpenAIConfig } from "../../shared/openai.js";
 import type {
@@ -35,11 +39,13 @@ export class OpenAIConsciousLoop
       ChatCompletionMessageParam[]
     >
 {
+  private log: StopwatchLogger;
   constructor(
     public store: SessionStore,
     public agent: IAgentResolver,
     public relay: ConversationRelayAdapter,
   ) {
+    this.log = getMakeLogger(store.callSid);
     this.eventEmitter = new TypedEventEmitter<ConsciousLoopEvents>();
     this.logStream = createLogStreamer("chunks"); // todo: remove
   }
@@ -50,7 +56,7 @@ export class OpenAIConsciousLoop
   run = async (): Promise<undefined | Promise<any>> => {
     // There should only be one completion stream open at a time.
     if (this.stream) {
-      log.warn(
+      this.log.warn(
         "llm",
         "Starting a completion while one is already underway. Previous completion will be aborted.",
       );
@@ -73,7 +79,7 @@ export class OpenAIConsciousLoop
         tools: this.getToolManifest(),
       });
     } catch (error) {
-      log.error("llm", "Error attempting completion", error);
+      this.log.error("llm", "Error attempting completion", error);
       return this.handleRetry(attempt + 1);
     }
 
@@ -170,11 +176,11 @@ export class OpenAIConsciousLoop
 
     // todo: add handlers for these situations
     if (finish_reason === "content_filter")
-      log.warn("llm", `Unusual finish reason ${finish_reason}`);
+      this.log.warn("llm", `Unusual finish reason ${finish_reason}`);
     if (finish_reason === "function_call")
-      log.warn("llm", `Unusual finish reason ${finish_reason}`);
+      this.log.warn("llm", `Unusual finish reason ${finish_reason}`);
     if (finish_reason === "length")
-      log.warn("llm", `Unusual finish reason ${finish_reason}`);
+      this.log.warn("llm", `Unusual finish reason ${finish_reason}`);
 
     /****************************************************
      Clean Up Completion
@@ -198,7 +204,7 @@ export class OpenAIConsciousLoop
 
           return result;
         } catch (error) {
-          log.warn("llm", "Error while executing a tool", error);
+          this.log.warn("llm", "Error while executing a tool", error);
           return {
             tool,
             data: {
@@ -231,13 +237,13 @@ export class OpenAIConsciousLoop
         if (this.stream) return resolve(null);
         if (attempt > LLM_MAX_RETRY_ATTEMPTS) {
           const message = `LLM completion failed more than max retry attempt`;
-          log.error(`llm`, message);
+          this.log.error(`llm`, message);
           this.relay.end({ reason: "error", message });
           return resolve(null);
         }
 
         if (attempt > 0)
-          log.info(`llm`, `Completion retry attempt: ${attempt}`);
+          this.log.info(`llm`, `Completion retry attempt: ${attempt}`);
 
         resolve(this.doCompletion(attempt));
       }, 1000);
@@ -314,7 +320,7 @@ export class OpenAIConsciousLoop
 
       for (const tool of turn.tool_calls) {
         if (tool.result === null) {
-          log.warn(
+          this.log.warn(
             "llm",
             "A Tool Call has null result, which should never happen. This turn will be filtered",
             JSON.stringify({ turn, tool, allTurns: this.store.turns.list() }),
@@ -326,7 +332,7 @@ export class OpenAIConsciousLoop
         try {
           content = JSON.stringify(tool.result);
         } catch (err) {
-          log.warn(
+          this.log.warn(
             "llm",
             "Error parsing tool result",
             JSON.stringify({ turn, tool, allTurns: this.store.turns.list() }),
@@ -340,7 +346,7 @@ export class OpenAIConsciousLoop
       return msgs;
     }
 
-    log.warn(
+    this.log.warn(
       "llm",
       "StoreTurn not recognized by LLM translator.",
       JSON.stringify({ turn, allTurns: this.store.turns.list() }),

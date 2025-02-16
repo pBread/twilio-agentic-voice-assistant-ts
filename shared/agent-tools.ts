@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { IAgentRuntime } from "../completion-server/agent-runtime/types.js";
+import type { IAgentResolver } from "../completion-server/agent-resolver/types.js";
 import type { SessionStore } from "../completion-server/session-store/index.js";
 import type { ConversationRelayAdapter } from "../completion-server/twilio/conversation-relay-adapter.js";
 
@@ -32,7 +32,7 @@ export interface RequestTool<TParams extends z.ZodObject<any> = any>
 }
 
 export interface ToolDependencies {
-  agent: IAgentRuntime;
+  agent: IAgentResolver;
   relay: ConversationRelayAdapter;
   store: SessionStore;
 }

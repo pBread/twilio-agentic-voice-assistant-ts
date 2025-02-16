@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { TypedEventEmitter } from "../../lib/events.js";
-import log from "../../lib/logger.js";
+import { getMakeLogger, StopwatchLogger } from "../../lib/logger.js";
 import type {
   BotDTMFTurn,
   BotDTMFTurnParams,
@@ -21,11 +21,14 @@ import type { StoreEventEmitter } from "./index.js";
 
 export class TurnStore {
   private turnMap: Map<string, TurnRecord> = new Map(); // map order enforces turn ordering, not the order property on the turns
+  private log: StopwatchLogger;
 
   constructor(
     private callSid: string,
     private eventEmitter: StoreEventEmitter,
-  ) {}
+  ) {
+    this.log = getMakeLogger(callSid);
+  }
 
   /****************************************************
    Turn Sequential Ordering
@@ -221,7 +224,7 @@ export class TurnStore {
     interruptedTurn.content = `${newContent} ${interruptedClause}`.trim();
     interruptedTurn.interrupted = true;
 
-    log.info(
+    this.log.info(
       "store",
       `local state updated to reflect interruption: `,
       interruptedTurn.content,
