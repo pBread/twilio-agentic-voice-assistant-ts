@@ -4,10 +4,10 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
+    "clear:sync": "tsx scripts/sync/clear.ts",
+    "clear": "yarn clear:sync",
     "dev": "nodemon --exec tsx app.ts",
-    "grok": "tsx scripts/ngrok.ts",
-    "setup": "yarn setup:supabase",
-    "setup:supabase": "tsx scripts/supabase/setup.ts"
+    "grok": "tsx scripts/ngrok.ts"
   },
   "dependencies": {
     "deep-diff": "^1.0.2",
