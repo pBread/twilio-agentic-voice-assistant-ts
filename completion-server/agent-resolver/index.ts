@@ -116,11 +116,7 @@ export class AgentResolver implements IAgentResolver {
     instructionTemplate: string;
     llmConfig: LLMConfig;
   } = () => {
-    if (
-      !this.instructionTemplate ||
-      !this.llmConfig ||
-      this.toolMap.size === 0
-    ) {
+    if (!this.instructionTemplate || !this.llmConfig) {
       const msg = `Agent params or config are not defined. Check your initialization of the AgentResolver to ensure the parameters & model config are set before any class methods are executed.`;
       this.log.error("resolver", msg, {
         instructionTemplate: this.instructionTemplate,
