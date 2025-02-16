@@ -1,4 +1,4 @@
-import { ToolDefinition } from "../../shared/agent-tools.js";
+import { ToolDefinition } from "../../agents/tools.js";
 
 /**
  * Interface defining the core functionality of an Agent Runtime
