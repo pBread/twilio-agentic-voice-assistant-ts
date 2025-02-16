@@ -43,6 +43,8 @@ if (!TWILIO_SYNC_SVC_SID) missingRequired("TWILIO_SYNC_SVC_SID");
 export const DEFAULT_TWILIO_NUMBER = process.env.DEFAULT_TWILIO_NUMBER;
 if (!DEFAULT_TWILIO_NUMBER) warnMissing("DEFAULT_TWILIO_NUMBER");
 
+export const DEVELOPERS_PHONE_NUMBER = process.env.DEVELOPERS_PHONE_NUMBER;
+
 /****************************************************
  Environment Configuration
 ****************************************************/
