@@ -11,29 +11,48 @@ import type {
 
 export class AgentResolver implements IAgentResolver {
   private log: StopwatchLogger;
+  public params?: AgentResolverParams; // must be set before the first method is called
+  public config?: LLMConfig; // must be set before the first method is called
+
+  // allows the app to check if the resolver configurations have been set properly
+  private agentReadyResolver!: (value: true) => void;
+  public agentReadyPromise: Promise<true>;
+  public agentReady = false;
+
   constructor(
     protected readonly relay: ConversationRelayAdapter,
     protected readonly store: SessionStore,
-    protected readonly config: LLMConfig,
-    public params: AgentResolverParams,
+    config?: LLMConfig,
+    params?: AgentResolverParams,
   ) {
+    this.agentReadyPromise = new Promise<true>((resolve) => {
+      this.agentReadyResolver = resolve;
+    });
+
     this.log = getMakeLogger(store.callSid);
-    this.toolMap = new Map(params.tools.map((tool) => [tool.name, tool]));
+    this.toolMap = new Map();
+
+    if (params?.tools)
+      params.tools.forEach((tool) => this.toolMap.set(tool.name, tool));
   }
 
   // instructions
   getInstructions = (): string => {
+    this.assertReady();
+
     return this.params.instructionTemplate;
   };
 
   // config
   getLLMConfig = (): LLMConfig => {
+    this.assertReady();
     return this.config;
   };
 
   // tools
   toolMap: Map<string, ToolDefinition>;
   getToolManifest = (): ToolDefinition<any>[] => {
+    this.assertReady();
     return [...this.toolMap.values()];
   };
 
@@ -71,6 +90,28 @@ export class AgentResolver implements IAgentResolver {
     }
 
     return { status: "error", error: "unknown" };
+  };
+
+  /****************************************************
+   Misc Utilities
+  ****************************************************/
+  private assertReady: () => asserts this is this & {
+    params: AgentResolverParams;
+    config: LLMConfig;
+  } = () => {
+    if (!this.params || !this.config) {
+      const msg = `Agent params or config are not defined. Check your initialization of the AgentResolver to ensure the parameters & model config are set before any class methods are executed.`;
+      this.log.error("resolver", msg, {
+        config: this.config,
+        params: this.params,
+      });
+      throw new Error(msg);
+    }
+
+    if (!this.agentReady) return;
+
+    this.agentReady = true;
+    this.agentReadyResolver(true);
   };
 }
 

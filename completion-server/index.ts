@@ -18,6 +18,7 @@ import {
   placeCall,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
+import * as agents from "../agents/index.js";
 
 const router = Router();
 
@@ -50,6 +51,7 @@ router.post("/incoming-call", async (req, res) => {
       callSid: call.callSid,
       context: { call },
       welcomeGreeting,
+      parameters: { welcomeGreeting },
     });
     res.status(200).type("text/xml").end(twiml);
   } catch (error) {
@@ -173,7 +175,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     store,
     { model: "gpt-3.5-turbo" },
     {
-      instructionTemplate: owlTickets.instructionsTemplate,
+      instructionTemplate: owlTickets.agent.instructionsTemplate,
       tools: [
         {
           type: "request",
@@ -210,7 +212,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
       call: { ...context.call, conversationRelaySessionId: ev.sessionId },
     });
 
-    const greeting = params.greeting;
+    const greeting = params.welcomeGreeting;
     if (greeting) {
       store.turns.addBotText({ content: greeting });
       log.info("llm.transcript", `"${greeting}"`);
