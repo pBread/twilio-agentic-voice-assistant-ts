@@ -1,7 +1,7 @@
 import { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
 import type { RequestTool, ToolDefinition } from "../../shared/agent-tools.js";
 import type { SessionStore } from "../session-store/index.js";
-import { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
+import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
 import type {
   AgentResolverParams,
   IAgentResolver,
