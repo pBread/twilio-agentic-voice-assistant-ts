@@ -1,8 +1,7 @@
 import "dotenv-flow/config";
 import twilio from "twilio";
-import { isContextMapName, isTurnMapName } from "../../shared/sync/ids.js";
-
 import log from "../../lib/logger.js";
+import { isContextMapName, isTurnMapName } from "../../shared/sync/ids.js";
 
 const {
   TWILIO_ACCOUNT_SID,
@@ -17,7 +16,7 @@ if (!TWILIO_API_SECRET) throw Error("Missing env var TWILIO_API_SECRET");
 if (!TWILIO_SYNC_SVC_SID) throw Error("Missing env var TWILIO_SYNC_SVC_SID");
 
 const main = async () => {
-  console.log("=== CLEAR SYNC SCRIPT: STARTING ===");
+  console.log("=== CLEAR SESSIONS SCRIPT: STARTING ===");
 
   const client = twilio(TWILIO_API_KEY, TWILIO_API_SECRET, {
     accountSid: TWILIO_ACCOUNT_SID,
@@ -54,7 +53,7 @@ const main = async () => {
 
   console.log(`\ntotal deleted: ${deleted}; total failed: ${failed}`);
 
-  console.log("=== CLEAR SYNC SCRIPT: FINISHED ===\n");
+  console.log("=== CLEAR SESSIONS SCRIPT: FINISHED ===\n");
 };
 
 main();

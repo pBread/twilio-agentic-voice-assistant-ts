@@ -4,8 +4,8 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
-    "clear:sync": "tsx scripts/sync/clear.ts",
-    "clear": "yarn clear:sync",
+    "clear:sessions": "tsx scripts/sessions/clear.ts",
+    "clear": "yarn clear:sessions",
     "dev": "nodemon --exec tsx app.ts",
     "grok": "tsx scripts/ngrok.ts"
   },
