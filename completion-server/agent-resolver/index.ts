@@ -11,8 +11,6 @@ import type {
 
 export class AgentResolver implements IAgentResolver {
   private log: StopwatchLogger;
-  public params?: AgentResolverParams; // must be set before the first method is called
-  public config?: LLMConfig; // must be set before the first method is called
 
   // allows the app to check if the resolver configurations have been set properly
   private agentReadyResolver!: (value: true) => void;
@@ -22,7 +20,7 @@ export class AgentResolver implements IAgentResolver {
   constructor(
     protected readonly relay: ConversationRelayAdapter,
     protected readonly store: SessionStore,
-    config?: LLMConfig,
+    llmConfig?: LLMConfig,
     params?: AgentResolverParams,
   ) {
     this.agentReadyPromise = new Promise<true>((resolve) => {
@@ -32,9 +30,14 @@ export class AgentResolver implements IAgentResolver {
     this.log = getMakeLogger(store.callSid);
     this.toolMap = new Map();
 
+    this.llmConfig = llmConfig;
+
     if (params?.tools)
       params.tools.forEach((tool) => this.toolMap.set(tool.name, tool));
   }
+
+  public params?: AgentResolverParams; // must be set before the first method is called
+  public llmConfig?: LLMConfig; // must be set before the first method is called
 
   // instructions
   getInstructions = (): string => {
@@ -99,10 +102,10 @@ export class AgentResolver implements IAgentResolver {
     params: AgentResolverParams;
     config: LLMConfig;
   } = () => {
-    if (!this.params || !this.config) {
+    if (!this.params || !this.llmConfig) {
       const msg = `Agent params or config are not defined. Check your initialization of the AgentResolver to ensure the parameters & model config are set before any class methods are executed.`;
       this.log.error("resolver", msg, {
-        config: this.config,
+        llmConfig: this.llmConfig,
         params: this.params,
       });
       throw new Error(msg);
