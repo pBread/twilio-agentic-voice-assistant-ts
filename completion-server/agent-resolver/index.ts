@@ -17,6 +17,10 @@ export class AgentResolver implements IAgentResolver {
   public agentReadyPromise: Promise<true>;
   public agentReady = false;
 
+  public llmConfig?: LLMConfig; // must be set before the first method is called
+  public instructionTemplate?: string; // must be set before the first method is called
+  toolMap: Map<string, ToolDefinition>; // tool manifest is stored in a map to avoid accidental conflicts
+
   constructor(
     protected readonly relay: ConversationRelayAdapter,
     protected readonly store: SessionStore,
@@ -33,24 +37,20 @@ export class AgentResolver implements IAgentResolver {
     this.llmConfig = config?.llmConfig;
 
     if (config?.toolManifest)
-      config?.toolManifest.forEach((tool) => this.toolMap.set(tool.name, tool));
+      config?.toolManifest.forEach((tool) => this.setTool(tool));
   }
 
-  public llmConfig?: LLMConfig; // must be set before the first method is called
-  public instructionTemplate?: string; // must be set before the first method is called
-
+  // note: configure() only adds tools to the manifest. To remove tools you must call removeTool
   configure = (config: Partial<AgentResolverConfig>) => {
     this.log.info(
       "resolver",
       `configurating agent resolver: ${Object.keys(config).join(", ")}`,
     );
 
-    if (config.instructionTemplate)
-      this.instructionTemplate = config.instructionTemplate;
-    if (config.llmConfig) this.llmConfig = config.llmConfig;
-    if (config.toolManifest) {
-      for (const tool of config.toolManifest) this.toolMap.set(tool.name, tool);
-    }
+    const { instructionTemplate, llmConfig, toolManifest } = config;
+    this.instructionTemplate = instructionTemplate ?? this.instructionTemplate;
+    this.llmConfig = llmConfig ?? this.llmConfig;
+    if (toolManifest) for (const tool of toolManifest) this.setTool(tool);
   };
 
   // instructions
@@ -67,10 +67,21 @@ export class AgentResolver implements IAgentResolver {
   };
 
   // tools
-  toolMap: Map<string, ToolDefinition>;
   getToolManifest = (): ToolDefinition<any>[] => {
     this.assertReady();
     return [...this.toolMap.values()];
+  };
+
+  removeTool = (toolName: string) => {
+    this.log.info("resolver", `removing tool ${toolName}`);
+    return this.toolMap.delete(toolName);
+  };
+
+  setTool = (tool: ToolDefinition) => {
+    if (this.toolMap.has(tool.name))
+      this.log.info("resolver", `overriding tool ${tool.name}`);
+
+    this.toolMap.set(tool.name, tool);
   };
 
   executeTool = async (
@@ -133,6 +144,7 @@ export class AgentResolver implements IAgentResolver {
   };
 }
 
+// todo: make this interchangable
 async function executeRequestTool(
   tool: RequestTool,
   args?: string,
