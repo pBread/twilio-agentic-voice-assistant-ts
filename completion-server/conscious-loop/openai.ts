@@ -19,8 +19,7 @@ import type {
   StoreToolCall,
   TurnRecord,
 } from "../../shared/session/turns.js";
-import type { IAgentRuntime } from "../agent-runtime/types.js";
-import { ToolResponse } from "../agent-runtime/types.js";
+import type { IAgentResolver, ToolResponse } from "../agent-resolver/types.js";
 import type { SessionStore } from "../session-store/index.js";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
 import type { ConsciousLoopEvents, IConsciousLoop } from "./types.js";
@@ -38,7 +37,7 @@ export class OpenAIConsciousLoop
 {
   constructor(
     public store: SessionStore,
-    public agent: IAgentRuntime,
+    public agent: IAgentResolver,
     public relay: ConversationRelayAdapter,
   ) {
     this.eventEmitter = new TypedEventEmitter<ConsciousLoopEvents>();
