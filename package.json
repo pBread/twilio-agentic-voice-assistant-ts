@@ -6,7 +6,7 @@
   "scripts": {
     "clear:sessions": "tsx scripts/sessions/clear.ts",
     "clear": "yarn clear:sessions",
-    "dev": "nodemon --exec tsx app.ts",
+    "dev": "nodemon --exec tsx app.ts --delay 1500ms",
     "format:check": "prettier --check \"**/*.{ts,tsx}\"",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "grok": "tsx scripts/ngrok.ts"
