@@ -1,5 +1,6 @@
 import { RequestHandler, Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
+import * as owlTickets from "../agents/owl-tickets/index.js";
 import { getMakeLogger } from "../lib/logger.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
 import { CallDetails } from "../shared/session/context.js";
@@ -172,7 +173,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     store,
     { model: "gpt-3.5-turbo" },
     {
-      instructionTemplate: "You are a friendly robot who likes to tell jokes",
+      instructionTemplate: owlTickets.instructionsTemplate,
       tools: [
         {
           type: "request",

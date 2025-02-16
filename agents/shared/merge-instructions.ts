@@ -9,7 +9,7 @@ export function mergeInstructions(directory: string): string {
     return files
       .map((file) => {
         try {
-          readFileSync(join(directory, file), "utf-8");
+          return readFileSync(join(directory, file), "utf-8");
         } catch (error) {
           log.red(`agent`, `error reading instructions file ${file}: `, error);
           return;
