@@ -3,18 +3,18 @@ import type { RequestTool, ToolDefinition } from "../../shared/agent-tools.js";
 import type { SessionStore } from "../session-store/index.js";
 import { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
 import type {
-  AgentRuntimeParams,
-  IAgentRuntime,
+  AgentResolverParams,
+  IAgentResolver,
   LLMConfig,
   ToolResponse,
 } from "./types.js";
 
-export class AgentRuntime implements IAgentRuntime {
+export class AgentResolver implements IAgentResolver {
   constructor(
     protected readonly relay: ConversationRelayAdapter,
     protected readonly store: SessionStore,
     protected readonly config: LLMConfig,
-    public params: AgentRuntimeParams
+    public params: AgentResolverParams
   ) {
     this.toolMap = new Map(params.tools.map((tool) => [tool.name, tool]));
   }

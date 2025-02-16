@@ -3,7 +3,7 @@ import { WebsocketRequestHandler } from "express-ws";
 import log from "../lib/logger.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
 import { CallDetails } from "../shared/session/context.js";
-import { AgentRuntime } from "./agent-runtime/index.js";
+import { AgentResolver } from "./agent-resolver/index.js";
 import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
 import { SessionStore } from "./session-store/index.js";
 import { setupSyncSession, updateCallStatus } from "./session-store/sync.js";
@@ -165,7 +165,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const relay = new ConversationRelayAdapter(ws);
   const store = new SessionStore(callSid);
 
-  const agent = new AgentRuntime(
+  const agent = new AgentResolver(
     relay,
     store,
     { model: "gpt-3.5-turbo" },

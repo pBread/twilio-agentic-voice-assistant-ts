@@ -5,7 +5,7 @@ import { ToolDefinition } from "../../shared/agent-tools.js";
  * @template TTools - The type of tools the agent can use
  * @template TConfig - The configuration type for the LLM
  */
-export interface IAgentRuntime {
+export interface IAgentResolver {
   getInstructions(): string;
   getLLMConfig(): LLMConfig;
   getToolManifest(): ToolDefinition<any>[];
@@ -17,7 +17,7 @@ export type ToolResponse =
   | { status: "success"; result?: object }
   | { status: "error"; error: string };
 
-export interface AgentRuntimeParams {
+export interface AgentResolverParams {
   instructionTemplate: string;
   tools: ToolDefinition<any>[];
 }
