@@ -27,15 +27,19 @@ app.use(intergrationServerRoutes);
  Start Server
 ****************************************************/
 app.listen(PORT, () => {
-  log.green(`server running on http://localhost:${PORT}`);
-  log.green(`public base URL https://${HOSTNAME}`);
-  if (DEFAULT_TWILIO_NUMBER) {
-    // todo: validate whether this is configured to handle incoming calls
-    log.green(
-      `default phone number: ${
-        parseE164(DEFAULT_TWILIO_NUMBER)?.formatted.international ??
-        DEFAULT_TWILIO_NUMBER
-      }`
-    );
-  }
+  let phone = null;
+  if (DEFAULT_TWILIO_NUMBER)
+    phone =
+      parseE164(DEFAULT_TWILIO_NUMBER)?.formatted.international ??
+      DEFAULT_TWILIO_NUMBER;
+
+  log.green(`\
+Local Server Running      http://localhost:${PORT}
+
+Public URL                https://${HOSTNAME}
+Incoming Phone Webhook    https://${HOSTNAME}/incoming-call
+Call Status Webhook       https://${HOSTNAME}/call-status
+
+Default Phone Number      ${phone}
+`);
 });
