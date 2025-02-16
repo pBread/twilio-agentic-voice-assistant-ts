@@ -1,6 +1,6 @@
 import PQueue from "p-queue";
 import twilio from "twilio";
-import { SyncClient, SyncMap } from "twilio-sync";
+import { SyncClient, type SyncMap } from "twilio-sync";
 import { getMakeLogger, StopwatchLogger } from "../../lib/logger.js";
 import {
   TWILIO_ACCOUNT_SID as accountSid,
@@ -8,8 +8,10 @@ import {
   TWILIO_API_SECRET,
   TWILIO_SYNC_SVC_SID,
 } from "../../shared/env/server.js";
-import type { SessionContext } from "../../shared/session/context.js";
-import { CallDetails } from "../../shared/session/context.js";
+import type {
+  CallDetails,
+  SessionContext,
+} from "../../shared/session/context.js";
 import type { TurnRecord } from "../../shared/session/turns.js";
 import { createSyncToken } from "../../shared/sync/create-token.js";
 import { makeContextMapName, makeTurnMapName } from "../../shared/sync/ids.js";
