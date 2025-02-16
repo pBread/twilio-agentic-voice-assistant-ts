@@ -1,1 +1,3 @@
-export interface Procedure {}
+export interface Procedure {
+  id: string;
+}

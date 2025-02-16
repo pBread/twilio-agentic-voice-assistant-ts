@@ -1,8 +1,10 @@
 import type { UserRecord } from "../db-entities.js";
+import type { Procedure } from "../../agents/procedures.js";
 
 export interface SessionContext {
-  user?: UserRecord;
   call?: CallDetails;
+  procedures?: Record<string, Procedure>;
+  user?: UserRecord;
 }
 
 export type CallDetails = {
