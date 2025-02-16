@@ -208,7 +208,10 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     });
 
     const greeting = params.greeting;
-    if (greeting) store.turns.addHumanText({ content: greeting });
+    if (greeting) {
+      store.turns.addBotText({ content: greeting });
+      log.info("llm.transcript", `"${greeting}"`);
+    }
   });
 
   relay.onPrompt((ev) => {
