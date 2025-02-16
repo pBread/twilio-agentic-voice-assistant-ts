@@ -3,7 +3,7 @@ import { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
 import type { SessionStore } from "../session-store/index.js";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
 import type {
-  AgentResolverParams,
+  AgentResolverConfig,
   IAgentResolver,
   LLMConfig,
   ToolResponse,
@@ -20,8 +20,7 @@ export class AgentResolver implements IAgentResolver {
   constructor(
     protected readonly relay: ConversationRelayAdapter,
     protected readonly store: SessionStore,
-    llmConfig?: LLMConfig,
-    params?: AgentResolverParams,
+    config?: Partial<AgentResolverConfig>,
   ) {
     this.agentReadyPromise = new Promise<true>((resolve) => {
       this.agentReadyResolver = resolve;
@@ -30,26 +29,41 @@ export class AgentResolver implements IAgentResolver {
     this.log = getMakeLogger(store.callSid);
     this.toolMap = new Map();
 
-    this.llmConfig = llmConfig;
+    this.instructionTemplate = config?.instructionTemplate;
+    this.llmConfig = config?.llmConfig;
 
-    if (params?.tools)
-      params.tools.forEach((tool) => this.toolMap.set(tool.name, tool));
+    if (config?.toolManifest)
+      config?.toolManifest.forEach((tool) => this.toolMap.set(tool.name, tool));
   }
 
-  public params?: AgentResolverParams; // must be set before the first method is called
   public llmConfig?: LLMConfig; // must be set before the first method is called
+  public instructionTemplate?: string; // must be set before the first method is called
+
+  configure = (config: Partial<AgentResolverConfig>) => {
+    this.log.info(
+      "resolver",
+      `configurating agent resolver: ${Object.keys(config).join(", ")}`,
+    );
+
+    if (config.instructionTemplate)
+      this.instructionTemplate = config.instructionTemplate;
+    if (config.llmConfig) this.llmConfig = config.llmConfig;
+    if (config.toolManifest) {
+      for (const tool of config.toolManifest) this.toolMap.set(tool.name, tool);
+    }
+  };
 
   // instructions
   getInstructions = (): string => {
     this.assertReady();
 
-    return this.params.instructionTemplate;
+    return this.instructionTemplate;
   };
 
   // config
   getLLMConfig = (): LLMConfig => {
     this.assertReady();
-    return this.config;
+    return this.llmConfig;
   };
 
   // tools
@@ -99,14 +113,19 @@ export class AgentResolver implements IAgentResolver {
    Misc Utilities
   ****************************************************/
   private assertReady: () => asserts this is this & {
-    params: AgentResolverParams;
-    config: LLMConfig;
+    instructionTemplate: string;
+    llmConfig: LLMConfig;
   } = () => {
-    if (!this.params || !this.llmConfig) {
+    if (
+      !this.instructionTemplate ||
+      !this.llmConfig ||
+      this.toolMap.size === 0
+    ) {
       const msg = `Agent params or config are not defined. Check your initialization of the AgentResolver to ensure the parameters & model config are set before any class methods are executed.`;
       this.log.error("resolver", msg, {
+        instructionTemplate: this.instructionTemplate,
         llmConfig: this.llmConfig,
-        params: this.params,
+        toolManifest: this.toolMap.values(),
       });
       throw new Error(msg);
     }

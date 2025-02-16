@@ -18,7 +18,6 @@ export interface FunctionTool<TParams extends z.ZodObject<any> = any>
   extends BaseTool {
   type: "function";
   parameters?: TParams;
-  execute: (args: z.infer<TParams>, deps: ToolDependencies) => Promise<any>;
 }
 
 // a tool that will make an API request

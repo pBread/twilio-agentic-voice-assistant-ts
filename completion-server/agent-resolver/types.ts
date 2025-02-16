@@ -17,9 +17,10 @@ export type ToolResponse =
   | { status: "success"; result?: object }
   | { status: "error"; error: string };
 
-export interface AgentResolverParams {
+export interface AgentResolverConfig {
+  llmConfig: LLMConfig;
   instructionTemplate: string;
-  tools: ToolDefinition<any>[];
+  toolManifest: ToolDefinition<any>[];
 }
 
 export interface LLMConfig {

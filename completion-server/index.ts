@@ -1,6 +1,5 @@
 import { RequestHandler, Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
-import * as owlTickets from "../agents/owl-tickets/index.js";
 import { getMakeLogger } from "../lib/logger.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
 import { CallDetails } from "../shared/session/context.js";
@@ -18,7 +17,6 @@ import {
   placeCall,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
-import * as agents from "../agents/index.js";
 
 const router = Router();
 
@@ -170,36 +168,9 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const relay = new ConversationRelayAdapter(ws);
   const store = new SessionStore(callSid);
 
-  const agent = new AgentResolver(
-    relay,
-    store,
-    { model: "gpt-3.5-turbo" },
-    {
-      instructionTemplate: owlTickets.agent.instructionsTemplate,
-      tools: [
-        {
-          type: "request",
-          name: "getUserProfile",
-          endpoint: {
-            url: `https://${HOSTNAME}/get-user`,
-            method: "POST",
-            contentType: "json",
-          },
-        },
-        {
-          type: "function",
-          name: "updateUserProfile",
-          parameters: {
-            type: "object",
-            properties: { userEmail: { type: "string" } },
-          },
-          execute: async (args, deps) => {
-            log.debug("args", args);
-          },
-        },
-      ],
-    },
-  );
+  const agent = new AgentResolver(relay, store, {
+    llmConfig: { model: "gpt-3.5-turbo" },
+  });
 
   const consciousLoop = new OpenAIConsciousLoop(store, agent, relay);
 
