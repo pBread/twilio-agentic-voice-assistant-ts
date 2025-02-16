@@ -18,7 +18,7 @@ export class AgentResolver implements IAgentResolver {
   public agentReady = false;
 
   public llmConfig?: LLMConfig; // must be set before the first method is called
-  public instructionTemplate?: string; // must be set before the first method is called
+  public instructionsTemplate?: string; // must be set before the first method is called
   toolMap: Map<string, ToolDefinition>; // tool manifest is stored in a map to avoid accidental conflicts
 
   constructor(
@@ -33,7 +33,7 @@ export class AgentResolver implements IAgentResolver {
     this.log = getMakeLogger(store.callSid);
     this.toolMap = new Map();
 
-    this.instructionTemplate = config?.instructionTemplate;
+    this.instructionsTemplate = config?.instructionsTemplate;
     this.llmConfig = config?.llmConfig;
 
     if (config?.toolManifest)
@@ -42,13 +42,20 @@ export class AgentResolver implements IAgentResolver {
 
   // note: configure() only adds tools to the manifest. To remove tools you must call removeTool
   configure = (config: Partial<AgentResolverConfig>) => {
-    this.log.info(
-      "resolver",
-      `configurating agent resolver: ${Object.keys(config).join(", ")}`,
-    );
+    const configKeys = [
+      "instructionsTemplate",
+      "llmConfig",
+      "toolManifest",
+    ] as (keyof AgentResolverConfig)[];
+    const keys = Object.keys(config)
+      .filter((key) => configKeys.includes(key as keyof AgentResolverConfig))
+      .join(", ");
 
-    const { instructionTemplate, llmConfig, toolManifest } = config;
-    this.instructionTemplate = instructionTemplate ?? this.instructionTemplate;
+    this.log.info("resolver", `configurating agent resolver: ${keys}`);
+
+    const { instructionsTemplate, llmConfig, toolManifest } = config;
+    this.instructionsTemplate =
+      instructionsTemplate ?? this.instructionsTemplate;
     this.llmConfig = llmConfig ?? this.llmConfig;
     if (toolManifest) for (const tool of toolManifest) this.setTool(tool);
   };
@@ -127,10 +134,10 @@ export class AgentResolver implements IAgentResolver {
     instructionTemplate: string;
     llmConfig: LLMConfig;
   } = () => {
-    if (!this.instructionTemplate || !this.llmConfig) {
+    if (!this.instructionsTemplate || !this.llmConfig) {
       const msg = `Agent params or config are not defined. Check your initialization of the AgentResolver to ensure the parameters & model config are set before any class methods are executed.`;
       this.log.error("resolver", msg, {
-        instructionTemplate: this.instructionTemplate,
+        instructionsTemplate: this.instructionsTemplate,
         llmConfig: this.llmConfig,
         toolManifest: this.toolMap.values(),
       });

@@ -1,9 +1,11 @@
 import { RequestHandler, Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
+import * as agents from "../agents/index.js";
 import { getMakeLogger } from "../lib/logger.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
 import { CallDetails } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";
+import { AgentResolverConfig } from "./agent-resolver/types.js";
 import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
 import { SessionStore } from "./session-store/index.js";
 import { setupSyncSession, updateCallStatus } from "./session-store/sync.js";
@@ -42,6 +44,7 @@ router.post("/incoming-call", async (req, res) => {
   const log = getMakeLogger(call.callSid);
 
   try {
+    const agent = agents["owl_tickets"]; // todo: make this fetchable
     await setupSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
 
     const welcomeGreeting = "Hello there. I am a voice bot";
@@ -49,7 +52,7 @@ router.post("/incoming-call", async (req, res) => {
       callSid: call.callSid,
       context: { call },
       welcomeGreeting,
-      parameters: { welcomeGreeting },
+      parameters: { agent, welcomeGreeting },
     });
     res.status(200).type("text/xml").end(twiml);
   } catch (error) {
@@ -139,11 +142,12 @@ router.post("/outbound/answer", async (req, res) => {
   log.info(`/outbound/answer`, `CallSid ${call.callSid}`);
 
   try {
+    const agent = agents["owl_tickets"]; // todo: make this fetchable
     await setupSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
 
     const twiml = makeConversationRelayTwiML({
       callSid: call.callSid,
-      context: { call },
+      context: { agent, call },
     });
     res.status(200).type("text/xml").end(twiml);
   } catch (error) {
@@ -183,7 +187,11 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
       call: { ...context.call, conversationRelaySessionId: ev.sessionId },
     });
 
-    const greeting = params.welcomeGreeting;
+    const config = JSON.parse(params.agent) as Partial<AgentResolverConfig>;
+    log.debug("onSetup", "config", config);
+    agent.configure(config);
+
+    const greeting = JSON.parse(params.welcomeGreeting);
     if (greeting) {
       store.turns.addBotText({ content: greeting });
       log.info("llm.transcript", `"${greeting}"`);

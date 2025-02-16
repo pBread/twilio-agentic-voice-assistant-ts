@@ -1,11 +1,11 @@
-import { HOSTNAME } from "../../shared/env/server.js";
+import { intergrationServerBaseUrl } from "../../shared/endpoints.js";
 
-const tools = [
+export const toolManifest = [
   {
     type: "request",
     name: "getUserProfile",
     endpoint: {
-      url: `https://${HOSTNAME}/get-user`,
+      url: `${intergrationServerBaseUrl}/get-user`,
       method: "POST",
       contentType: "json",
     },

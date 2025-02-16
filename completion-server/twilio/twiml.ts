@@ -6,7 +6,7 @@ interface MakeConversationRelayTwiML
   extends Omit<ConversationRelayAttributes, "url"> {
   callSid: string;
   context: {};
-  parameters?: { [key: string]: string }; // values are stringified json objects
+  parameters?: object; // values are stringified json objects
 }
 
 export function makeConversationRelayTwiML({
@@ -35,7 +35,7 @@ export function makeConversationRelayTwiML({
   });
 
   Object.entries(parameters).forEach(([name, value]) =>
-    conversationRelay.parameter({ name, value }),
+    conversationRelay.parameter({ name, value: JSON.stringify(value) }),
   );
 
   return response.toString();
