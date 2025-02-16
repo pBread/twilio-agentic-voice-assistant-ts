@@ -65,7 +65,7 @@ router.post("/call-status", async (req, res) => {
 
   log.info(
     "/call-status",
-    `call status updated to ${callStatus}, CallSid ${callSid}`
+    `call status updated to ${callStatus}, CallSid ${callSid}`,
   );
 
   try {
@@ -73,7 +73,7 @@ router.post("/call-status", async (req, res) => {
   } catch (error) {
     log.warn(
       "/call-status",
-      `unable to update call status in Sync, CallSid ${callSid}`
+      `unable to update call status in Sync, CallSid ${callSid}`,
     );
   }
 
@@ -157,7 +157,7 @@ router.post("/outbound/answer", async (req, res) => {
 export const CONVERSATION_RELAY_WS_ROUTE = "/convo-relay/:callSid";
 export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   ws,
-  req
+  req,
 ) => {
   const { callSid } = req.params;
   log.info("/convo-relay", `websocket initializing, CallSid ${callSid}`);
@@ -193,7 +193,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
           },
         },
       ],
-    }
+    },
   );
 
   const consciousLoop = new OpenAIConsciousLoop(store, agent, relay);
@@ -256,7 +256,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
       "\n/** session turns **/\n",
       JSON.stringify(store.turns.list(), null, 2),
       "\n/** session context **/\n",
-      JSON.stringify(store.context, null, 2)
+      JSON.stringify(store.context, null, 2),
     );
   });
 };
@@ -284,7 +284,7 @@ router.post("/call-wrapup", async (req, res) => {
       `/call-wrapup`,
       "Unable to parse handoffData in wrapup webhook. ",
       "Request Body: ",
-      JSON.stringify(req.body)
+      JSON.stringify(req.body),
     );
     res.status(500).send({ status: "failed", error });
     return;
@@ -293,7 +293,7 @@ router.post("/call-wrapup", async (req, res) => {
   if (handoffData.reason === "error") {
     log.info(
       "/call-wrapup",
-      `wrapping up call that failed due to error, callSid: ${callSid}, message: ${handoffData.message}`
+      `wrapping up call that failed due to error, callSid: ${callSid}, message: ${handoffData.message}`,
     );
 
     await endCall(callSid);
@@ -305,7 +305,7 @@ router.post("/call-wrapup", async (req, res) => {
   if (isHandoff) {
     log.info(
       "/call-wrapup",
-      `Live agent handoff starting. CallSid: ${callSid}`
+      `Live agent handoff starting. CallSid: ${callSid}`,
     );
   }
 });

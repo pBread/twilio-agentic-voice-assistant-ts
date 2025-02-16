@@ -21,7 +21,10 @@ export class SessionStore {
   private syncClient: SyncClient;
   private syncQueue: SyncQueueService;
 
-  constructor(public callSid: string, context?: SessionContext) {
+  constructor(
+    public callSid: string,
+    context?: SessionContext,
+  ) {
     this.eventEmitter = new TypedEventEmitter<TurnEvents>();
 
     this.context = context ?? {};
@@ -32,7 +35,7 @@ export class SessionStore {
       callSid,
       this.syncClient,
       () => this.context,
-      (turnId: string) => this.turns.get(turnId)
+      (turnId: string) => this.turns.get(turnId),
     );
 
     // send data to sync when local updates are made

@@ -13,11 +13,11 @@ export function createSyncToken(identity: string) {
     TWILIO_ACCOUNT_SID,
     TWILIO_API_KEY,
     TWILIO_API_SECRET,
-    { identity }
+    { identity },
   );
 
   token.addGrant(
-    new AccessToken.SyncGrant({ serviceSid: TWILIO_SYNC_SVC_SID })
+    new AccessToken.SyncGrant({ serviceSid: TWILIO_SYNC_SVC_SID }),
   );
 
   return token.toJwt();

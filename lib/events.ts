@@ -10,6 +10,6 @@ export class TypedEventEmitter<Events = {}> extends EventEmitter {
 
   on = <K extends keyof Events & (string | symbol)>(
     event: K,
-    listener: Events[K] extends (...args: any[]) => any ? Events[K] : never
+    listener: Events[K] extends (...args: any[]) => any ? Events[K] : never,
   ): this => super.on(event, listener);
 }

@@ -40,7 +40,7 @@ export function makeConversationRelayTwiML({
   });
 
   Object.entries(parameters).forEach(([name, value]) =>
-    conversationRelay.parameter({ name, value })
+    conversationRelay.parameter({ name, value }),
   );
 
   return response.toString();

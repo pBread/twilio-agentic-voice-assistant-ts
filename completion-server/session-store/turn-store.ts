@@ -24,7 +24,7 @@ export class TurnStore {
 
   constructor(
     private callSid: string,
-    private eventEmitter: StoreEventEmitter
+    private eventEmitter: StoreEventEmitter,
   ) {}
 
   /****************************************************
@@ -67,7 +67,7 @@ export class TurnStore {
         type: "dtmf",
         version: 0,
       } as BotDTMFTurn,
-      () => this.eventEmitter.emit("turnUpdated", id)
+      () => this.eventEmitter.emit("turnUpdated", id),
     );
 
     this.turnMap.set(turn.id, turn);
@@ -90,7 +90,7 @@ export class TurnStore {
         type: "text",
         version: 0,
       } as BotTextTurn,
-      () => this.eventEmitter.emit("turnUpdated", id)
+      () => this.eventEmitter.emit("turnUpdated", id),
     );
 
     this.turnMap.set(turn.id, turn);
@@ -112,7 +112,7 @@ export class TurnStore {
         type: "tool",
         version: 0,
       } as BotToolTurn,
-      () => this.eventEmitter.emit("turnUpdated", id)
+      () => this.eventEmitter.emit("turnUpdated", id),
     );
 
     this.turnMap.set(turn.id, turn);
@@ -134,7 +134,7 @@ export class TurnStore {
         type: "dtmf",
         version: 0,
       } as HumanDTMFTurn,
-      () => this.eventEmitter.emit("turnUpdated", id)
+      () => this.eventEmitter.emit("turnUpdated", id),
     );
 
     this.turnMap.set(turn.id, turn);
@@ -156,7 +156,7 @@ export class TurnStore {
         type: "text",
         version: 0,
       } as HumanTextTurn,
-      () => this.eventEmitter.emit("turnUpdated", id)
+      () => this.eventEmitter.emit("turnUpdated", id),
     );
 
     this.turnMap.set(turn.id, turn);
@@ -177,7 +177,7 @@ export class TurnStore {
         role: "system",
         version: 0,
       } as SystemTurn,
-      () => this.eventEmitter.emit("turnUpdated", id)
+      () => this.eventEmitter.emit("turnUpdated", id),
     );
 
     this.turnMap.set(turn.id, turn);
@@ -197,7 +197,7 @@ export class TurnStore {
       (turn) =>
         turn.role === "bot" &&
         turn.type === "text" &&
-        turn.content.includes(interruptedClause)
+        turn.content.includes(interruptedClause),
     ) as BotTextTurn | undefined;
 
     if (!interruptedTurn) return;
@@ -208,7 +208,7 @@ export class TurnStore {
       .filter(
         (turn) =>
           turn.order > interruptedTurn.order && // only delete messages after the interrupted messages
-          turn.role === "bot" // delete bot messages, both text & tools. note: system messages will not be deleted
+          turn.role === "bot", // delete bot messages, both text & tools. note: system messages will not be deleted
       )
       .forEach((turn) => {
         this.delete(turn.id);
@@ -224,7 +224,7 @@ export class TurnStore {
     log.info(
       "store",
       `local state updated to reflect interruption: `,
-      interruptedTurn.content
+      interruptedTurn.content,
     );
   };
 
@@ -233,7 +233,7 @@ export class TurnStore {
       (turn) =>
         turn.role === "bot" &&
         turn.type === "tool" &&
-        (turn as BotToolTurn).tool_calls.some((tool) => tool.id === toolId)
+        (turn as BotToolTurn).tool_calls.some((tool) => tool.id === toolId),
     ) as BotToolTurn | undefined;
 
     if (!toolTurn) return;

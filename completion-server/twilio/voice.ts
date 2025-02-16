@@ -25,7 +25,7 @@ export async function placeCall(params: CallListInstanceCreateOptions) {
  */
 export async function startRecording(
   callSid: string,
-  options: RecordingListInstanceCreateOptions = {}
+  options: RecordingListInstanceCreateOptions = {},
 ) {
   const call = await client
     .calls(callSid)

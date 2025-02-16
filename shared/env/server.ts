@@ -20,7 +20,7 @@ export const HOSTNAME = process.env.HOSTNAME as string;
 if (!HOSTNAME) missingRequired("HOSTNAME");
 else if (!isValidHostname(HOSTNAME)) {
   warn(
-    "Invalid HOSTNAME. Only include the hostname, e.g. domain.com or sub.domain.com, not the other URL elements, e.g. http://"
+    "Invalid HOSTNAME. Only include the hostname, e.g. domain.com or sub.domain.com, not the other URL elements, e.g. http://",
   );
 }
 
@@ -56,7 +56,7 @@ export const PORT = process.env.PORT ?? "3333";
 // Helper function to validate hostname using RFC-1123
 function isValidHostname(hostname: string): boolean {
   return /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/.test(
-    hostname
+    hostname,
   );
 }
 
@@ -65,6 +65,6 @@ if (errors.length) {
   throw Error(
     `Environment validation failed with the following errors:\n${errors
       .map((err, idx) => `\t(${idx + 1}) ${err}`)
-      .join("\n")}`
+      .join("\n")}`,
   );
 }

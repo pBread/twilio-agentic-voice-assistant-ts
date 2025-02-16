@@ -167,7 +167,7 @@ export class StopwatchLogger {
           .join(" ");
 
         this.logStream?.write(
-          `${level.padEnd(7, " ")} ${timeStamp} ${ns} ${formattedMsg}\n`
+          `${level.padEnd(7, " ")} ${timeStamp} ${ns} ${formattedMsg}\n`,
         );
       } catch (error) {}
     }
@@ -177,13 +177,13 @@ export class StopwatchLogger {
     let _msgs = msgs.flatMap((msg) =>
       (typeof msg === "object" && msg !== null) || Array.isArray(msg)
         ? [Levels.CLEAR, msg, color]
-        : String(msg)
+        : String(msg),
     );
 
     console.log(
       `${color}${Levels.INVERT}${timeStamp} ${ns}${Levels.CLEAR}${color} `,
       ..._msgs,
-      Levels.CLEAR
+      Levels.CLEAR,
     );
   };
 
@@ -222,7 +222,7 @@ export const createLogStreamer = (fileName: string) => {
       const line =
         messages
           .map((msg) =>
-            typeof msg === "object" ? JSON.stringify(msg) : String(msg)
+            typeof msg === "object" ? JSON.stringify(msg) : String(msg),
           )
           .join(" ") + "\n";
 

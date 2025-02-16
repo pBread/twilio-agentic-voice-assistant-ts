@@ -39,7 +39,7 @@ export class OpenAIConsciousLoop
   constructor(
     public store: SessionStore,
     public agent: IAgentRuntime,
-    public relay: ConversationRelayAdapter
+    public relay: ConversationRelayAdapter,
   ) {
     this.eventEmitter = new TypedEventEmitter<ConsciousLoopEvents>();
     this.logStream = createLogStreamer("chunks"); // todo: remove
@@ -53,7 +53,7 @@ export class OpenAIConsciousLoop
     if (this.stream) {
       log.warn(
         "llm",
-        "Starting a completion while one is already underway. Previous completion will be aborted."
+        "Starting a completion while one is already underway. Previous completion will be aborted.",
       );
       this.abort(); // judgement call: should previous completion be aborted or should the new one be cancelled?
     }
@@ -193,7 +193,7 @@ export class OpenAIConsciousLoop
             tool,
             data: await this.agent.executeTool(
               tool.function.name,
-              tool.function.arguments
+              tool.function.arguments,
             ),
           };
 
@@ -208,7 +208,7 @@ export class OpenAIConsciousLoop
             } as ToolResponse,
           };
         }
-      })
+      }),
     );
 
     for (const result of results) {
@@ -289,7 +289,7 @@ export class OpenAIConsciousLoop
    * Converts the store's turn schema to the OpenAI parameter schema required by their completion API
    */
   translateStoreTurnToLLMParam = (
-    turn: TurnRecord
+    turn: TurnRecord,
   ): ChatCompletionMessageParam | ChatCompletionMessageParam[] | null => {
     if (turn.role === "bot" && turn.type === "dtmf")
       return { role: "assistant", content: turn.content };
@@ -318,7 +318,7 @@ export class OpenAIConsciousLoop
           log.warn(
             "llm",
             "A Tool Call has null result, which should never happen. This turn will be filtered",
-            JSON.stringify({ turn, tool, allTurns: this.store.turns.list() })
+            JSON.stringify({ turn, tool, allTurns: this.store.turns.list() }),
           );
           return null;
         }
@@ -330,7 +330,7 @@ export class OpenAIConsciousLoop
           log.warn(
             "llm",
             "Error parsing tool result",
-            JSON.stringify({ turn, tool, allTurns: this.store.turns.list() })
+            JSON.stringify({ turn, tool, allTurns: this.store.turns.list() }),
           );
           content = `{"status": "error", "error": "unknown" }`;
         }
@@ -344,7 +344,7 @@ export class OpenAIConsciousLoop
     log.warn(
       "llm",
       "StoreTurn not recognized by LLM translator.",
-      JSON.stringify({ turn, allTurns: this.store.turns.list() })
+      JSON.stringify({ turn, allTurns: this.store.turns.list() }),
     );
 
     return null;

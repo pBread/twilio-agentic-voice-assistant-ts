@@ -13,7 +13,7 @@ export interface IConsciousLoop<TConfig, TToolManifest, TTurns> {
 
   on<K extends keyof ConsciousLoopEvents>(
     event: K,
-    listener: ConsciousLoopEvents[K]
+    listener: ConsciousLoopEvents[K],
   ): void;
 
   store: SessionStore;
@@ -32,11 +32,11 @@ export interface ConsciousLoopEvents {
   "tool.success": (
     turn: BotToolTurn,
     params: StoreToolCall,
-    result: any
+    result: any,
   ) => void;
   "tool.error": (
     turn: BotToolTurn,
     param: StoreToolCall,
-    error: any
+    error: any,
   ) => boolean;
 }

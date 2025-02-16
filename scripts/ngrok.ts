@@ -35,7 +35,7 @@ async function execNgrok(args: string[] = []): Promise<number> {
     console.error(
       `Ngrok unable to connect using HOSTNAME ${HOSTNAME}. These commands failed:` +
         `\n\t ngrok ${[...baseArgs, "--hostname=" + HOSTNAME].join(" ")}` +
-        `\n\t ngrok ${[...baseArgs, "--url=" + HOSTNAME].join(" ")}`
+        `\n\t ngrok ${[...baseArgs, "--url=" + HOSTNAME].join(" ")}`,
     );
   }
 

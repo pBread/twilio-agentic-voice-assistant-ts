@@ -30,11 +30,11 @@ const main = async () => {
   const maps = await syncMapApi.list();
 
   const mapsToDelete = maps.filter(
-    (map) => isContextMapName(map.uniqueName) || isTurnMapName(map.uniqueName)
+    (map) => isContextMapName(map.uniqueName) || isTurnMapName(map.uniqueName),
   );
 
   console.log(
-    `found ${maps.length} total sync maps, identified ${mapsToDelete.length} for deletion`
+    `found ${maps.length} total sync maps, identified ${mapsToDelete.length} for deletion`,
   );
 
   let deleted = 0;

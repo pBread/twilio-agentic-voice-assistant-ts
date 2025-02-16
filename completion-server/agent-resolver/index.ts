@@ -14,7 +14,7 @@ export class AgentResolver implements IAgentResolver {
     protected readonly relay: ConversationRelayAdapter,
     protected readonly store: SessionStore,
     protected readonly config: LLMConfig,
-    public params: AgentResolverParams
+    public params: AgentResolverParams,
   ) {
     this.toolMap = new Map(params.tools.map((tool) => [tool.name, tool]));
   }
@@ -37,25 +37,25 @@ export class AgentResolver implements IAgentResolver {
 
   executeTool = async (
     toolName: string,
-    args: string
+    args: string,
   ): Promise<ToolResponse> => {
     const tool = this.toolMap.get(toolName);
     if (!tool) {
       log.warn(
         "agent",
-        `LLM attempted to execute a tool (${toolName}) that does not exist.`
+        `LLM attempted to execute a tool (${toolName}) that does not exist.`,
       );
       return { status: "error", error: `Tool ${toolName} does not exist.` };
     }
 
     // sometimes the bot will try to execute a tool it previously had executed even if the tool is no longer in the tool manifest.
     const isToolAvailable = this.getToolManifest().some(
-      (tool) => toolName === tool.name
+      (tool) => toolName === tool.name,
     );
     if (!isToolAvailable) {
       log.warn(
         "agent",
-        `LLM attempted to execute a tool (${toolName}) that it is not authorized to use.`
+        `LLM attempted to execute a tool (${toolName}) that it is not authorized to use.`,
       );
       return {
         status: "error",
@@ -74,7 +74,7 @@ export class AgentResolver implements IAgentResolver {
 
 async function executeRequestTool(
   tool: RequestTool,
-  args?: string
+  args?: string,
 ): Promise<ToolResponse> {
   return fetch(tool.endpoint.url, {
     method: tool.endpoint.method,
@@ -85,7 +85,7 @@ async function executeRequestTool(
         ({
           status: "success",
           data: await res.json(),
-        } as ToolResponse)
+        }) as ToolResponse,
     )
     .catch((error) => ({ status: "error", error }));
 }

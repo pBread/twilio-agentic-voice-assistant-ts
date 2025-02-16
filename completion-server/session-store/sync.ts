@@ -61,18 +61,21 @@ export async function setupSyncSession(callSid: string) {
     sync.map(makeTurnMapName(callSid)),
   ]);
 
-  const timeout = setTimeout(() => {
-    // delete unaccessed sync clients after 5 minutes to avoid memory leaks
-    const entry = tempSyncClientCache.get(callSid);
-    const sync = entry?.sync;
-    if (!sync) return;
+  const timeout = setTimeout(
+    () => {
+      // delete unaccessed sync clients after 5 minutes to avoid memory leaks
+      const entry = tempSyncClientCache.get(callSid);
+      const sync = entry?.sync;
+      if (!sync) return;
 
-    sync.removeAllListeners();
-    sync.shutdown();
+      sync.removeAllListeners();
+      sync.shutdown();
 
-    tempSyncClientCache.delete(callSid);
-    log.warn("sync-client", `cleaned up unused sync client for ${callSid}`);
-  }, 5 * 60 * 1000);
+      tempSyncClientCache.delete(callSid);
+      log.warn("sync-client", `cleaned up unused sync client for ${callSid}`);
+    },
+    5 * 60 * 1000,
+  );
 
   tempSyncClientCache.set(callSid, { sync, timeout });
 
@@ -105,7 +108,7 @@ async function createSyncClient(callSid: string): Promise<SyncClient> {
       log.error(
         "sync-client",
         `sync client connection error ${callSid}`,
-        error
+        error,
       );
       if (!isResolved) {
         reject(error); // Reject with the error instead of the sync client
@@ -137,7 +140,7 @@ async function createSyncClient(callSid: string): Promise<SyncClient> {
           const error = new Error(`Sync client connection ${connectionState}`);
           log.error(
             "sync",
-            `sync client connection ${connectionState}, ${callSid}`
+            `sync client connection ${connectionState}, ${callSid}`,
           );
           if (!isResolved) {
             reject(error); // Reject with an error instead of the sync client
@@ -164,14 +167,14 @@ export class SyncQueueService {
     private callSid: string,
     private sync: SyncClient,
     private getContext: () => SessionContext,
-    private getTurn: (turnId: string) => TurnRecord | undefined
+    private getTurn: (turnId: string) => TurnRecord | undefined,
   ) {
     this.ctxMapPromise = this.sync.map(makeContextMapName(callSid));
     this.turnMapPromise = this.sync.map(makeTurnMapName(callSid));
   }
 
   updateContext = async <K extends keyof SessionContext>(
-    key: K
+    key: K,
   ): Promise<void> => {
     const queueKey = `${this.callSid}:context:${key}`;
     const queue = this.getQueue(queueKey);
@@ -188,7 +191,7 @@ export class SyncQueueService {
           log.warn(
             "sync-queue",
             `context item ${key} is not an object and could not be sent to sync. value: `,
-            value
+            value,
           );
         }
 
@@ -201,7 +204,7 @@ export class SyncQueueService {
       log.error(
         "sync-queue",
         `Failed to queue context update for ${queueKey}:`,
-        error
+        error,
       );
     }
 
@@ -228,7 +231,7 @@ export class SyncQueueService {
       log.error(
         "sync-queue",
         `Failed to queue turn update for ${queueKey}:`,
-        error
+        error,
       );
     }
 
@@ -245,16 +248,16 @@ export class SyncQueueService {
           const turnMap = await this.turnMapPromise;
           await turnMap.set(
             turn.id,
-            turn as unknown as Record<string, unknown>
+            turn as unknown as Record<string, unknown>,
           );
         },
-        { priority: 1 } // Higher priority for new turns
+        { priority: 1 }, // Higher priority for new turns
       );
     } catch (error) {
       log.error(
         "sync-queue",
         `Failed to queue turn addition for ${queueKey}:`,
-        error
+        error,
       );
     }
 
@@ -274,7 +277,7 @@ export class SyncQueueService {
       log.error(
         "sync-queue",
         `Failed to queue turn deletion for ${queueKey}:`,
-        error
+        error,
       );
     }
 
@@ -331,7 +334,7 @@ export async function updateCallStatus(
     | "completed"
     | "busy"
     | "failed"
-    | "no-answer"
+    | "no-answer",
 ) {
   const client = twilio(TWILIO_API_KEY, TWILIO_API_SECRET, { accountSid });
 

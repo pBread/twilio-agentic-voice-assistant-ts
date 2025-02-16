@@ -43,18 +43,18 @@
 
 export function createVersionedObject<T extends VersionedObject>(
   baseObject: T,
-  emitUpdate: () => void
+  emitUpdate: () => void,
 ): T {
   const clonedObject = JSON.parse(JSON.stringify(baseObject));
   return new Proxy(
     clonedObject,
-    createVersionedHandler<T>(clonedObject, emitUpdate)
+    createVersionedHandler<T>(clonedObject, emitUpdate),
   );
 }
 
 function createVersionedHandler<T extends object>(
   parentObject: VersionedObject,
-  emitUpdate: () => void
+  emitUpdate: () => void,
 ): ProxyHandler<T> {
   return {
     get(target: any, prop: string | symbol) {
@@ -66,7 +66,7 @@ function createVersionedHandler<T extends object>(
           target,
           prop,
           parentObject,
-          emitUpdate
+          emitUpdate,
         );
         if (arrayMethodHandler) return arrayMethodHandler;
       }
@@ -75,7 +75,7 @@ function createVersionedHandler<T extends object>(
       if (typeof value === "object" && value !== null) {
         return new Proxy(
           value,
-          createVersionedHandler(parentObject, emitUpdate)
+          createVersionedHandler(parentObject, emitUpdate),
         );
       }
 
@@ -98,7 +98,7 @@ function createVersionedHandler<T extends object>(
 
         target[prop] = new Proxy(
           target[prop],
-          createVersionedHandler(parentObject, emitUpdate)
+          createVersionedHandler(parentObject, emitUpdate),
         );
       } else target[prop] = value;
 
@@ -122,7 +122,7 @@ function createArrayMethodHandler(
   array: any[],
   prop: string | symbol,
   parentObject: VersionedObject,
-  emitUpdate: () => void
+  emitUpdate: () => void,
 ) {
   const modifyingMethods = {
     push: (...items: any[]) => {
