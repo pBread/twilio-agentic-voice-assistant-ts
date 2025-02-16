@@ -34,6 +34,11 @@ export function makeConversationRelayTwiML({
     value: JSON.stringify(context),
   });
 
+  conversationRelay.parameter({
+    name: "greeting",
+    value: params.welcomeGreeting,
+  });
+
   Object.entries(parameters).forEach(([name, value]) =>
     conversationRelay.parameter({ name, value })
   );

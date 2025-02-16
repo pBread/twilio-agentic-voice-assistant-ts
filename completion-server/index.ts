@@ -45,10 +45,11 @@ router.post("/incoming-call", async (req, res) => {
   try {
     await setupSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
 
+    const welcomeGreeting = "Hello there. I am a voice bot";
     const twiml = makeConversationRelayTwiML({
       callSid: call.callSid,
       context: { call },
-      welcomeGreeting: "Hello there. I am a voice bot",
+      welcomeGreeting,
     });
     res.status(200).type("text/xml").end(twiml);
   } catch (error) {
@@ -201,12 +202,13 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     // handle setup
     const params = ev.customParameters ?? {};
     const context = "context" in params ? JSON.parse(params.context) : {};
-    store.setContext(context);
+    store.setContext({
+      ...context,
+      call: { ...context.call, conversationRelaySessionId: ev.sessionId },
+    });
 
-    const turn = store.turns.addHumanText({ content: "hello", id: "myid" });
-    turn.content += "world";
-    turn.content += "Nope!";
-    store.turns.delete(turn.id);
+    const greeting = params.greeting;
+    if (greeting) store.turns.addHumanText({ content: greeting });
   });
 
   relay.onPrompt((ev) => {

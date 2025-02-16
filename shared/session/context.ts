@@ -5,8 +5,10 @@ export interface SessionContext {
   call?: CallDetails;
 }
 
-export interface CallDetails {
+export type CallDetails = {
   callSid: string;
+  conversationRelaySessionId?: string; // the Conversation Relay session
+
   from: string; // e164
   to: string; // e164
 
@@ -25,4 +27,4 @@ export interface CallDetails {
     | "busy"
     | "failed"
     | "no-answer";
-}
+};
