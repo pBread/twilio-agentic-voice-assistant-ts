@@ -45,8 +45,13 @@ export interface FunctionTool<TParams extends z.ZodObject<any> = any>
   extends BaseTool {
   type: "function";
   schema: TParams;
-  fn: (args: TParams, deps: ToolDependencies) => Promise<any> | any;
+  fn: ToolExecutor<TParams>;
 }
+
+export type ToolExecutor<TParams extends z.ZodObject<any> = any> = (
+  args: TParams,
+  deps: ToolDependencies,
+) => Promise<any> | any;
 
 export interface FunctionToolSpec<TParams extends z.ZodObject<any> = any>
   extends BaseTool {
