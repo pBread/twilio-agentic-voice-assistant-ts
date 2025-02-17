@@ -99,7 +99,7 @@ export class AgentResolver implements IAgentResolver {
       return { status: "error", error };
     }
 
-    // sometimes the bot will try to execute a tool it previously had executed even if the tool is no longer in the tool manifest.
+    // Tools can be removed from the bot's manifest. The bot may believe the tool exists if it previously executed it or if the system instructions reference a tool not in the tool-manifest.
     const isToolAvailable = this.getToolManifest().some(
       (tool) => toolName === tool.name,
     );

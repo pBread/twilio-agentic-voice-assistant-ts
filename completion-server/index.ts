@@ -7,6 +7,7 @@ import { CallDetails } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";
 import { AgentResolverConfig } from "./agent-resolver/types.js";
 import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
+import { makeCallDetail } from "./helpers.js";
 import { SessionStore } from "./session-store/index.js";
 import { setupSyncSession, updateCallStatus } from "./session-store/sync.js";
 import {
@@ -19,7 +20,6 @@ import {
   placeCall,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
-import { makeCallDetail } from "./helpers.js";
 
 const router = Router();
 
@@ -91,11 +91,8 @@ const outboundCallHandler: RequestHandler = async (req, res) => {
   }
 
   try {
-    const call = await placeCall({
-      from,
-      to,
-      url: `https://${HOSTNAME}/outbound/answer`, // The URL is executed when the callee answers and that endpoint (below) returns TwiML. It's possible to simply include TwiML in the call creation request but the websocket route includes the callSid as a param. This could be simplified a bit, but this is fine.
-    });
+    const url = `https://${HOSTNAME}/outbound/answer`; // The URL is executed when the callee answers and that endpoint (below) returns TwiML. It's possible to simply include TwiML in the call creation request but the websocket route includes the callSid as a param. This could be simplified a bit, but this is fine.
+    const call = await placeCall({ from, to, url });
 
     res.status(200).json(call);
   } catch (error) {
@@ -107,6 +104,8 @@ const outboundCallHandler: RequestHandler = async (req, res) => {
 router.get("/outbound", outboundCallHandler);
 router.post("/outbound", outboundCallHandler);
 
+// This endpoint responds with TwiML to initiate the Conversation Relay connection.
+// Note: This is not technically necessary; the TwiML could be included with the call creation request. This was done so the /:callSid could be included in the websocket URL, which makes that part a bit cleaner to read.
 router.post("/outbound/answer", async (req, res) => {
   const body = req.body as TwilioCallWebhookPayload;
   const call: CallDetails = makeCallDetail(body);
@@ -152,15 +151,19 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
 
   const consciousLoop = new OpenAIConsciousLoop(store, agent, relay);
 
+  // handle setup
   relay.onSetup((ev) => {
-    // handle setup
     const params = ev.customParameters ?? {};
+
+    // context is fetched in the API routes that generate the the ConversationRelay TwiML and then included as a <Parameter/>. This ensures that any data fetching, such as the user's profile, is completed before the websocket is initialized and the AI agent is engaged.
+    // https://www.twilio.com/docs/voice/twiml/connect/conversationrelay#parameter-element
     const context = "context" in params ? JSON.parse(params.context) : {};
     store.setContext({
       ...context,
       call: { ...context.call, conversationRelaySessionId: ev.sessionId },
     });
 
+    //
     const config = JSON.parse(params.agent) as Partial<AgentResolverConfig>;
     agent.configure(config);
 
