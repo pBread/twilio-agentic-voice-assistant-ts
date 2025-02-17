@@ -1,7 +1,7 @@
 import { intergrationServerBaseUrl } from "../../shared/endpoints.js";
-import type { ToolDefinition } from "../tools.js";
+import type { ToolSpec } from "../tools.js";
 
-export const toolManifest: ToolDefinition[] = [
+export const toolManifest: ToolSpec[] = [
   {
     type: "request",
     name: "getUserProfile",

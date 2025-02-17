@@ -1,5 +1,5 @@
 import result from "lodash.result";
-import type { RequestTool, ToolDefinition } from "../../agents/tools.js";
+import type { RequestToolSpec, ToolSpec } from "../../agents/tools.js";
 import log, { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
 import type { SessionContext } from "../../shared/session/context.js";
 import type { SessionStore } from "../session-store/index.js";
@@ -16,7 +16,7 @@ export class AgentResolver implements IAgentResolver {
 
   public llmConfig?: LLMConfig; // must be set before the first method is called
   public instructionsTemplate?: string; // must be set before the first method is called
-  private toolMap: Map<string, ToolDefinition>; // tool manifest is stored in a map to avoid accidental conflicts
+  private toolMap: Map<string, ToolSpec>; // tool manifest is stored in a map to avoid accidental conflicts
 
   constructor(
     private relay: ConversationRelayAdapter,
@@ -71,7 +71,7 @@ export class AgentResolver implements IAgentResolver {
   };
 
   // tools
-  getToolManifest = (): ToolDefinition<any>[] => {
+  getToolManifest = (): ToolSpec<any>[] => {
     this.assertReady();
     return [...this.toolMap.values()];
   };
@@ -81,7 +81,7 @@ export class AgentResolver implements IAgentResolver {
     return this.toolMap.delete(toolName);
   };
 
-  setTool = (tool: ToolDefinition) => {
+  setTool = (tool: ToolSpec) => {
     if (this.toolMap.has(tool.name))
       this.log.info("resolver", `overriding tool ${tool.name}`);
 
@@ -109,7 +109,8 @@ export class AgentResolver implements IAgentResolver {
       return { status: "error", error };
     }
 
-    if (tool.type === "request") return await executeRequestTool(tool, args);
+    if (tool.type === "request")
+      return await executeRequestToolSpec(tool, args);
 
     return { status: "error", error: "unknown" };
   };
@@ -135,8 +136,8 @@ export class AgentResolver implements IAgentResolver {
 
 // This is a generic tool that allows the bot to execute a
 // todo: make this interchangable
-async function executeRequestTool(
-  tool: RequestTool,
+async function executeRequestToolSpec(
+  tool: RequestToolSpec,
   args?: string,
 ): Promise<ToolResponse> {
   return fetch(tool.endpoint.url, {

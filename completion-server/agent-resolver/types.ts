@@ -1,4 +1,4 @@
-import type { ToolDefinition } from "../../agents/tools.js";
+import type { ToolSpec } from "../../agents/tools.js";
 
 /**
  * Interface defining the core functionality of an Agent Runtime
@@ -8,7 +8,7 @@ import type { ToolDefinition } from "../../agents/tools.js";
 export interface IAgentResolver {
   getInstructions(): string;
   getLLMConfig(): LLMConfig;
-  getToolManifest(): ToolDefinition<any>[];
+  getToolManifest(): ToolSpec<any>[];
 
   executeTool(toolName: string, args: any): Promise<ToolResponse>;
 }
@@ -20,7 +20,7 @@ export type ToolResponse =
 export interface AgentResolverConfig {
   llmConfig: LLMConfig;
   instructionsTemplate: string;
-  toolManifest: ToolDefinition<any>[];
+  toolManifest: ToolSpec<any>[];
 }
 
 export interface LLMConfig {
