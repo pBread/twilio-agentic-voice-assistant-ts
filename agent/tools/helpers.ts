@@ -9,6 +9,7 @@ export function checkErrors(params: any, schema: z.ZodObject<any>) {
     if (error instanceof z.ZodError) {
       return error.errors;
     }
+    return error;
   }
 }
 
