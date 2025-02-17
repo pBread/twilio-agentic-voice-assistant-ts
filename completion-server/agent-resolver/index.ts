@@ -13,21 +13,21 @@ export class AgentResolver implements IAgentResolver {
   private log: StopwatchLogger;
 
   // allows the app to check if the resolver configurations have been set properly
-  private agentReadyResolver!: (value: true) => void;
-  public agentReadyPromise: Promise<true>;
-  public agentReady = false;
+  private readyResolver!: (value: true) => void;
+  public readyPromise: Promise<true>;
+  public ready = false;
 
   public llmConfig?: LLMConfig; // must be set before the first method is called
   public instructionsTemplate?: string; // must be set before the first method is called
-  toolMap: Map<string, ToolDefinition>; // tool manifest is stored in a map to avoid accidental conflicts
+  private toolMap: Map<string, ToolDefinition>; // tool manifest is stored in a map to avoid accidental conflicts
 
   constructor(
     protected readonly relay: ConversationRelayAdapter,
     protected readonly store: SessionStore,
     config?: Partial<AgentResolverConfig>,
   ) {
-    this.agentReadyPromise = new Promise<true>((resolve) => {
-      this.agentReadyResolver = resolve;
+    this.readyPromise = new Promise<true>((resolve) => {
+      this.readyResolver = resolve;
     });
 
     this.log = getMakeLogger(store.callSid);
@@ -144,10 +144,10 @@ export class AgentResolver implements IAgentResolver {
       throw new Error(msg);
     }
 
-    if (!this.agentReady) return;
+    if (!this.ready) return;
 
-    this.agentReady = true;
-    this.agentReadyResolver(true);
+    this.ready = true;
+    this.readyResolver(true);
   };
 }
 
