@@ -1,5 +1,7 @@
+import result from "lodash.result";
 import type { RequestTool, ToolDefinition } from "../../agents/tools.js";
-import { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
+import log, { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
+import type { SessionContext } from "../../shared/session/context.js";
 import type { SessionStore } from "../session-store/index.js";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
 import type {
@@ -22,8 +24,8 @@ export class AgentResolver implements IAgentResolver {
   private toolMap: Map<string, ToolDefinition>; // tool manifest is stored in a map to avoid accidental conflicts
 
   constructor(
-    protected readonly relay: ConversationRelayAdapter,
-    protected readonly store: SessionStore,
+    private relay: ConversationRelayAdapter,
+    private store: SessionStore,
     config?: Partial<AgentResolverConfig>,
   ) {
     this.readyPromise = new Promise<true>((resolve) => {
@@ -63,8 +65,12 @@ export class AgentResolver implements IAgentResolver {
   // instructions
   getInstructions = (): string => {
     this.assertReady();
-
-    return this.instructionTemplate;
+    const instructions = injectContext(
+      this.instructionsTemplate,
+      this.store.context,
+    );
+    log.debug("resolver", "instructions:\n", instructions);
+    return instructions;
   };
 
   // config
@@ -97,11 +103,9 @@ export class AgentResolver implements IAgentResolver {
   ): Promise<ToolResponse> => {
     const tool = this.toolMap.get(toolName);
     if (!tool) {
-      this.log.warn(
-        "agent",
-        `LLM attempted to execute a tool (${toolName}) that does not exist.`,
-      );
-      return { status: "error", error: `Tool ${toolName} does not exist.` };
+      const error = `Attempted to execute a tool (${toolName}) that does not exist.`;
+      this.log.warn("agent", error);
+      return { status: "error", error };
     }
 
     // sometimes the bot will try to execute a tool it previously had executed even if the tool is no longer in the tool manifest.
@@ -109,20 +113,12 @@ export class AgentResolver implements IAgentResolver {
       (tool) => toolName === tool.name,
     );
     if (!isToolAvailable) {
-      this.log.warn(
-        "agent",
-        `LLM attempted to execute a tool (${toolName}) that it is not authorized to use.`,
-      );
-      return {
-        status: "error",
-        error: `Tool ${toolName} exists, but it has not been authorized to be executed.`,
-      };
+      const error = `Attempted to execute a tool (${toolName}) that is not authorized.`;
+      this.log.warn("agent", error);
+      return { status: "error", error };
     }
 
-    if (tool.type === "request") {
-      const result = await executeRequestTool(tool, args);
-      return result;
-    }
+    if (tool.type === "request") return await executeRequestTool(tool, args);
 
     return { status: "error", error: "unknown" };
   };
@@ -131,7 +127,7 @@ export class AgentResolver implements IAgentResolver {
    Misc Utilities
   ****************************************************/
   private assertReady: () => asserts this is this & {
-    instructionTemplate: string;
+    instructionsTemplate: string;
     llmConfig: LLMConfig;
   } = () => {
     if (!this.instructionsTemplate || !this.llmConfig) {
@@ -168,4 +164,30 @@ async function executeRequestTool(
         }) as ToolResponse,
     )
     .catch((error) => ({ status: "error", error }));
+}
+
+export function injectContext(
+  template: string,
+  context: SessionContext,
+): string {
+  const templateRegex = /\{\{([^}]+)\}\}/g; // regex to match {{path.to.value}} patterns
+
+  return template.replace(templateRegex, (match, path: string) => {
+    const value = result(context, path);
+
+    if (value === null || value === undefined) return "N/A";
+
+    // Stringify objects to avoid [object Object]
+    if (typeof value === "object") {
+      try {
+        return JSON.stringify(value, null, 2);
+      } catch (e) {
+        const msg = "Error injecting context into template";
+        log.error("resolver", msg, "value: ", value);
+        throw Error(msg);
+      }
+    }
+
+    return String(value);
+  });
 }

@@ -188,7 +188,6 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     });
 
     const config = JSON.parse(params.agent) as Partial<AgentResolverConfig>;
-    log.debug("onSetup", "config", config);
     agent.configure(config);
 
     const greeting = JSON.parse(params.welcomeGreeting);
