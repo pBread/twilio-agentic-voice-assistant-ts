@@ -6,7 +6,7 @@ export function interpolateTemplate(template: string, obj: object): string {
   return template.replace(templateRegex, (match, path: string) => {
     const value = result(obj, path);
 
-    if (value === null || value === undefined) return "N/A";
+    if (value === null || value === undefined) return "";
 
     // Stringify objects to avoid [object Object]
     if (typeof value === "object") {
