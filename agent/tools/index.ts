@@ -1,41 +1,25 @@
-import log from "../../lib/logger.js";
-import type { ToolExecutor } from "../types.js";
 import * as tools from "./functions.js";
 
-export const fnRegistry = new Map<string, ToolExecutor>();
-
-const mismatchedExports: string[][] = [];
-
-export const toolManifest = Object.entries(tools).map(([exportName, tool]) => {
-  if (exportName !== tool.name) mismatchedExports.push([exportName, tool.name]);
-
-  return tool;
+// check for duplicates
+const duplicateTools = new Map<string, string[]>();
+Object.entries(tools).forEach(([exportName, tool]) => {
+  const existingExports = duplicateTools.get(tool.name) || [];
+  duplicateTools.set(tool.name, [...existingExports, exportName]);
 });
 
-if (mismatchedExports.length) {
-  const mismatches = mismatchedExports
+const duplicates = Array.from(duplicateTools.entries()).filter(
+  ([toolName, exports]) => exports.length > 1,
+);
+
+if (duplicates.length) {
+  const duplicateList = duplicates
     .map(
-      ([exportName, toolName]) =>
-        `\tExport name: "${exportName}", Tool name: "${toolName}"`,
+      ([toolName, exports]) =>
+        `\tTool "${toolName}" is defined multiple times with exports: ${exports.join(", ")}`,
     )
     .join("\n");
 
-  const correction = mismatchedExports
-    .map(
-      ([_, toolName]) =>
-        `export const ${toolName} = makeToolFn({ name: "${toolName}", ... });`,
-    )
-    .join("\n");
-
-  log.warn(
-    `agent/tools`,
-    `\
-Tool name mismatches detected:
-${mismatches}
-
-This could lead to unexpected behavior when the tools are invoked.
-To fix this, ensure the exported function names match their tool's 'name' property:
-
-${correction}`,
+  throw new Error(
+    `Duplicate tool definitions detected!\n\n${duplicateList}\n\nEach tool must have a unique name.`,
   );
 }
