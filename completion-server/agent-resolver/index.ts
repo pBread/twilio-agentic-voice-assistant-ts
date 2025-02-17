@@ -14,11 +14,6 @@ import type {
 export class AgentResolver implements IAgentResolver {
   private log: StopwatchLogger;
 
-  // allows the app to check if the resolver configurations have been set properly
-  private readyResolver!: (value: true) => void;
-  public readyPromise: Promise<true>;
-  public ready = false;
-
   public llmConfig?: LLMConfig; // must be set before the first method is called
   public instructionsTemplate?: string; // must be set before the first method is called
   private toolMap: Map<string, ToolDefinition>; // tool manifest is stored in a map to avoid accidental conflicts
@@ -28,10 +23,6 @@ export class AgentResolver implements IAgentResolver {
     private store: SessionStore,
     config?: Partial<AgentResolverConfig>,
   ) {
-    this.readyPromise = new Promise<true>((resolve) => {
-      this.readyResolver = resolve;
-    });
-
     this.log = getMakeLogger(store.callSid);
     this.toolMap = new Map();
 
@@ -139,11 +130,6 @@ export class AgentResolver implements IAgentResolver {
       });
       throw new Error(msg);
     }
-
-    if (!this.ready) return;
-
-    this.ready = true;
-    this.readyResolver(true);
   };
 }
 
