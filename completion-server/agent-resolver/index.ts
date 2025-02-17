@@ -13,6 +13,7 @@ import type {
   IAgentResolver,
   LLMConfig,
 } from "./types.js";
+import { getToolExecutor } from "../../agent/tools/index.js";
 
 export class AgentResolver implements IAgentResolver {
   private log: StopwatchLogger;
@@ -114,6 +115,21 @@ export class AgentResolver implements IAgentResolver {
 
     if (tool.type === "request")
       return await executeRequestToolSpec(tool, args);
+
+    if (tool.type === "function") {
+      const executor = getToolExecutor(tool.name);
+      if (!executor) {
+        const error = `No executor found for ${tool.name}`;
+        log.error("resolver", error);
+        return { status: "error", error };
+      }
+
+      return await executor(args, {
+        agent: this,
+        relay: this.relay,
+        store: this.store,
+      });
+    }
 
     return { status: "error", error: "unknown" };
   };
