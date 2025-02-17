@@ -50,7 +50,7 @@ router.post("/incoming-call", async (req, res) => {
     const welcomeGreeting = "Hello there. I am a voice bot";
     const twiml = makeConversationRelayTwiML({
       callSid: call.callSid,
-      context: { call },
+      context: { ...agent.context, call },
       welcomeGreeting,
       parameters: { agent, welcomeGreeting },
     });
