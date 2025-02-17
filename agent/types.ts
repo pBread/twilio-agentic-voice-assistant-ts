@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import type { JSONSchema } from "json-schema-to-ts";
 import type { IAgentResolver } from "../completion-server/agent-resolver/types.js";
 import type { SessionStore } from "../completion-server/session-store/index.js";
 import type { ConversationRelayAdapter } from "../completion-server/twilio/conversation-relay-adapter.js";
@@ -37,19 +37,19 @@ type StrictLevel =
 /****************************************************
  Tool Definitions
 ****************************************************/
-export type ToolSpec<T extends z.ZodObject<any> = any> =
+export type ToolSpec<T extends JSONSchema = JSONSchema> =
   | FunctionToolSpec<T>
   | RequestToolSpec<T>;
 
-export interface FunctionToolSpec<TParams extends z.ZodObject<any> = any> {
+export interface FunctionToolSpec<TParams extends JSONSchema = JSONSchema> {
   type: "function";
   name: string;
   description?: string;
   parameters: TParams;
 }
 
-export type ToolExecutor<TParams extends z.ZodObject<any> = any> = (
-  args: TParams,
+export type ToolExecutor<TParams extends JSONSchema = JSONSchema> = (
+  args: any,
   deps: ToolDependencies,
 ) => Promise<any> | any;
 
@@ -57,7 +57,7 @@ export type ToolExecutor<TParams extends z.ZodObject<any> = any> = (
 // todo: extend with different methods & content-types
 // todo: allow parameter mapping, i.e. path, body, query, header
 
-export interface RequestToolSpec<TParams extends z.ZodObject<any> = any> {
+export interface RequestToolSpec<TParams extends JSONSchema = JSONSchema> {
   type: "request";
   name: string;
   description?: string;

@@ -16,14 +16,14 @@
     "dotenv-flow": "^4.1.0",
     "express": "^4.21.2",
     "express-ws": "^5.0.2",
+    "json-schema-to-ts": "^3.1.1",
     "lodash.result": "^4.5.2",
     "openai": "^4.83.0",
     "p-queue": "^8.1.0",
     "twilio": "^5.4.3",
     "twilio-sync": "^3.3.5",
     "uuid": "^11.0.5",
-    "ws": "^8.18.0",
-    "zod": "^3.24.2"
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/deep-diff": "^1.0.5",
@@ -37,7 +37,7 @@
     "@types/ws": "^8.5.14",
     "nodemon": "^3.1.9",
     "prettier": "3.5.1",
-    "tsx": "^4.19.2",
+    "tsx": "^3.12.10",
     "typescript": "^5.7.3"
   }
 }

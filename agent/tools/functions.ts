@@ -1,17 +1,18 @@
-import { z } from "zod";
-import { makeToolFn } from "./helpers.js";
+import type { JSONSchema } from "json-schema-to-ts";
 import log from "../../lib/logger.js";
+import { makeToolFn } from "./helpers.js";
 
 /****************************************************
  Get User Profile
 ****************************************************/
-const zGetProfile = z.object({
-  email: z.string().email().describe("The user's email address").optional(),
-  phone: z
-    .string()
-    .describe("The user's phone number formatted in E164, i.e. +18885550001")
-    .optional(),
-});
+
+const zGetProfile = {
+  type: "object",
+  properties: {
+    email: { type: "string", description: "The user's email address" },
+    phone: { type: "string", description: "The user's phone number" },
+  },
+} as const satisfies JSONSchema;
 
 log.debug("agent/tools", "zGetProfile", JSON.stringify(zGetProfile, null, 2));
 

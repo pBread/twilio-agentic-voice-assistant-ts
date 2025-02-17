@@ -1,12 +1,10 @@
 import OpenAI from "openai";
-import { zodFunction } from "openai/helpers/zod";
 import type {
   ChatCompletionChunk,
   ChatCompletionMessageParam,
   ChatCompletionTool,
 } from "openai/resources/index";
 import type { Stream } from "openai/streaming";
-import { z } from "zod";
 import type { ToolResponse, ToolSpec } from "../../agent/types.js";
 import { TypedEventEmitter } from "../../lib/events.js";
 import log, {
@@ -270,13 +268,7 @@ export class OpenAIConsciousLoop
       type: "function",
       function: {
         name: tool.name,
-        // parameters: zodFunction({
-        //   name: tool.name,
-        //   parameters: tool.parameters,
-        // }),
-        ...(tool.parameters instanceof z.ZodObject
-          ? zodFunction({ name: tool.name, parameters: tool.parameters })
-          : { parameters: tool.parameters }),
+        parameters: tool.parameters,
       },
     }));
   };
