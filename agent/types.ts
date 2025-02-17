@@ -41,6 +41,13 @@ interface BaseTool {
 }
 
 // a tool that will execute a specific function when called
+export interface FunctionTool<TParams extends z.ZodObject<any> = any>
+  extends BaseTool {
+  type: "function";
+  schema: TParams;
+  fn: (args: TParams, deps: ToolDependencies) => Promise<any> | any;
+}
+
 export interface FunctionToolSpec<TParams extends z.ZodObject<any> = any>
   extends BaseTool {
   type: "function";
@@ -62,3 +69,7 @@ export interface ToolDependencies {
   relay: ConversationRelayAdapter;
   store: SessionStore;
 }
+
+export type ToolResponse =
+  | { status: "complete"; result?: object }
+  | { status: "error"; error: string };

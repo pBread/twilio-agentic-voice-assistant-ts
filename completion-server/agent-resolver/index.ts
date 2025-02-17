@@ -1,5 +1,9 @@
 import result from "lodash.result";
-import type { RequestToolSpec, ToolSpec } from "../../agent/types.js";
+import type {
+  RequestToolSpec,
+  ToolResponse,
+  ToolSpec,
+} from "../../agent/types.js";
 import log, { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
 import type { SessionContext } from "../../shared/session/context.js";
 import type { SessionStore } from "../session-store/index.js";
@@ -8,7 +12,6 @@ import type {
   AgentResolverConfig,
   IAgentResolver,
   LLMConfig,
-  ToolResponse,
 } from "./types.js";
 
 export class AgentResolver implements IAgentResolver {
@@ -147,7 +150,7 @@ async function executeRequestToolSpec(
     .then(
       async (res) =>
         ({
-          status: "success",
+          status: "complete",
           data: await res.json(),
         }) as ToolResponse,
     )
