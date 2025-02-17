@@ -1,6 +1,6 @@
 import { RequestHandler, Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
-import * as agents from "../agents/index.js";
+import { getAgentConfig } from "../agent/index.js";
 import { getMakeLogger } from "../lib/logger.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
 import { CallDetails } from "../shared/session/context.js";
@@ -33,7 +33,7 @@ router.post("/incoming-call", async (req, res) => {
   const log = getMakeLogger(call.callSid);
 
   try {
-    const agent = agents["owl_tickets"]; // todo: make this fetchable
+    const agent = await getAgentConfig();
     await setupSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
 
     const welcomeGreeting = "Hello there. I am a voice bot";
@@ -115,7 +115,7 @@ router.post("/outbound/answer", async (req, res) => {
   log.info(`/outbound/answer`, `CallSid ${call.callSid}`);
 
   try {
-    const agent = agents["owl_tickets"]; // todo: make this fetchable
+    const agent = await getAgentConfig();
     await setupSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
 
     const twiml = makeConversationRelayTwiML({

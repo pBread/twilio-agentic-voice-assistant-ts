@@ -1,5 +1,5 @@
 import { intergrationServerBaseUrl } from "../../shared/endpoints.js";
-import type { ToolSpec } from "../tools.js";
+import type { ToolSpec } from "../types.js";
 
 export const toolManifest: ToolSpec[] = [
   {

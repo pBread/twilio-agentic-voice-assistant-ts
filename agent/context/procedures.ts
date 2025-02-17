@@ -1,4 +1,4 @@
-import type { Procedure } from "../../procedures.js";
+import type { Procedure } from "../types.js";
 
 export const procedures: Record<string, Procedure> = [
   {

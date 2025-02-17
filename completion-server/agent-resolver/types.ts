@@ -1,4 +1,4 @@
-import type { ToolSpec } from "../../agents/tools.js";
+import type { ToolSpec } from "../../agent/types.js";
 
 /**
  * Interface defining the core functionality of an Agent Runtime

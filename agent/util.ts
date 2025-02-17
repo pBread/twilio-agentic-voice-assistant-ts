@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
-import log from "../../lib/logger.js";
+import log from "../lib/logger.js";
 
 export function mergeInstructions(directory: string): string {
   try {

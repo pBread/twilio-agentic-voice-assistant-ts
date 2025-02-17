@@ -1,5 +1,5 @@
 import result from "lodash.result";
-import type { RequestToolSpec, ToolSpec } from "../../agents/tools.js";
+import type { RequestToolSpec, ToolSpec } from "../../agent/types.js";
 import log, { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
 import type { SessionContext } from "../../shared/session/context.js";
 import type { SessionStore } from "../session-store/index.js";

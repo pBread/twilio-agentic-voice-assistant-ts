@@ -1,5 +1,5 @@
+import type { Procedure } from "../../agent/types.js";
 import type { UserRecord } from "../db-entities.js";
-import type { Procedure } from "../../agents/procedures.js";
 
 export interface SessionContext {
   call?: CallDetails;
