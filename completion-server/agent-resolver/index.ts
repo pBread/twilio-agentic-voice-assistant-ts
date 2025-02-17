@@ -1,5 +1,7 @@
 import result from "lodash.result";
+import { getToolExecutor } from "../../agent/tools/index.js";
 import type {
+  LLMConfig,
   RequestToolSpec,
   ToolResponse,
   ToolSpec,
@@ -8,12 +10,7 @@ import log, { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
 import type { SessionContext } from "../../shared/session/context.js";
 import type { SessionStore } from "../session-store/index.js";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
-import type {
-  AgentResolverConfig,
-  IAgentResolver,
-  LLMConfig,
-} from "./types.js";
-import { getToolExecutor } from "../../agent/tools/index.js";
+import type { AgentResolverConfig, IAgentResolver } from "./types.js";
 
 export class AgentResolver implements IAgentResolver {
   private log: StopwatchLogger;

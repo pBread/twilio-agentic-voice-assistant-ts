@@ -1,4 +1,4 @@
-import type { ToolResponse, ToolSpec } from "../../agent/types.js";
+import type { LLMConfig, ToolResponse, ToolSpec } from "../../agent/types.js";
 
 /**
  * Interface defining the core functionality of an Agent Runtime
@@ -17,8 +17,4 @@ export interface AgentResolverConfig {
   llmConfig: LLMConfig;
   instructionsTemplate: string;
   toolManifest: ToolSpec<any>[];
-}
-
-export interface LLMConfig {
-  model: string;
 }

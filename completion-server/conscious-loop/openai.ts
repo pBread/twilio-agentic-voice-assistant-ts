@@ -264,10 +264,16 @@ export class OpenAIConsciousLoop
   getToolManifest = (): ChatCompletionTool[] | undefined => {
     const tools = this.agent.getToolManifest();
 
+    log.debug("llm", "getToolManifest", JSON.stringify(tools, null, 2));
+
     return tools.map((tool) => ({
       type: "function",
       function: {
         name: tool.name,
+        // parameters: zodFunction({
+        //   name: tool.name,
+        //   parameters: tool.parameters,
+        // }),
         ...(tool.parameters instanceof z.ZodObject
           ? zodFunction({ name: tool.name, parameters: tool.parameters })
           : { parameters: tool.parameters }),

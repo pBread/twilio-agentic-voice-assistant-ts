@@ -4,6 +4,13 @@ import type { SessionStore } from "../completion-server/session-store/index.js";
 import type { ConversationRelayAdapter } from "../completion-server/twilio/conversation-relay-adapter.js";
 
 /****************************************************
+ LLM Config
+****************************************************/
+export interface LLMConfig {
+  model: string;
+}
+
+/****************************************************
  Procedures
 ****************************************************/
 export interface Procedure {
