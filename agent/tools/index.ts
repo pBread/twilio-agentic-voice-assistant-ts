@@ -1,7 +1,6 @@
-import * as tools from "./functions.js";
-import { intergrationServerBaseUrl } from "../../shared/endpoints.js";
-import type { ToolExecutor, ToolSpec } from "../types.js";
 import log from "../../lib/logger.js";
+import type { ToolExecutor, ToolSpec } from "../types.js";
+import * as tools from "./functions.js";
 
 // check for duplicates
 const duplicateTools = new Map<string, string[]>();
@@ -27,12 +26,15 @@ if (duplicates.length) {
   throw new Error(error);
 }
 
-const fnRegistry = new Map<string, ToolExecutor>();
+const fnRegistry = new Map<string, ToolExecutor<any>>();
 export const getToolExecutor = (toolName: string) => fnRegistry.get(toolName);
 
-export const toolManifest: ToolSpec[] = Object.values(tools).map(
-  ({ fn, ...tool }) => {
+export const toolManifest: ToolSpec[] = Object.values(tools).map((tool) => {
+  if (tool.type === "function") {
+    const { fn, ..._tool } = tool;
     fnRegistry.set(tool.name, fn);
-    return tool;
-  },
-);
+    return _tool;
+  }
+
+  return tool;
+});

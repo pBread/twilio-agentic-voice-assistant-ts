@@ -51,7 +51,7 @@ export interface FunctionToolSpec {
   parameters?: ToolParameters;
 }
 
-export type ToolExecutor<T extends object> = (
+export type ToolExecutor<T extends object = object> = (
   args: T,
   deps: ToolDependencies,
 ) => Promise<any> | any;
