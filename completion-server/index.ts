@@ -19,6 +19,7 @@ import {
   placeCall,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
+import { makeCallDetail } from "./helpers.js";
 
 const router = Router();
 
@@ -27,19 +28,7 @@ const router = Router();
 ****************************************************/
 router.post("/incoming-call", async (req, res) => {
   const body = req.body as TwilioCallWebhookPayload;
-
-  const dt = new Date();
-  const call: CallDetails = {
-    callSid: body.CallSid,
-    direction: "inbound",
-    from: body.From,
-    to: body.To,
-    participantPhone: body.From,
-    startedAt: dt.toISOString(),
-    localStartDate: dt.toLocaleDateString(),
-    localStartTime: dt.toLocaleTimeString(),
-    status: body.CallStatus,
-  };
+  const call: CallDetails = makeCallDetail(body);
 
   const log = getMakeLogger(call.callSid);
 
@@ -94,13 +83,10 @@ const outboundCallHandler: RequestHandler = async (req, res) => {
 
   const log = getMakeLogger();
 
-  if (!to) {
-    res.status(400).send({ status: "failed", error: "No to number defined" });
-    return;
-  }
-
-  if (!from) {
-    res.status(400).send({ status: "failed", error: "No from number defined" });
+  if (!to || !from) {
+    const error = `Cannot place outbound call. Missing to (${to}) or from (${from})`;
+    log.error("outbound", error);
+    res.status(400).send({ status: "failed", error });
     return;
   }
 
@@ -123,19 +109,7 @@ router.post("/outbound", outboundCallHandler);
 
 router.post("/outbound/answer", async (req, res) => {
   const body = req.body as TwilioCallWebhookPayload;
-
-  const dt = new Date();
-  const call: CallDetails = {
-    callSid: body.CallSid,
-    direction: "outbound",
-    from: body.From,
-    to: body.To,
-    participantPhone: body.From,
-    startedAt: dt.toISOString(),
-    localStartDate: dt.toLocaleDateString(),
-    localStartTime: dt.toLocaleTimeString(),
-    status: body.CallStatus,
-  };
+  const call: CallDetails = makeCallDetail(body);
 
   const log = getMakeLogger(call.callSid);
 
