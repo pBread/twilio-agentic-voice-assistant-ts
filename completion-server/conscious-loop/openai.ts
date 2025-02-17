@@ -195,10 +195,18 @@ export class OpenAIConsciousLoop
         try {
           this.emit("tool.starting", botTool, tool);
 
-          const result = await this.agent.executeTool(
-            tool.function.name,
-            tool.function.arguments,
-          );
+          let args: object | undefined;
+          try {
+            args = JSON.parse(tool.function.arguments);
+          } catch (error) {
+            log.warn(
+              "llm",
+              `error parsing tool (${tool.function.name}), args: `,
+              tool.function.arguments,
+            );
+          }
+
+          const result = await this.agent.executeTool(tool.function.name, args);
 
           return { result, tool };
         } catch (error) {
