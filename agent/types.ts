@@ -1,4 +1,3 @@
-import type { JSONSchema } from "json-schema-to-ts";
 import type { IAgentResolver } from "../completion-server/agent-resolver/types.js";
 import type { SessionStore } from "../completion-server/session-store/index.js";
 import type { ConversationRelayAdapter } from "../completion-server/twilio/conversation-relay-adapter.js";
@@ -37,33 +36,35 @@ type StrictLevel =
 /****************************************************
  Tool Definitions
 ****************************************************/
-export type ToolSpec<T extends JSONSchema = JSONSchema> =
-  | FunctionToolSpec<T>
-  | RequestToolSpec<T>;
+// this is what is exported from the tools
+export type ToolDefinition<T extends object = object> =
+  | (FunctionToolSpec & { fn: ToolExecutor<T> })
+  | RequestToolSpec;
 
-export interface FunctionToolSpec<TParams extends JSONSchema = JSONSchema> {
+export type ToolSpec = FunctionToolSpec | RequestToolSpec; // this is what is ingested by the completion server
+export type ToolParameters = ObjectPropertySchema;
+
+export interface FunctionToolSpec {
   type: "function";
-  name: string;
   description?: string;
-  parameters: TParams;
+  name: string;
+  parameters?: ToolParameters;
 }
 
-export type ToolExecutor<TParams extends JSONSchema = JSONSchema> = (
-  args: any,
+export type ToolExecutor<T extends object> = (
+  args: T,
   deps: ToolDependencies,
 ) => Promise<any> | any;
 
 // a tool that will make an API request
 // todo: extend with different methods & content-types
 // todo: allow parameter mapping, i.e. path, body, query, header
-
-export interface RequestToolSpec<TParams extends JSONSchema = JSONSchema> {
+export interface RequestToolSpec {
   type: "request";
   name: string;
   description?: string;
-
   endpoint: { url: string; method: "POST"; contentType: "json" };
-  parameters: TParams;
+  parameters?: ToolParameters;
 }
 
 export interface ToolDependencies {
@@ -75,3 +76,44 @@ export interface ToolDependencies {
 export type ToolResponse =
   | { status: "complete"; result?: object }
   | { status: "error"; error: string };
+
+/****************************************************
+ JSON Schema
+ https://json-schema.org/
+****************************************************/
+type JSONSchemaProperty =
+  | StringPropertySchema
+  | NumberPropertySchema
+  | ArrayPropertySchema
+  | ObjectPropertySchema;
+
+type JSONSchemaType = "string" | "number" | "boolean" | "object" | "array";
+
+interface JSONSchemaPropertyBase {
+  type: JSONSchemaType;
+  description?: string;
+  enum?: any[];
+  default?: any;
+}
+
+interface StringPropertySchema extends JSONSchemaPropertyBase {
+  type: "string";
+  minLength?: number;
+  maxLength?: number;
+}
+
+interface NumberPropertySchema extends JSONSchemaPropertyBase {
+  type: "number";
+}
+
+interface ArrayPropertySchema extends JSONSchemaPropertyBase {
+  type: "array";
+  items: JSONSchemaProperty;
+}
+
+interface ObjectPropertySchema extends JSONSchemaPropertyBase {
+  type: "object";
+  properties: Record<string, JSONSchemaProperty>;
+  required?: string[];
+  additionalProperties?: boolean | JSONSchemaProperty;
+}

@@ -16,7 +16,6 @@
     "dotenv-flow": "^4.1.0",
     "express": "^4.21.2",
     "express-ws": "^5.0.2",
-    "json-schema-to-ts": "^3.1.1",
     "lodash.result": "^4.5.2",
     "openai": "^4.83.0",
     "p-queue": "^8.1.0",

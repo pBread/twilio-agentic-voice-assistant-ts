@@ -268,9 +268,10 @@ export class OpenAIConsciousLoop
       type: "function",
       function: {
         name: tool.name,
+        description: tool.description,
         parameters: tool.parameters,
       },
-    }));
+    })) as ChatCompletionTool[];
   };
 
   translateToolSpec = (tool: ToolSpec) => {

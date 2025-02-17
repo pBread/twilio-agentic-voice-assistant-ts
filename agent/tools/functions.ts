@@ -1,28 +1,28 @@
-import type { JSONSchema } from "json-schema-to-ts";
-import log from "../../lib/logger.js";
-import { makeToolFn } from "./helpers.js";
+import type { ToolDefinition, ToolParameters } from "../types.js";
 
 /****************************************************
  Get User Profile
 ****************************************************/
-
-const zGetProfile = {
+const GetProfileParams: ToolParameters = {
   type: "object",
   properties: {
     email: { type: "string", description: "The user's email address" },
-    phone: { type: "string", description: "The user's phone number" },
+    phone: { type: "string", description: "The user's phone" },
   },
-} as const satisfies JSONSchema;
+  required: [],
+};
 
-log.debug("agent/tools", "zGetProfile", JSON.stringify(zGetProfile, null, 2));
+interface GetProfile {
+  email?: string;
+  phone?: string;
+}
 
-type GetProfile = typeof zGetProfile;
-export const getUserByEmailOrPhone = makeToolFn<GetProfile>({
+export const getUserByEmailOrPhone: ToolDefinition<GetProfile> = {
   name: "getUserByEmailOrPhone",
-  description: "Fetch the user's record by email or phone",
-  parameters: zGetProfile,
-  async fn(args, deps) {
+  parameters: GetProfileParams,
+  type: "function",
+  async fn(args: GetProfile, deps) {
     if (Math.random() > 0.5) throw Error("Error Test");
     return { name: "Richard", email: "richard@gmail.com" };
   },
-});
+};

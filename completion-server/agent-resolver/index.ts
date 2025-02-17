@@ -72,7 +72,7 @@ export class AgentResolver implements IAgentResolver {
   };
 
   // tools
-  getToolManifest = (): ToolSpec<any>[] => {
+  getToolManifest = (): ToolSpec[] => {
     this.assertReady();
     return [...this.toolMap.values()];
   };
