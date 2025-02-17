@@ -34,17 +34,11 @@ export type ToolSpec<T extends z.ZodObject<any> = any> =
   | FunctionToolSpec<T>
   | RequestToolSpec<T>;
 
-interface BaseTool {
+export interface FunctionToolSpec<TParams extends z.ZodObject<any> = any> {
+  type: "function";
   name: string;
   description?: string;
-}
-
-// a tool that will execute a specific function when called
-export interface FunctionTool<TParams extends z.ZodObject<any> = any>
-  extends BaseTool {
-  type: "function";
-  schema: TParams;
-  fn: ToolExecutor<TParams>;
+  parameters: TParams;
 }
 
 export type ToolExecutor<TParams extends z.ZodObject<any> = any> = (
@@ -52,20 +46,17 @@ export type ToolExecutor<TParams extends z.ZodObject<any> = any> = (
   deps: ToolDependencies,
 ) => Promise<any> | any;
 
-export interface FunctionToolSpec<TParams extends z.ZodObject<any> = any>
-  extends BaseTool {
-  type: "function";
-  parameters?: TParams;
-}
-
 // a tool that will make an API request
 // todo: extend with different methods & content-types
 // todo: allow parameter mapping, i.e. path, body, query, header
-export interface RequestToolSpec<TParams extends z.ZodObject<any> = any>
-  extends BaseTool {
+
+export interface RequestToolSpec<TParams extends z.ZodObject<any> = any> {
   type: "request";
+  name: string;
+  description?: string;
+
   endpoint: { url: string; method: "POST"; contentType: "json" };
-  parameters?: TParams;
+  parameters: TParams;
 }
 
 export interface ToolDependencies {

@@ -7,7 +7,7 @@ import type {
 } from "openai/resources/index";
 import type { Stream } from "openai/streaming";
 import { z } from "zod";
-import type { ToolResponse } from "../../agent/types.js";
+import type { ToolResponse, ToolSpec } from "../../agent/types.js";
 import { TypedEventEmitter } from "../../lib/events.js";
 import log, {
   createLogStreamer,
@@ -273,6 +273,10 @@ export class OpenAIConsciousLoop
           : { parameters: tool.parameters }),
       },
     }));
+  };
+
+  translateToolSpec = (tool: ToolSpec) => {
+    if (tool.type === "function") return;
   };
 
   // translate this app's turn schema into OpenAI format

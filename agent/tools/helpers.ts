@@ -1,14 +1,17 @@
 import { z } from "zod";
 import log from "../../lib/logger.js";
-import type { FunctionTool, ToolDependencies } from "../types.js";
+import type {
+  FunctionToolSpec,
+  ToolDependencies,
+  ToolExecutor,
+} from "../types.js";
 
-export function checkErrors(params: any, schema: z.ZodObject<any>) {
+export function checkErrors<T>(params: any, schema: z.ZodObject<any>) {
   try {
-    schema.parse(params);
+    const data = schema.parse(params);
+    return data as T;
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return error.errors;
-    }
+    if (error instanceof z.ZodError) return error.errors;
     return error;
   }
 }
@@ -16,16 +19,16 @@ export function checkErrors(params: any, schema: z.ZodObject<any>) {
 export function makeToolFn<T extends z.ZodObject<any>>({
   name,
   description,
-  schema,
+  parameters,
   fn,
 }: {
   name: string;
   description: string;
-  schema: T;
+  parameters: T;
   fn: (args: T, deps: ToolDependencies) => any;
-}): FunctionTool<T> {
+}): FunctionToolSpec<T> & { fn: ToolExecutor<T> } {
   const _fn = async (args: T, deps: ToolDependencies) => {
-    const errors = checkErrors(args, schema);
+    const errors = checkErrors(args, parameters);
     if (errors) return { status: "error", errors };
 
     try {
@@ -41,5 +44,5 @@ export function makeToolFn<T extends z.ZodObject<any>>({
     }
   };
 
-  return { name, type: "function", description, schema, fn: _fn };
+  return { name, type: "function", description, parameters, fn: _fn };
 }
