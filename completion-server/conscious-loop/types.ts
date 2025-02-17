@@ -7,10 +7,6 @@ export interface IConsciousLoop<TConfig, TToolManifest, TTurns> {
   run(): Promise<undefined | Promise<any>>;
   abort(): void;
 
-  getConfig(): TConfig;
-  getToolManifest(): TToolManifest;
-  getTurns(): TTurns;
-
   on<K extends keyof ConsciousLoopEvents>(
     event: K,
     listener: ConsciousLoopEvents[K],

@@ -8,13 +8,15 @@ import type { LLMConfig, ToolResponse, ToolSpec } from "../../agent/types.js";
 export interface IAgentResolver {
   getInstructions(): string;
   getLLMConfig(): LLMConfig;
-  getToolManifest(): ToolSpec[];
+  getTools(): ToolSpec[];
+
+  setTool(name: string, tool: ToolSpec): void;
 
   executeTool(toolName: string, args: any): Promise<ToolResponse>;
 }
 
 export interface AgentResolverConfig {
-  llmConfig: LLMConfig;
-  instructionsTemplate: string;
-  toolManifest: ToolSpec[];
+  llm: LLMConfig;
+  instructions: string;
+  tools: ToolSpec[];
 }

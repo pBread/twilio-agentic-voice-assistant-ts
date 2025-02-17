@@ -75,7 +75,7 @@ export class OpenAIConsciousLoop
         ...this.getConfig(),
         messages,
         stream: true,
-        tools: this.getToolManifest(),
+        tools: this.getTools(),
       });
     } catch (error) {
       this.log.error("llm", "Error attempting completion", error);
@@ -259,23 +259,36 @@ export class OpenAIConsciousLoop
   };
 
   // translate this app's tool schema into OpenAI format
-  getToolManifest = (): ChatCompletionTool[] | undefined => {
-    const tools = this.agent.getToolManifest();
+  getTools = (): ChatCompletionTool[] | undefined => {
+    const tools = this.agent.getTools();
 
-    log.debug("llm", "getToolManifest", JSON.stringify(tools, null, 2));
-
-    return tools.map((tool) => ({
-      type: "function",
-      function: {
-        name: tool.name,
-        description: tool.description,
-        parameters: tool.parameters,
-      },
-    })) as ChatCompletionTool[];
+    return tools.map(this.translateToolSpec).filter((tool) => !!tool);
   };
 
-  translateToolSpec = (tool: ToolSpec) => {
-    if (tool.type === "function") return;
+  translateToolSpec = (tool: ToolSpec): ChatCompletionTool | undefined => {
+    if (tool.type === "function") {
+      return {
+        type: "function",
+        function: {
+          name: tool.name,
+          description: tool.description,
+          parameters: tool.parameters,
+        },
+      } as ChatCompletionTool;
+    }
+
+    if (tool.type === "request") {
+      return {
+        type: "function",
+        function: {
+          name: tool.name,
+          description: tool.description,
+          parameters: tool.parameters,
+        },
+      } as ChatCompletionTool;
+    }
+
+    log.warn("openai", `unable to translate tool`, JSON.stringify(tool));
   };
 
   // translate this app's turn schema into OpenAI format
