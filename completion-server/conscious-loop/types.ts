@@ -29,7 +29,7 @@ export interface ConsciousLoopEvents {
   "text-chunk": (text: string, last: boolean, fullText?: string) => void; // chunk of text the LLM wants to say
 
   "tool.starting": (turn: BotToolTurn, params: StoreToolCall) => void;
-  "tool.success": (
+  "tool.complete": (
     turn: BotToolTurn,
     params: StoreToolCall,
     result: any,

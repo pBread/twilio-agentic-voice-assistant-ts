@@ -221,7 +221,7 @@ export class OpenAIConsciousLoop
       // todo: add abort logic
       this.store.turns.setToolResult(tool.id, result);
       if (result.status === "complete")
-        this.emit("tool.success", botTool, tool, result);
+        this.emit("tool.complete", botTool, tool, result);
       if (result.status === "error")
         this.emit("tool.error", botTool, tool, result);
     }
