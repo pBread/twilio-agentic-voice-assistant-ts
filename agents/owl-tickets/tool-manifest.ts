@@ -1,6 +1,7 @@
 import { intergrationServerBaseUrl } from "../../shared/endpoints.js";
+import { ToolDefinition } from "../tools.js";
 
-export const toolManifest = [
+export const toolManifest: ToolDefinition[] = [
   {
     type: "request",
     name: "getUserProfile",
@@ -11,11 +12,12 @@ export const toolManifest = [
     },
   },
   {
-    type: "function",
-    name: "updateUserProfile",
-    parameters: {
-      type: "object",
-      properties: { userEmail: { type: "string" } },
+    type: "request",
+    name: "getUserOrders",
+    endpoint: {
+      url: `${intergrationServerBaseUrl}/get-user`,
+      method: "POST",
+      contentType: "json",
     },
   },
 ];
