@@ -20,7 +20,7 @@ import { makeContextMapName, makeTurnMapName } from "../../shared/sync/ids.js";
  Sync Client
 ****************************************************/
 // Cache holds sync clients between call initiation, which occurs in a webhook or rest API request, and the websocket initiliazation.
-// note: To prevent memory leaks, the sync client is removed from the cache after it is retrieved the first time.
+// note: To prevent memory leaks, the sync client is removed from the cache after it is retrieved the first time and a timeout is set to remove it if it hasn't been accessed w/in a certain time.
 const tempSyncClientCache = new Map<
   string,
   { sync: SyncClient; timeout: NodeJS.Timeout }
