@@ -133,6 +133,7 @@ export class AgentResolver implements IAgentResolver {
   };
 }
 
+// This is a generic tool that allows the bot to execute a
 // todo: make this interchangable
 async function executeRequestTool(
   tool: RequestTool,
