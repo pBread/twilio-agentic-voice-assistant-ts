@@ -64,7 +64,7 @@ export class AgentResolver implements IAgentResolver {
       this.instructionsTemplate,
       this.store.context,
     );
-    log.debug("resolver", "instructions:\n", instructions);
+
     return instructions;
   };
 
@@ -102,6 +102,8 @@ export class AgentResolver implements IAgentResolver {
       this.log.warn("agent", error);
       return { status: "error", error };
     }
+
+    log.debug("resolver", "executeTool ", toolName, { tool, args });
 
     // Tools can be removed from the bot's manifest. The bot may believe the tool exists if it previously executed it or if the system instructions reference a tool not in the tool-manifest.
     const isToolAvailable = this.getToolManifest().some(

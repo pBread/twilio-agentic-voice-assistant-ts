@@ -22,5 +22,3 @@ export const getUserByEmailOrPhone = makeToolFn<GetProfile>({
     return { name: "Richard", email: "richard@gmail.com" };
   },
 });
-
-export const getUserProfile = { ...getUserByEmailOrPhone };

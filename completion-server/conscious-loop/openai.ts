@@ -7,8 +7,9 @@ import type {
 } from "openai/resources/index";
 import type { Stream } from "openai/streaming";
 import { z } from "zod";
+import type { ToolResponse } from "../../agent/types.js";
 import { TypedEventEmitter } from "../../lib/events.js";
-import {
+import log, {
   createLogStreamer,
   getMakeLogger,
   StopwatchLogger,
@@ -23,7 +24,7 @@ import type {
   StoreToolCall,
   TurnRecord,
 } from "../../shared/session/turns.js";
-import type { IAgentResolver, ToolResponse } from "../agent-resolver/types.js";
+import type { IAgentResolver } from "../agent-resolver/types.js";
 import type { SessionStore } from "../session-store/index.js";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
 import type { ConsciousLoopEvents, IConsciousLoop } from "./types.js";
@@ -124,17 +125,15 @@ export class OpenAIConsciousLoop
         this.emit("text-chunk", content, !!finish_reason, botText.content);
       }
 
-      if (isTextDelta)
-        if (isFirstToolDelta) {
-          // handles the first chunk of the first tool
-          if (!("tool_calls" in delta))
-            throw Error("No tool_calls in 1st delta"); // should be unreachable
-          params = {
-            id: chunk.id,
-            tool_calls: delta.tool_calls as StoreToolCall[],
-          }; // isFirstToolDelta
-          botTool = this.store.turns.addBotTool(params);
-        }
+      // handles the first chunk of the first tool
+      if (isToolDelta && isFirstToolDelta) {
+        if (!("tool_calls" in delta)) throw Error("No tool_calls in 1st delta"); // should be unreachable
+        params = {
+          id: chunk.id,
+          tool_calls: delta.tool_calls as StoreToolCall[],
+        }; // isFirstToolDelta
+        botTool = this.store.turns.addBotTool(params);
+      }
 
       // handles the first chunk of subsequent tools
       if (isToolDelta && !isFirstToolDelta && isNewTool) {
@@ -169,6 +168,7 @@ export class OpenAIConsciousLoop
 
     if (finish_reason === "tool_calls") {
       if (!botTool) throw Error("finished for tool_calls but no BotTool"); // should be unreachable
+
       await this.handleToolExecution(botTool);
       this.stream = undefined;
       return this.doCompletion();
@@ -190,40 +190,32 @@ export class OpenAIConsciousLoop
   };
 
   handleToolExecution = async (botTool: BotToolTurn) => {
-    const results = await Promise.all(
+    const executions = await Promise.all(
       botTool.tool_calls.map(async (tool) => {
         try {
           this.emit("tool.starting", botTool, tool);
-          const result = {
-            tool,
-            data: await this.agent.executeTool(
-              tool.function.name,
-              tool.function.arguments,
-            ),
-          };
 
-          return result;
+          const result = await this.agent.executeTool(
+            tool.function.name,
+            tool.function.arguments,
+          );
+
+          return { result, tool };
         } catch (error) {
           this.log.warn("llm", "Error while executing a tool", error);
-          return {
-            tool,
-            data: {
-              status: "error",
-              error: "unknown error",
-            } as ToolResponse,
-          };
+          const result: ToolResponse = { status: "error", error: "unknown" };
+          return { tool, result };
         }
       }),
     );
 
-    for (const result of results) {
+    for (const { result, tool } of executions) {
       // todo: add abort logic
-      this.store.turns.setToolResult(result.tool.id, result.data);
-      if (result.data.status === "success")
-        this.emit("tool.success", botTool, result.tool, result.data);
-
-      if (result.data.status === "error")
-        this.emit("tool.error", botTool, result.tool, result.data);
+      this.store.turns.setToolResult(tool.id, result);
+      if (result.status === "complete")
+        this.emit("tool.success", botTool, tool, result);
+      if (result.status === "error")
+        this.emit("tool.error", botTool, tool, result);
     }
 
     this.logStream.write("\n");

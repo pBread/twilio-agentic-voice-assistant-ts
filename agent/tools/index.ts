@@ -1,6 +1,7 @@
 import * as tools from "./functions.js";
 import { intergrationServerBaseUrl } from "../../shared/endpoints.js";
 import type { ToolExecutor, ToolSpec } from "../types.js";
+import log from "../../lib/logger.js";
 
 // check for duplicates
 const duplicateTools = new Map<string, string[]>();
@@ -16,14 +17,14 @@ const duplicates = Array.from(duplicateTools.entries()).filter(
 if (duplicates.length) {
   const duplicateList = duplicates
     .map(
-      ([toolName, exports]) =>
-        `\tTool "${toolName}" is defined multiple times with exports: ${exports.join(", ")}`,
+      ([toolName, exports], idx) =>
+        `(${idx + 1}) Tool "${toolName}" is defined multiple times with exports: ${exports.join(", ")}`,
     )
     .join("\n");
 
-  throw new Error(
-    `Duplicate tool definitions detected!\n\n${duplicateList}\n\nEach tool must have a unique name.`,
-  );
+  const error = `Duplicate tool definitions detected:\n${duplicateList}\n\nEach tool must have a unique name. `;
+  log.error("agent/tools", error);
+  throw new Error(error);
 }
 
 const fnRegistry = new Map<string, ToolExecutor>();

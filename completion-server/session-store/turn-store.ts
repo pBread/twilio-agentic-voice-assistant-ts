@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from "uuid";
-import { TypedEventEmitter } from "../../lib/events.js";
 import { getMakeLogger, StopwatchLogger } from "../../lib/logger.js";
 import type {
   BotDTMFTurn,
@@ -16,8 +15,8 @@ import type {
   SystemTurnParams,
   TurnRecord,
 } from "../../shared/session/turns.js";
-import { createVersionedObject } from "./versioning.js";
 import type { StoreEventEmitter } from "./index.js";
+import { createVersionedObject } from "./versioning.js";
 
 export class TurnStore {
   private turnMap: Map<string, TurnRecord> = new Map(); // map order enforces turn ordering, not the order property on the turns
