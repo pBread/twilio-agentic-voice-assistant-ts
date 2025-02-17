@@ -37,7 +37,6 @@ export type ToolSpec<T extends z.ZodObject<any> = any> =
 interface BaseTool {
   name: string;
   description?: string;
-  parameters?: z.ZodObject<any>;
 }
 
 // a tool that will execute a specific function when called

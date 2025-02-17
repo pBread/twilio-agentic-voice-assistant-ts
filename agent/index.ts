@@ -1,7 +1,7 @@
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import * as context from "./context/index.js";
-import { toolManifest } from "./tools/tool-manifest.js";
+import { toolManifest } from "./tools/index.js";
 import { mergeInstructions } from "./util.js";
 
 // the instructions templates are injected with context at runtime by the agent resolver

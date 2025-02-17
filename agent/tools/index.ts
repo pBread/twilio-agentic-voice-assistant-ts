@@ -1,4 +1,6 @@
 import * as tools from "./functions.js";
+import { intergrationServerBaseUrl } from "../../shared/endpoints.js";
+import type { ToolExecutor, ToolSpec } from "../types.js";
 
 // check for duplicates
 const duplicateTools = new Map<string, string[]>();
@@ -23,3 +25,13 @@ if (duplicates.length) {
     `Duplicate tool definitions detected!\n\n${duplicateList}\n\nEach tool must have a unique name.`,
   );
 }
+
+const fnRegistry = new Map<string, ToolExecutor>();
+export const getToolExecutor = (toolName: string) => fnRegistry.get(toolName);
+
+export const toolManifest: ToolSpec[] = Object.values(tools).map(
+  ({ fn, ...tool }) => {
+    fnRegistry.set(tool.name, fn);
+    return tool;
+  },
+);

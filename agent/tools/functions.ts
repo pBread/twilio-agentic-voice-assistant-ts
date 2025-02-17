@@ -19,6 +19,8 @@ export const getUserByEmailOrPhone = makeToolFn<GetProfile>({
   schema: zGetProfile,
   async fn(args, deps) {
     if (Math.random() > 0.5) throw Error("Error Test");
-    return { name: "Richard", email: "" };
+    return { name: "Richard", email: "richard@gmail.com" };
   },
 });
+
+export const getUserProfile = { ...getUserByEmailOrPhone };
