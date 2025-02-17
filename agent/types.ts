@@ -44,11 +44,14 @@ export type ToolDefinition<T extends object = object> =
 export type ToolSpec = FunctionToolSpec | RequestToolSpec; // this is what is ingested by the completion server
 export type ToolParameters = ObjectPropertySchema;
 
-export interface FunctionToolSpec {
-  type: "function";
+interface BaseTool {
   description?: string;
   name: string;
   parameters?: ToolParameters;
+}
+
+export interface FunctionToolSpec extends BaseTool {
+  type: "function";
 }
 
 export type ToolExecutor<T extends object = object> = (
@@ -57,14 +60,9 @@ export type ToolExecutor<T extends object = object> = (
 ) => Promise<any> | any;
 
 // a tool that will make an API request
-// todo: extend with different methods & content-types
-// todo: allow parameter mapping, i.e. path, body, query, header
-export interface RequestToolSpec {
+export interface RequestToolSpec extends BaseTool {
   type: "request";
-  name: string;
-  description?: string;
   endpoint: { url: string; method: "POST"; contentType: "json" };
-  parameters?: ToolParameters;
 }
 
 export interface ToolDependencies {
