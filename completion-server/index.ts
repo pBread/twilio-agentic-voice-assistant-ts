@@ -145,9 +145,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const relay = new ConversationRelayAdapter(ws);
   const store = new SessionStore(callSid);
 
-  const agent = new AgentResolver(relay, store, {
-    llmConfig: { model: "gpt-3.5-turbo" },
-  });
+  const agent = new AgentResolver(relay, store);
 
   const consciousLoop = new OpenAIConsciousLoop(store, agent, relay);
 
@@ -163,7 +161,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
       call: { ...context.call, conversationRelaySessionId: ev.sessionId },
     });
 
-    //
+    // set the agent configuration
     const config = JSON.parse(params.agent) as Partial<AgentResolverConfig>;
     agent.configure(config);
 
