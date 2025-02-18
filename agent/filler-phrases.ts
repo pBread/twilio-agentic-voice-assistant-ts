@@ -12,13 +12,14 @@ const primary = [
 // these are spoken when a request is taking a very long time to complete
 const secondary = [
   "My systems are taking a little while to respond.",
-  "Pardon the delay. This request is taking a little longer than usual.",
+  "This request is taking a little longer than usual.",
   "This is taking a little longer than normal.",
   "Taking a bit longer than expected.",
   "The response is still processing.",
 ].flatMap((phrase0) =>
   // create a cartesian product to increase the variety
   [
+    "Pardon the delay.",
     "One more moment {{user.name}}.",
     "Just another moment.",
     "Thanks for the patience, {{user.name}}",

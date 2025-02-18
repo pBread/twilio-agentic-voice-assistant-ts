@@ -170,6 +170,7 @@ export class AgentResolver implements IAgentResolver {
       this.relay.sendTextToken(sentence, idx + 1 === sentences.length),
     );
     this.store.turns.addBotText({ content: phrase });
+    this.log.info("agent.filler", `"${phrase.trim()}"`);
   };
 
   /****************************************************
