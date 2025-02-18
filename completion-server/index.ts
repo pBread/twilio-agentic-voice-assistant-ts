@@ -1,12 +1,12 @@
-import { RequestHandler, Router } from "express";
-import { WebsocketRequestHandler } from "express-ws";
+import { type RequestHandler, Router } from "express";
+import type { WebsocketRequestHandler } from "express-ws";
 import { getAgentConfig } from "../agent/index.js";
 import { getMakeLogger } from "../lib/logger.js";
 import { prettyXML } from "../lib/xml.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
-import { CallDetails } from "../shared/session/context.js";
+import type { CallDetails } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";
-import { AgentResolverConfig } from "./agent-resolver/types.js";
+import type { AgentResolverConfig } from "./agent-resolver/types.js";
 import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
 import { makeCallDetail } from "./helpers.js";
 import { SessionStore } from "./session-store/index.js";
