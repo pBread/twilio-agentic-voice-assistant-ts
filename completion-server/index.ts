@@ -2,6 +2,7 @@ import { RequestHandler, Router } from "express";
 import { WebsocketRequestHandler } from "express-ws";
 import { getAgentConfig } from "../agent/index.js";
 import { getMakeLogger } from "../lib/logger.js";
+import { prettyXML } from "../lib/xml.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
 import { CallDetails } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";
@@ -20,7 +21,6 @@ import {
   placeCall,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
-import { prettyXML } from "../lib/xml.js";
 
 const router = Router();
 
