@@ -20,6 +20,7 @@ import {
   placeCall,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
+import { prettyXML } from "../lib/xml.js";
 
 const router = Router();
 
@@ -43,6 +44,7 @@ router.post("/incoming-call", async (req, res) => {
       welcomeGreeting,
       parameters: { agent, welcomeGreeting },
     });
+    log.info("/incoming-call", "twiml\n", prettyXML(twiml));
     res.status(200).type("text/xml").end(twiml);
   } catch (error) {
     log.error("/incoming-call", "unknown error", error);
