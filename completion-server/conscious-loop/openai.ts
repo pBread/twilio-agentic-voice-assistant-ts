@@ -4,7 +4,7 @@ import type {
   ChatCompletionMessageParam,
   ChatCompletionTool,
 } from "openai/resources/index";
-import { ChatCompletionCreateParamsStreaming } from "openai/src/resources/index.js";
+import type { ChatCompletionCreateParamsStreaming } from "openai/src/resources/index.js";
 import type { Stream } from "openai/streaming";
 import { v4 as uuidV4 } from "uuid";
 import type { ToolResponse, ToolSpec } from "../../agent/types.js";
@@ -289,9 +289,12 @@ export class OpenAIConsciousLoop
 
   // translate this app's tool schema into OpenAI format
   getTools = (): ChatCompletionTool[] | undefined => {
-    const tools = this.agent.getTools();
+    const tools = this.agent
+      .getTools()
+      .map(this.translateToolSpec)
+      .filter((tool) => !!tool);
 
-    return tools.map(this.translateToolSpec).filter((tool) => !!tool);
+    return tools.length ? tools : undefined;
   };
 
   translateToolSpec = (tool: ToolSpec): ChatCompletionTool | undefined => {

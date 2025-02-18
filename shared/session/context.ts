@@ -4,7 +4,12 @@ import type { UserRecord } from "../db-entities.js";
 export interface SessionContext {
   call?: CallDetails;
   procedures?: Record<string, Procedure>;
+  toolConfig?: Record<string, ToolConfiguration>;
   user?: UserRecord;
+}
+
+export interface ToolConfiguration {
+  restricted?: boolean;
 }
 
 export type CallDetails = {

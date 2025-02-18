@@ -58,7 +58,13 @@ export class AgentResolver implements IAgentResolver {
   ****************************************************/
   getTools = (): ToolSpec[] => {
     this.assertReady();
-    return [...this.toolMap.values()];
+    const toolConfig = this.store.context.toolConfig ?? {};
+
+    return [...this.toolMap.values()].filter((tool) => {
+      if (tool.name in toolConfig) return !toolConfig[tool.name].restricted;
+
+      return true;
+    });
   };
 
   setTool = (name: string, tool: ToolSpec) => {
