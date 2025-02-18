@@ -4,9 +4,9 @@
 const primary = [
   "One moment, please.",
   "Give me a minute.",
-  // "Just a second, {{context.user.name}}.",
-  // "Hold on while I access my systems.",
-  // "Bear with me for a moment.",
+  "Just a second, {{context.user.name}}.",
+  "Hold on while I access my systems.",
+  "Bear with me for a moment.",
 ];
 
 // these are spoken when a request is taking a very long time to complete
