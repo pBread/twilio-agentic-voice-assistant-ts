@@ -63,14 +63,11 @@ export class OpenAIConsciousLoop
       this.abort(); // judgement call: should previous completion be aborted or should the new one be cancelled?
     }
 
-    this.curIds = new Set();
-
     this.emit("run.started");
     await this.doCompletion();
     this.emit("run.finished");
   };
 
-  private curIds = new Set<string | undefined>();
   doCompletion = async (attempt = 0): Promise<undefined | Promise<any>> => {
     const messages = this.getTurns();
 
@@ -91,9 +88,6 @@ export class OpenAIConsciousLoop
     let finish_reason: Finish_Reason | null = null;
 
     for await (const chunk of this.stream) {
-      this.curIds.add(botText?.id);
-      this.curIds.add(botTool?.id);
-
       const choice = chunk.choices[0];
       const delta = choice.delta;
 
@@ -256,11 +250,6 @@ export class OpenAIConsciousLoop
   abort = () => {
     this.stream?.controller.abort();
     this.stream = undefined;
-
-    // remove any store records that were in the process
-    [...this.curIds]
-      .filter((id) => id !== undefined)
-      .forEach((id) => this.store.turns.delete(id));
   };
 
   // translate this app's config schema into OpenAI format
