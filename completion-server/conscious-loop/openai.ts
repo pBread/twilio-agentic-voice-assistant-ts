@@ -6,6 +6,7 @@ import type {
 } from "openai/resources/index";
 import { ChatCompletionCreateParamsStreaming } from "openai/src/resources/index.js";
 import type { Stream } from "openai/streaming";
+import { v4 as uuidV4 } from "uuid";
 import type { ToolResponse, ToolSpec } from "../../agent/types.js";
 import { TypedEventEmitter } from "../../lib/events.js";
 import log, {
@@ -53,7 +54,17 @@ export class OpenAIConsciousLoop
   logStream: ReturnType<typeof createLogStreamer>;
 
   stream?: Stream<ChatCompletionChunk>;
+  private activeCompletionId: string | undefined;
+
   run = async (): Promise<undefined | Promise<any>> => {
+    this.checkStream();
+
+    this.emit("run.started");
+    await this.doCompletion();
+    this.emit("run.finished");
+  };
+
+  private checkStream = () => {
     // There should only be one completion stream open at a time.
     if (this.stream) {
       this.log.warn(
@@ -62,13 +73,11 @@ export class OpenAIConsciousLoop
       );
       this.abort(); // judgement call: should previous completion be aborted or should the new one be cancelled?
     }
-
-    this.emit("run.started");
-    await this.doCompletion();
-    this.emit("run.finished");
   };
 
   doCompletion = async (attempt = 0): Promise<undefined | Promise<any>> => {
+    const completionId = uuidV4();
+    this.activeCompletionId = completionId;
     const messages = this.getTurns();
 
     let args: ChatCompletionCreateParamsStreaming | undefined;
@@ -177,6 +186,8 @@ export class OpenAIConsciousLoop
 
       await this.handleToolExecution(botTool);
       if (botTool.status === "streaming") botTool.status = "complete";
+
+      if (this.activeCompletionId !== completionId) return; // check to make the stream that started this completion is still the same. if it's not, that means there was an interruption or error. a subsequent completion is not warranted
       this.stream = undefined;
       return this.doCompletion();
     }
@@ -263,7 +274,10 @@ export class OpenAIConsciousLoop
     });
 
   abort = () => {
-    this.stream?.controller.abort();
+    if (this.stream && !this.stream?.controller.signal.aborted)
+      this.stream?.controller.abort();
+
+    this.activeCompletionId = undefined;
     this.stream = undefined;
   };
 

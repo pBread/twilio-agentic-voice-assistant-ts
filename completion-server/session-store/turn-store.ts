@@ -253,9 +253,11 @@ export class TurnStore {
 
     for (const tool of interruptedTurn.tool_calls) {
       if (tool.result) continue;
+      // todo: add "aborted to the ToolResponse type"
       this.setToolResult(tool.id, {
         status: "aborted",
-        reason: "User interrupted before the tool resolved.",
+        reason:
+          "The user started speaking while this tool was resolving. In other words, the user interrupted this tool before it was completed.",
       });
     }
 
