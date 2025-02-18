@@ -6,6 +6,7 @@ import { interpolateTemplate } from "../../lib/template.js";
 import type { SessionStore } from "../session-store/index.js";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
 import type { AgentResolverConfig, IAgentResolver } from "./types.js";
+import { chunkIntoSentences } from "../../lib/strings.js";
 
 export class AgentResolver implements IAgentResolver {
   private log: StopwatchLogger;
@@ -27,10 +28,11 @@ export class AgentResolver implements IAgentResolver {
   }
 
   configure = (config: Partial<AgentResolverConfig>) => {
-    const { instructions, fillerPhrases, llm, tools } = config;
+    const { instructions, fillerPhrases, llmConfig, toolManifest } = config;
     this.instructions = instructions ?? this.instructions;
-    this.llm = llm ?? this.llm;
-    if (tools) for (const tool of tools) this.setTool(tool.name, tool);
+    this.llm = llmConfig ?? this.llm;
+    if (toolManifest)
+      for (const tool of toolManifest) this.setTool(tool.name, tool);
     this.fillerPhrases = { ...this.fillerPhrases, ...fillerPhrases };
   };
 
@@ -86,11 +88,11 @@ export class AgentResolver implements IAgentResolver {
       return { status: "error", error };
     }
 
-    const fillerTimer = setTimeout(() => {}, 500); // say filler phrase after 500ms
+    const cancelFillerPhrase = this.makeFillerPhraseTimer(tool, args);
 
     const resultPromise = await this.executeToolHandler(tool, args);
 
-    clearTimeout(fillerTimer);
+    cancelFillerPhrase();
     return resultPromise;
   };
 
@@ -134,7 +136,7 @@ export class AgentResolver implements IAgentResolver {
     return { status: "error", error: "Unknown tool type" };
   };
 
-  private makeFillerPhraseTimer = (tool: ToolSpec, args: object) => {
+  private makeFillerPhraseTimer = (tool: ToolSpec, args: object = {}) => {
     const primary = setTimeout(() => {
       const phrases = tool?.fillers?.length // use the tools filler phrases if they are defined
         ? tool.fillers
@@ -142,11 +144,11 @@ export class AgentResolver implements IAgentResolver {
           ? this.fillerPhrases.primary
           : [];
 
-      this.pickAndSayPhrase(phrases);
+      this.pickAndSayPhrase(phrases, args);
     }, 500);
 
     const secondary = setTimeout(() => {
-      this.pickAndSayPhrase(this.fillerPhrases?.secondary ?? []);
+      this.pickAndSayPhrase(this.fillerPhrases?.secondary ?? [], args);
     }, 4000);
 
     return () => {
@@ -155,10 +157,19 @@ export class AgentResolver implements IAgentResolver {
     };
   };
 
-  private pickAndSayPhrase = (phrases: string[]) => {
+  private pickAndSayPhrase = (phrases: string[], args: object = {}) => {
     const template = phrases[Math.floor(Math.random() * phrases.length)];
     if (!template) return;
-    return interpolateTemplate(template, this.store.context);
+    const phrase = interpolateTemplate(template, {
+      ...this.store.context,
+      args, // inject the args so the filler phrase can reference them
+    });
+
+    const sentences = chunkIntoSentences(phrase); // send in chunks to facilitate interruptions
+    sentences.forEach((sentence, idx) =>
+      this.relay.sendTextToken(sentence, idx + 1 === sentences.length),
+    );
+    this.store.turns.addBotText({ content: phrase });
   };
 
   /****************************************************

@@ -18,6 +18,6 @@ export interface IAgentResolver {
 export interface AgentResolverConfig {
   fillerPhrases: { primary: string[]; seconary: string[] };
   instructions: string;
-  llm: LLMConfig;
-  tools: ToolSpec[];
+  llmConfig: LLMConfig;
+  toolManifest: ToolSpec[];
 }

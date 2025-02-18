@@ -8,13 +8,13 @@ import { mergeInstructions } from "./util.js";
 
 // the instructions templates are injected with context at runtime by the agent resolver
 const __dirname = dirname(fileURLToPath(import.meta.url)); // this directory
-const instructionsTemplate = mergeInstructions(join(__dirname, "instructions"));
+const instructions = mergeInstructions(join(__dirname, "instructions"));
 
 // todo: allow agents to be stored in a database
 export const getAgentConfig = async () => {
   return {
     context,
-    instructionsTemplate,
+    instructions,
     fillerPhrases,
     llmConfig,
     toolManifest,
