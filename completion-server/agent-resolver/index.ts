@@ -197,7 +197,7 @@ export class AgentResolver implements IAgentResolver {
       args, // inject the args so the filler phrase can reference them
     });
 
-    const sentences = chunkIntoSentences(phrase); // send in chunks to facilitate interruptions
+    const sentences = chunkIntoSentences(phrase); // send in chunks to make interruptions more accurate
     sentences.forEach((sentence, idx) =>
       this.relay.sendTextToken(sentence, idx + 1 === sentences.length),
     );
