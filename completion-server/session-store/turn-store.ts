@@ -220,13 +220,39 @@ export class TurnStore {
 
     if (!interruptedTurn) return;
 
+    // delete unspoken dtmf & text turns
     turnsDecending
       .filter(
         (turn) =>
           turn.order > interruptedTurn.order && // only delete turns after the interrupted turn
-          turn.role === "bot", // delete bot turn, both text & tools. note: system messages will not be deleted
+          turn.role === "bot" && // only bot turns, not system, are deleted
+          (turn.type === "dtmf" || turn.type === "text"),
       )
       .forEach((turn) => this.delete(turn.id));
+
+    // update incomplete bot tools
+    turnsDecending
+      .filter(
+        (turn) =>
+          turn.order > interruptedTurn.order && // only delete turns after the interrupted turn
+          turn.role === "bot" &&
+          turn.type === "tool" &&
+          turn.complete === false,
+      )
+      .forEach((turn) => {
+        if (turn.order > interruptedTurn.order) return;
+        if (turn.role !== "bot") return;
+        if (turn.type !== "tool") return;
+        if (turn.complete === true) return;
+
+        for (const tool of turn.tool_calls) {
+          if (tool.result) continue;
+          this.setToolResult(tool.id, {
+            status: "aborted",
+            reason: "User interrupted before the tool resolved.",
+          });
+        }
+      });
 
     // Step 3: Update the interrupted turn to reflect what was actually spoken. Note, sometimes the interruptedClause is very long. The bot may have spoken some or most of it. So, the question is, should the interrupted clause be included or excluded. Here, it is being included but it's a judgement call.
     const curContent = interruptedTurn.content as string;
@@ -263,7 +289,6 @@ export class TurnStore {
     if (!tool) return;
 
     tool.result = result;
-    // this.turnMap.set(toolTurn.id, toolTurn);
     return toolTurn;
   };
 }
