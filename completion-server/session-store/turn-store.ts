@@ -60,6 +60,7 @@ export class TurnStore {
     const turn: BotDTMFTurn = createVersionedObject(
       {
         callSid: this.callSid,
+        complete: params.complete ?? false,
         content: params.content,
         createdAt: new Date().toISOString(),
         id,
@@ -68,7 +69,7 @@ export class TurnStore {
         role: "bot",
         type: "dtmf",
         version: 0,
-      } as BotDTMFTurn,
+      },
       () => this.eventEmitter.emit("turnUpdated", id),
     );
 
@@ -83,6 +84,7 @@ export class TurnStore {
     const turn: BotTextTurn = createVersionedObject(
       {
         callSid: this.callSid,
+        complete: params.complete ?? false,
         content: params.content,
         createdAt: new Date().toISOString(),
         id,
@@ -91,7 +93,7 @@ export class TurnStore {
         role: "bot",
         type: "text",
         version: 0,
-      } as BotTextTurn,
+      },
       () => this.eventEmitter.emit("turnUpdated", id),
     );
 
@@ -106,6 +108,7 @@ export class TurnStore {
     const turn: BotToolTurn = createVersionedObject(
       {
         callSid: this.callSid,
+        complete: params.complete ?? false,
         createdAt: new Date().toISOString(),
         id,
         order: this.nextOrder(),
@@ -113,7 +116,7 @@ export class TurnStore {
         tool_calls: params.tool_calls,
         type: "tool",
         version: 0,
-      } as BotToolTurn,
+      },
       () => this.eventEmitter.emit("turnUpdated", id),
     );
 
@@ -135,7 +138,7 @@ export class TurnStore {
         role: "human",
         type: "dtmf",
         version: 0,
-      } as HumanDTMFTurn,
+      },
       () => this.eventEmitter.emit("turnUpdated", id),
     );
 
@@ -157,7 +160,7 @@ export class TurnStore {
         role: "human",
         type: "text",
         version: 0,
-      } as HumanTextTurn,
+      },
       () => this.eventEmitter.emit("turnUpdated", id),
     );
 
@@ -178,7 +181,7 @@ export class TurnStore {
         order: this.nextOrder(),
         role: "system",
         version: 0,
-      } as SystemTurn,
+      },
       () => this.eventEmitter.emit("turnUpdated", id),
     );
 

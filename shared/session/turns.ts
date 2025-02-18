@@ -30,6 +30,7 @@ export type BotTurnParams =
 // represents DTMF tones from the bot
 export interface BotDTMFTurn extends TurnRecordBase {
   content: string;
+  complete: boolean; // is the completion finished
   interrupted: boolean;
   role: "bot";
   type: "dtmf";
@@ -45,13 +46,11 @@ export type BotDTMFTurnParams = Omit<
   | "role"
   | "type"
   | "version"
-> & {
-  id?: string;
-  interrupted?: boolean;
-};
+> & { complete?: boolean; id?: string; interrupted?: boolean };
 
 // represents a text from LLM that will be spoken
 export interface BotTextTurn extends TurnRecordBase {
+  complete: boolean; // is the completion finished
   content: string;
   interrupted?: boolean;
   role: "bot";
@@ -62,6 +61,7 @@ export type BotTextTurnParams = Omit<
   BotTextTurn,
   | "callSid"
   | "createdAt"
+  | "complete"
   | "interrupted"
   | "id"
   | "order"
@@ -69,6 +69,7 @@ export type BotTextTurnParams = Omit<
   | "type"
   | "version"
 > & {
+  complete?: boolean;
   id?: string;
   interrupted?: boolean;
 };
@@ -76,6 +77,7 @@ export type BotTextTurnParams = Omit<
 // represents the LLM requesting a FN tool be executed
 // note: the results are stored on the toolcall and not a separate item like some LLM APIs, such as OpenAI
 export interface BotToolTurn extends TurnRecordBase {
+  complete: boolean; // is the completion finished
   role: "bot";
   tool_calls: StoreToolCall[];
   type: "tool";
@@ -83,10 +85,15 @@ export interface BotToolTurn extends TurnRecordBase {
 
 export type BotToolTurnParams = Omit<
   BotToolTurn,
-  "callSid" | "createdAt" | "id" | "order" | "role" | "type" | "version"
-> & {
-  id?: string;
-};
+  | "callSid"
+  | "complete"
+  | "createdAt"
+  | "id"
+  | "order"
+  | "role"
+  | "type"
+  | "version"
+> & { complete?: boolean; id?: string };
 
 export interface StoreToolCall {
   function: { name: string; arguments: any };

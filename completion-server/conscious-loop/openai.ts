@@ -161,6 +161,7 @@ export class OpenAIConsciousLoop
     ****************************************************/
     if (finish_reason === "stop") {
       if (!botText) throw Error("finished for 'stop' but no BotText"); // should be unreachable
+      botText.complete = true;
       this.emit("text-chunk", "", true, botText.content);
     }
 
@@ -168,6 +169,7 @@ export class OpenAIConsciousLoop
       if (!botTool) throw Error("finished for tool_calls but no BotTool"); // should be unreachable
 
       await this.handleToolExecution(botTool);
+      botTool.complete = true;
       this.stream = undefined;
       return this.doCompletion();
     }
