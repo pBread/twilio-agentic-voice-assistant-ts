@@ -1,9 +1,10 @@
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import * as context from "./context/index.js";
+import { fillerPhrases } from "./filler-phrases.js";
+import { llmConfig } from "./llm-config.js";
 import { toolManifest } from "./tools/index.js";
 import { mergeInstructions } from "./util.js";
-import { llmConfig } from "./llmConfig.js";
 
 // the instructions templates are injected with context at runtime by the agent resolver
 const __dirname = dirname(fileURLToPath(import.meta.url)); // this directory
@@ -11,5 +12,11 @@ const instructionsTemplate = mergeInstructions(join(__dirname, "instructions"));
 
 // todo: allow agents to be stored in a database
 export const getAgentConfig = async () => {
-  return { context, instructionsTemplate, llmConfig, toolManifest };
+  return {
+    context,
+    instructionsTemplate,
+    fillerPhrases,
+    llmConfig,
+    toolManifest,
+  };
 };

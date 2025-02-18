@@ -12,6 +12,10 @@ export class AgentResolver implements IAgentResolver {
   protected instructions?: string;
   protected llm?: LLMConfig;
   protected toolMap = new Map<string, ToolSpec>();
+  protected fillerPhrases: { primary: string[]; secondary: string[] } = {
+    primary: [],
+    secondary: [],
+  };
 
   constructor(
     private relay: ConversationRelayAdapter,
@@ -23,10 +27,11 @@ export class AgentResolver implements IAgentResolver {
   }
 
   configure = (config: Partial<AgentResolverConfig>) => {
-    const { instructions, llm, tools } = config;
+    const { instructions, fillerPhrases, llm, tools } = config;
     this.instructions = instructions ?? this.instructions;
     this.llm = llm ?? this.llm;
     if (tools) for (const tool of tools) this.setTool(tool.name, tool);
+    this.fillerPhrases = { ...this.fillerPhrases, ...fillerPhrases };
   };
 
   /****************************************************
@@ -59,7 +64,10 @@ export class AgentResolver implements IAgentResolver {
     this.toolMap.set(name, tool);
   };
 
-  executeTool = async (toolName: string, args: any): Promise<ToolResponse> => {
+  executeTool = async (
+    toolName: string,
+    args?: object,
+  ): Promise<ToolResponse> => {
     const tool = this.toolMap.get(toolName);
     if (!tool) {
       const error = `Attempted to execute a tool (${toolName}) that does not exist.`;
@@ -78,6 +86,18 @@ export class AgentResolver implements IAgentResolver {
       return { status: "error", error };
     }
 
+    const fillerTimer = setTimeout(() => {}, 500); // say filler phrase after 500ms
+
+    const resultPromise = await this.executeToolHandler(tool, args);
+
+    clearTimeout(fillerTimer);
+    return resultPromise;
+  };
+
+  private executeToolHandler = async (
+    tool: ToolSpec,
+    args: any,
+  ): Promise<ToolResponse> => {
     if (tool.type === "request") {
       try {
         return {
@@ -112,6 +132,33 @@ export class AgentResolver implements IAgentResolver {
     }
 
     return { status: "error", error: "Unknown tool type" };
+  };
+
+  private makeFillerPhraseTimer = (tool: ToolSpec, args: object) => {
+    const primary = setTimeout(() => {
+      const phrases = tool?.fillers?.length // use the tools filler phrases if they are defined
+        ? tool.fillers
+        : this.fillerPhrases?.primary?.length
+          ? this.fillerPhrases.primary
+          : [];
+
+      this.pickAndSayPhrase(phrases);
+    }, 500);
+
+    const secondary = setTimeout(() => {
+      this.pickAndSayPhrase(this.fillerPhrases?.secondary ?? []);
+    }, 4000);
+
+    return () => {
+      clearTimeout(primary);
+      clearTimeout(secondary);
+    };
+  };
+
+  private pickAndSayPhrase = (phrases: string[]) => {
+    const template = phrases[Math.floor(Math.random() * phrases.length)];
+    if (!template) return;
+    return interpolateTemplate(template, this.store.context);
   };
 
   /****************************************************
