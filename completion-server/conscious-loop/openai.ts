@@ -312,11 +312,14 @@ export class OpenAIConsciousLoop
       this.makeSystemParam(),
       ...this.store.turns
         .list()
+        .filter(
+          (turn) => (turn.role === "bot" ? turn.origin !== "filler" : true), // filler phrases can confuse the bot because they break from the bot's natural completion flow
+        )
         .flatMap(this.translateStoreTurnToLLMParam)
         .filter((msg) => {
           if (!msg) return false;
-          if ("content" in msg)
-            return msg.content !== null && msg.content !== undefined;
+          if ("content" in msg && msg.content === null) return false;
+          if ("content" in msg && msg.content === undefined) return false;
 
           return true;
         }),
