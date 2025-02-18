@@ -144,11 +144,14 @@ export class AgentResolver implements IAgentResolver {
           ? this.fillerPhrases.primary
           : [];
 
-      this.pickAndSayPhrase(phrases, args);
+      const bestPhrase = this.pickLeastUsedPhrase(phrases);
+      this.sayPhrase(bestPhrase, args);
     }, 500);
 
     const secondary = setTimeout(() => {
-      this.pickAndSayPhrase(this.fillerPhrases?.secondary ?? [], args);
+      const phrases = this.fillerPhrases?.secondary ?? [];
+      const bestPhrase = this.pickLeastUsedPhrase(phrases);
+      this.sayPhrase(bestPhrase, args);
     }, 4000);
 
     return () => {
@@ -157,9 +160,26 @@ export class AgentResolver implements IAgentResolver {
     };
   };
 
-  private pickAndSayPhrase = (phrases: string[], args: object = {}) => {
-    const template = phrases[Math.floor(Math.random() * phrases.length)];
-    if (!template) return;
+  private phraseCounters: { [key: string]: number } = {};
+  private pickLeastUsedPhrase = (phrases: string[]) => {
+    if (!phrases.length) return;
+
+    const minUsage = Math.min(
+      ...phrases.map((phrase) => this.phraseCounters[phrase] ?? 0),
+    );
+
+    const leastUsedPhrases = phrases.filter(
+      (phrase) => (this.phraseCounters[phrase] ?? 0) === minUsage,
+    );
+    const selected =
+      leastUsedPhrases[Math.floor(Math.random() * leastUsedPhrases.length)];
+    this.phraseCounters[selected] = (this.phraseCounters[selected] ?? 0) + 1;
+
+    return selected;
+  };
+
+  private sayPhrase = (template?: string, args: object = {}) => {
+    if (!template?.length) return;
     const phrase = interpolateTemplate(template, {
       ...this.store.context,
       args, // inject the args so the filler phrase can reference them
