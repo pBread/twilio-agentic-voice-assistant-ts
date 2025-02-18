@@ -12,11 +12,5 @@ const instructions = mergeInstructions(join(__dirname, "instructions"));
 
 // todo: allow agents to be stored in a database
 export const getAgentConfig = async () => {
-  return {
-    context,
-    instructions,
-    fillerPhrases,
-    llmConfig,
-    toolManifest,
-  };
+  return { context, instructions, fillerPhrases, llmConfig, toolManifest };
 };
