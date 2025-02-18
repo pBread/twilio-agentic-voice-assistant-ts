@@ -111,7 +111,7 @@ export class OpenAIConsciousLoop
 
       // handle the first text chunk of a botText completion
       if (isFirstTextDelta) {
-        params = { content, id: chunk.id };
+        params = { content, id: chunk.id, origin: "completion" };
         botText = this.store.turns.addBotText(params);
         this.emit("text-chunk", content, false, botText.content);
       }
@@ -128,6 +128,7 @@ export class OpenAIConsciousLoop
         if (!("tool_calls" in delta)) throw Error("No tool_calls in 1st delta"); // should be unreachable
         params = {
           id: chunk.id,
+          origin: "completion",
           tool_calls: delta.tool_calls as StoreToolCall[],
         }; // isFirstToolDelta
         botTool = this.store.turns.addBotTool(params);

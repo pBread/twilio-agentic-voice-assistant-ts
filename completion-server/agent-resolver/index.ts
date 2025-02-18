@@ -189,7 +189,11 @@ export class AgentResolver implements IAgentResolver {
     sentences.forEach((sentence, idx) =>
       this.relay.sendTextToken(sentence, idx + 1 === sentences.length),
     );
-    this.store.turns.addBotText({ complete: true, content: phrase });
+    this.store.turns.addBotText({
+      complete: true,
+      content: phrase,
+      origin: "filler",
+    });
     this.log.info("agent.filler", `"${phrase.trim()}"`);
   };
 

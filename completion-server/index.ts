@@ -167,7 +167,11 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
 
     const greeting = JSON.parse(params.welcomeGreeting);
     if (greeting) {
-      store.turns.addBotText({ complete: true, content: greeting });
+      store.turns.addBotText({
+        complete: true,
+        content: greeting,
+        origin: "greeting",
+      });
       log.info("llm.transcript", `"${greeting}"`);
     }
   });
