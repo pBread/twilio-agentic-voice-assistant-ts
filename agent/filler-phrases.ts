@@ -23,7 +23,7 @@ const secondary = [
   "I appreciate the patience",
   "Won't be much longer, {{user.name}}",
   "Should be ready shortly",
-  "Almost there.",
+  "Almost there, {{user.name}}.",
 ];
 
 export const fillerPhrases = { primary, secondary };
