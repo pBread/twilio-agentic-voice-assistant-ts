@@ -26,6 +26,7 @@ import type { IAgentResolver } from "../agent-resolver/types.js";
 import type { SessionStore } from "../session-store/index.js";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
 import type { ConsciousLoopEvents, IConsciousLoop } from "./types.js";
+import { ChatCompletionCreateParamsStreaming } from "openai/src/resources/index.js";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 const LLM_MAX_RETRY_ATTEMPTS = 3;
@@ -46,7 +47,7 @@ export class OpenAIConsciousLoop
   ) {
     this.log = getMakeLogger(store.callSid);
     this.eventEmitter = new TypedEventEmitter<ConsciousLoopEvents>();
-    this.logStream = createLogStreamer("chunks"); // todo: remove
+    this.logStream = createLogStreamer("completion-chunks"); // saves the raw completion chunks for each completion. note: it is overridden every session
   }
 
   logStream: ReturnType<typeof createLogStreamer>;
@@ -62,23 +63,25 @@ export class OpenAIConsciousLoop
       this.abort(); // judgement call: should previous completion be aborted or should the new one be cancelled?
     }
 
+    this.curIds = new Set();
+
     this.emit("run.started");
     await this.doCompletion();
     this.emit("run.finished");
   };
 
+  private curIds = new Set<string | undefined>();
   doCompletion = async (attempt = 0): Promise<undefined | Promise<any>> => {
     const messages = this.getTurns();
 
+    let args: ChatCompletionCreateParamsStreaming | undefined;
     try {
-      this.stream = await openai.chat.completions.create({
-        ...this.getConfig(),
-        messages,
-        stream: true,
-        tools: this.getTools(),
-      });
+      const tools = this.getTools();
+      args = { ...this.getConfig(), messages, stream: true, tools };
+      this.stream = await openai.chat.completions.create(args);
     } catch (error) {
-      this.log.error("llm", "Error attempting completion", error);
+      const _args = JSON.stringify({ turns: this.store.turns.list(), ...args });
+      this.log.error("llm", "Error attempting completion", error, "\n", _args);
       return this.handleRetry(attempt + 1);
     }
 
@@ -88,6 +91,9 @@ export class OpenAIConsciousLoop
     let finish_reason: Finish_Reason | null = null;
 
     for await (const chunk of this.stream) {
+      this.curIds.add(botText?.id);
+      this.curIds.add(botTool?.id);
+
       const choice = chunk.choices[0];
       const delta = choice.delta;
 
@@ -250,6 +256,11 @@ export class OpenAIConsciousLoop
   abort = () => {
     this.stream?.controller.abort();
     this.stream = undefined;
+
+    // remove any store records that were in the process
+    [...this.curIds]
+      .filter((id) => id !== undefined)
+      .forEach((id) => this.store.turns.delete(id));
   };
 
   // translate this app's config schema into OpenAI format
@@ -298,7 +309,13 @@ export class OpenAIConsciousLoop
       ...this.store.turns
         .list()
         .flatMap(this.translateStoreTurnToLLMParam)
-        .filter((msg) => !!msg && msg.content !== null),
+        .filter((msg) => {
+          if (!msg) return false;
+          if ("content" in msg)
+            return msg.content !== null && msg.content !== undefined;
+
+          return true;
+        }),
     ] as ChatCompletionMessageParam[];
 
   makeSystemParam = () => ({
