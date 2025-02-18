@@ -28,14 +28,14 @@ export type BotTurnParams =
   | BotToolTurnParams;
 
 type BotOrigins = "completion" | "greeting" | "filler";
+type BotTurnStatus = "streaming" | "complete" | "interrupted";
 
 // represents DTMF tones from the bot
 export interface BotDTMFTurn extends TurnRecordBase {
   content: string;
-  complete: boolean; // is the completion finished
-  interrupted: boolean;
   origin: BotOrigins;
   role: "bot";
+  status: BotTurnStatus;
   type: "dtmf";
 }
 
@@ -53,11 +53,10 @@ export type BotDTMFTurnParams = Omit<
 
 // represents a text from LLM that will be spoken
 export interface BotTextTurn extends TurnRecordBase {
-  complete: boolean; // is the completion finished
   content: string;
-  interrupted?: boolean;
   origin: BotOrigins;
   role: "bot";
+  status: BotTurnStatus;
   type: "text";
 }
 
@@ -81,10 +80,10 @@ export type BotTextTurnParams = Omit<
 // represents the LLM requesting a FN tool be executed
 // note: the results are stored on the toolcall and not a separate item like some LLM APIs, such as OpenAI
 export interface BotToolTurn extends TurnRecordBase {
-  complete: boolean; // is the completion finished
   origin: BotOrigins;
   role: "bot";
   tool_calls: StoreToolCall[];
+  status: BotTurnStatus;
   type: "tool";
 }
 

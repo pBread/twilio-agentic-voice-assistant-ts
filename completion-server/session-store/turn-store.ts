@@ -60,14 +60,13 @@ export class TurnStore {
     const turn: BotDTMFTurn = createVersionedObject(
       {
         callSid: this.callSid,
-        complete: params.complete ?? false,
         content: params.content,
         createdAt: new Date().toISOString(),
         id,
-        interrupted: params.interrupted ?? false,
         order: this.nextOrder(),
         origin: params.origin,
         role: "bot",
+        status: params.status,
         type: "dtmf",
         version: 0,
       },
@@ -85,14 +84,13 @@ export class TurnStore {
     const turn: BotTextTurn = createVersionedObject(
       {
         callSid: this.callSid,
-        complete: params.complete ?? false,
         content: params.content,
         createdAt: new Date().toISOString(),
         id,
-        interrupted: params.interrupted ?? false,
         order: this.nextOrder(),
         origin: params.origin,
         role: "bot",
+        status: params.status,
         type: "text",
         version: 0,
       },
@@ -110,12 +108,12 @@ export class TurnStore {
     const turn: BotToolTurn = createVersionedObject(
       {
         callSid: this.callSid,
-        complete: params.complete ?? false,
         createdAt: new Date().toISOString(),
         id,
         order: this.nextOrder(),
         origin: params.origin,
         role: "bot",
+        status: params.status,
         tool_calls: params.tool_calls,
         type: "tool",
         version: 0,
@@ -230,35 +228,11 @@ export class TurnStore {
       )
       .forEach((turn) => this.delete(turn.id));
 
-    // update incomplete bot tools
-    turnsDecending
-      .filter(
-        (turn) =>
-          turn.order > interruptedTurn.order && // only delete turns after the interrupted turn
-          turn.role === "bot" &&
-          turn.type === "tool" &&
-          turn.complete === false,
-      )
-      .forEach((turn) => {
-        if (turn.order > interruptedTurn.order) return;
-        if (turn.role !== "bot") return;
-        if (turn.type !== "tool") return;
-        if (turn.complete === true) return;
-
-        for (const tool of turn.tool_calls) {
-          if (tool.result) continue;
-          this.setToolResult(tool.id, {
-            status: "aborted",
-            reason: "User interrupted before the tool resolved.",
-          });
-        }
-      });
-
     // Step 3: Update the interrupted turn to reflect what was actually spoken. Note, sometimes the interruptedClause is very long. The bot may have spoken some or most of it. So, the question is, should the interrupted clause be included or excluded. Here, it is being included but it's a judgement call.
     const curContent = interruptedTurn.content as string;
     const [newContent] = curContent.split(interruptedClause);
     interruptedTurn.content = `${newContent} ${interruptedClause}`.trim();
-    interruptedTurn.interrupted = true;
+    interruptedTurn.status = "interrupted";
 
     return interruptedTurn.content;
   };
@@ -266,13 +240,22 @@ export class TurnStore {
   private handleToolInterruption = () => {
     const turnsDecending = this.list().reverse();
 
-    const interruptedTurn = turnsDecending.find(
-      (turn) => turn.role === "bot" && turn.type === "tool" && !turn.complete,
-    );
+    // update incomplete bot tools
+    turnsDecending.forEach((turn) => {
+      if (turn.role !== "bot") return;
+      if (turn.type !== "tool") return;
+      if (turn.status === "complete") return;
 
-    if (!interruptedTurn) return;
+      turn.status = "interrupted";
 
-    this.delete(interruptedTurn.id);
+      for (const tool of turn.tool_calls) {
+        if (tool.result) continue;
+        this.setToolResult(tool.id, {
+          status: "aborted",
+          reason: "User interrupted before the tool resolved.",
+        });
+      }
+    });
   };
 
   setToolResult = (toolId: string, result: object) => {

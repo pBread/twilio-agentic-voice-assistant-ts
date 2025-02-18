@@ -111,7 +111,12 @@ export class OpenAIConsciousLoop
 
       // handle the first text chunk of a botText completion
       if (isFirstTextDelta) {
-        params = { content, id: chunk.id, origin: "completion" };
+        params = {
+          content,
+          id: chunk.id,
+          origin: "completion",
+          status: "streaming",
+        };
         botText = this.store.turns.addBotText(params);
         this.emit("text-chunk", content, false, botText.content);
       }
@@ -129,6 +134,7 @@ export class OpenAIConsciousLoop
         params = {
           id: chunk.id,
           origin: "completion",
+          status: "streaming",
           tool_calls: delta.tool_calls as StoreToolCall[],
         }; // isFirstToolDelta
         botTool = this.store.turns.addBotTool(params);
@@ -155,33 +161,33 @@ export class OpenAIConsciousLoop
         tool.function.name += toolDelta.function.name ?? "";
         tool.function.arguments += toolDelta.function.arguments ?? "";
       }
-
-      /****************************************************
-       Handle Completion Finish
-      ****************************************************/
-      if (finish_reason === "stop") {
-        if (!botText) throw Error("finished for 'stop' but no BotText"); // should be unreachable
-        botText.complete = true;
-        this.emit("text-chunk", "", true, botText.content);
-      }
-
-      if (finish_reason === "tool_calls") {
-        if (!botTool) throw Error("finished for tool_calls but no BotTool"); // should be unreachable
-
-        await this.handleToolExecution(botTool);
-        botTool.complete = true;
-        this.stream = undefined;
-        return this.doCompletion();
-      }
-
-      // todo: add handlers for these situations
-      if (finish_reason === "content_filter")
-        this.log.warn("llm", `Unusual finish reason ${finish_reason}`);
-      if (finish_reason === "function_call")
-        this.log.warn("llm", `Unusual finish reason ${finish_reason}`);
-      if (finish_reason === "length")
-        this.log.warn("llm", `Unusual finish reason ${finish_reason}`);
     }
+
+    /****************************************************
+     Handle Completion Finish
+    ****************************************************/
+    if (finish_reason === "stop") {
+      if (!botText) throw Error("finished for 'stop' but no BotText"); // should be unreachable
+      botText.status = "complete";
+      this.emit("text-chunk", "", true, botText.content);
+    }
+
+    if (finish_reason === "tool_calls") {
+      if (!botTool) throw Error("finished for tool_calls but no BotTool"); // should be unreachable
+
+      await this.handleToolExecution(botTool);
+      if (botTool.status === "streaming") botTool.status = "complete";
+      this.stream = undefined;
+      return this.doCompletion();
+    }
+
+    // todo: add handlers for these situations
+    if (finish_reason === "content_filter")
+      this.log.warn("llm", `Unusual finish reason ${finish_reason}`);
+    if (finish_reason === "function_call")
+      this.log.warn("llm", `Unusual finish reason ${finish_reason}`);
+    if (finish_reason === "length")
+      this.log.warn("llm", `Unusual finish reason ${finish_reason}`);
 
     /****************************************************
      Clean Up Completion
@@ -218,13 +224,15 @@ export class OpenAIConsciousLoop
       }),
     );
 
-    for (const { result, tool } of executions) {
-      // todo: add abort logic
-      this.store.turns.setToolResult(tool.id, result);
-      if (result.status === "complete")
-        this.emit("tool.complete", botTool, tool, result);
-      if (result.status === "error")
-        this.emit("tool.error", botTool, tool, result);
+    if (botTool.status !== "interrupted") {
+      for (const { result, tool } of executions) {
+        // todo: add abort logic
+        this.store.turns.setToolResult(tool.id, result);
+        if (result.status === "complete")
+          this.emit("tool.complete", botTool, tool, result);
+        if (result.status === "error")
+          this.emit("tool.error", botTool, tool, result);
+      }
     }
 
     this.logStream.write("\n");

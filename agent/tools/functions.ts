@@ -22,7 +22,7 @@ export const getUserByEmailOrPhone: ToolDefinition<GetProfile> = {
   parameters: GetProfileParams,
   type: "function",
   async fn(args: GetProfile, deps) {
-    await new Promise((resolve) => setTimeout(() => resolve(null), 5000));
+    await new Promise((resolve) => setTimeout(() => resolve(null), 10 * 1000));
     return { name: "Richard", email: "richard@gmail.com" };
   },
 };
