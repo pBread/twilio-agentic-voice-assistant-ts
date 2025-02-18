@@ -244,7 +244,7 @@ export class TurnStore {
     if (!tool) return;
 
     tool.result = result;
-    this.turnMap.set(toolTurn.id, toolTurn);
+    // this.turnMap.set(toolTurn.id, toolTurn);
     return toolTurn;
   };
 }
