@@ -196,7 +196,7 @@ export class SyncQueueService {
 
         if (typeof value !== "object") {
           this.log.warn(
-            "sync-queue",
+            "sync.queue",
             `context item ${key} is not an object and could not be sent to sync. value: `,
             value,
           );
@@ -208,8 +208,15 @@ export class SyncQueueService {
         else await ctxMap.set(key, value as unknown as Record<string, unknown>);
       });
     } catch (error) {
+      if (isSyncMapItemNotFound(error)) {
+        this.log.warn(
+          "sync.queue",
+          `Failed to remove the SyncMapItem holding context property ${key}.`,
+        );
+        return;
+      }
       this.log.error(
-        "sync-queue",
+        "sync.queue",
         `Failed to queue context update for ${queueKey}:`,
         error,
       );
@@ -236,7 +243,7 @@ export class SyncQueueService {
       });
     } catch (error) {
       this.log.error(
-        "sync-queue",
+        "sync.queue",
         `Failed to queue turn update for ${queueKey}:`,
         error,
       );
@@ -262,7 +269,7 @@ export class SyncQueueService {
       );
     } catch (error) {
       this.log.error(
-        "sync-queue",
+        "sync.queue",
         `Failed to queue turn addition for ${queueKey}:`,
         error,
       );
@@ -281,11 +288,16 @@ export class SyncQueueService {
         await turnMap.remove(turnId);
       });
     } catch (error) {
-      this.log.error(
-        "sync-queue",
-        `Failed to queue turn deletion for ${queueKey}:`,
-        error,
-      );
+      if (isSyncMapItemNotFound(error)) {
+        this.log.warn(
+          "sync.queue",
+          `Attempted to delete turn but it did not exist. It may have already been deleted. turnId: ${turnId}`,
+        );
+      } else
+        this.log.error(
+          "sync.queue",
+          `Failed to queue turn deletion for ${queueKey}`,
+        );
     }
 
     this.cleanupQueue(queue, queueKey);
@@ -303,7 +315,9 @@ export class SyncQueueService {
       });
 
       queue.on("error", (error) => {
-        this.log.error("sync-queue", `Queue ${queueKey} error:`, error);
+        if (isSyncMapItemNotFound(error)) {
+        }
+        this.log.error("sync.queue", `Queue ${queueKey} error:`, error);
       });
 
       this.queues.set(queueKey, queue);
@@ -318,6 +332,16 @@ export class SyncQueueService {
     queue.removeAllListeners();
     this.queues.delete(queueKey);
   };
+}
+
+function isSyncMapItemNotFound(error: any) {
+  return (
+    typeof error === "object" &&
+    "status" in error &&
+    "code" in error &&
+    error.status === 404 &&
+    error.code === 54201
+  );
 }
 
 /****************************************************
