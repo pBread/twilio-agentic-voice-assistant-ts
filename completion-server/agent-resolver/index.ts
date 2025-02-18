@@ -2,11 +2,12 @@ import { getToolExecutor } from "../../agent/tools/index.js";
 import { executeRequestTool } from "../../agent/tools/request.js";
 import type { LLMConfig, ToolResponse, ToolSpec } from "../../agent/types.js";
 import { getMakeLogger, StopwatchLogger } from "../../lib/logger.js";
+import { chunkIntoSentences } from "../../lib/strings.js";
 import { interpolateTemplate } from "../../lib/template.js";
+import { BotToolTurn } from "../../shared/session/turns.js";
 import type { SessionStore } from "../session-store/index.js";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
 import type { AgentResolverConfig, IAgentResolver } from "./types.js";
-import { chunkIntoSentences } from "../../lib/strings.js";
 
 export class AgentResolver implements IAgentResolver {
   private log: StopwatchLogger;
@@ -67,6 +68,7 @@ export class AgentResolver implements IAgentResolver {
   };
 
   executeTool = async (
+    turnId: string,
     toolName: string,
     args?: object,
   ): Promise<ToolResponse> => {
@@ -88,7 +90,7 @@ export class AgentResolver implements IAgentResolver {
       return { status: "error", error };
     }
 
-    const cancelFillerPhrase = this.makeFillerPhraseTimer(tool, args);
+    const cancelFillerPhrase = this.makeFillerPhraseTimer(turnId, tool, args);
 
     const resultPromise = await this.executeToolHandler(tool, args);
 
@@ -136,8 +138,15 @@ export class AgentResolver implements IAgentResolver {
     return { status: "error", error: "Unknown tool type" };
   };
 
-  private makeFillerPhraseTimer = (tool: ToolSpec, args: object = {}) => {
+  private makeFillerPhraseTimer = (
+    turnId: string,
+    tool: ToolSpec,
+    args: object = {},
+  ) => {
     const primary = setTimeout(() => {
+      const turn = this.store.turns.get(turnId) as BotToolTurn | undefined;
+      if (turn?.status === "interrupted") return;
+
       const phrases = tool?.fillers?.length // use the tools filler phrases if they are defined
         ? tool.fillers
         : this.fillerPhrases?.primary?.length
@@ -149,6 +158,9 @@ export class AgentResolver implements IAgentResolver {
     }, 500);
 
     const secondary = setTimeout(() => {
+      const turn = this.store.turns.get(turnId) as BotToolTurn | undefined;
+      if (turn?.status === "interrupted") return;
+
       const phrases = this.fillerPhrases?.secondary ?? [];
       const bestPhrase = this.pickLeastUsedPhrase(phrases);
       this.sayPhrase(bestPhrase, args);
@@ -190,9 +202,9 @@ export class AgentResolver implements IAgentResolver {
       this.relay.sendTextToken(sentence, idx + 1 === sentences.length),
     );
     this.store.turns.addBotText({
-      complete: true,
       content: phrase,
       origin: "filler",
+      status: "complete",
     });
     this.log.info("agent.filler", `"${phrase.trim()}"`);
   };

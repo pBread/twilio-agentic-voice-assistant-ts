@@ -240,22 +240,34 @@ export class TurnStore {
   private handleToolInterruption = () => {
     const turnsDecending = this.list().reverse();
 
+    const interruptedTurn = turnsDecending.find(
+      (turn) =>
+        turn.role === "bot" &&
+        turn.type === "tool" &&
+        turn.status === "streaming",
+    ) as BotToolTurn | undefined;
+
+    if (!interruptedTurn) return;
+
+    interruptedTurn.status = "interrupted";
+
+    for (const tool of interruptedTurn.tool_calls) {
+      if (tool.result) continue;
+      this.setToolResult(tool.id, {
+        status: "aborted",
+        reason: "User interrupted before the tool resolved.",
+      });
+    }
+
     // update incomplete bot tools
-    turnsDecending.forEach((turn) => {
-      if (turn.role !== "bot") return;
-      if (turn.type !== "tool") return;
-      if (turn.status === "complete") return;
-
-      turn.status = "interrupted";
-
-      for (const tool of turn.tool_calls) {
-        if (tool.result) continue;
-        this.setToolResult(tool.id, {
-          status: "aborted",
-          reason: "User interrupted before the tool resolved.",
-        });
-      }
-    });
+    turnsDecending
+      .filter(
+        (turn) =>
+          turn.order > interruptedTurn.order && // only delete turns after the interrupted turn
+          turn.role === "bot" && // only bot turns, not system, are deleted
+          turn.origin === "filler",
+      )
+      .forEach((turn) => this.delete(turn.id));
   };
 
   setToolResult = (toolId: string, result: object) => {

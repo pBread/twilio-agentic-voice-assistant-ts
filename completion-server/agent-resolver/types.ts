@@ -12,7 +12,11 @@ export interface IAgentResolver {
 
   setTool(name: string, tool: ToolSpec): void;
 
-  executeTool(toolName: string, args: any): Promise<ToolResponse>;
+  executeTool(
+    turnId: string,
+    toolName: string,
+    args: any,
+  ): Promise<ToolResponse>;
 }
 
 export interface AgentResolverConfig {

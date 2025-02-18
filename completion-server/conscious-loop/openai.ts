@@ -4,6 +4,7 @@ import type {
   ChatCompletionMessageParam,
   ChatCompletionTool,
 } from "openai/resources/index";
+import { ChatCompletionCreateParamsStreaming } from "openai/src/resources/index.js";
 import type { Stream } from "openai/streaming";
 import type { ToolResponse, ToolSpec } from "../../agent/types.js";
 import { TypedEventEmitter } from "../../lib/events.js";
@@ -26,7 +27,6 @@ import type { IAgentResolver } from "../agent-resolver/types.js";
 import type { SessionStore } from "../session-store/index.js";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
 import type { ConsciousLoopEvents, IConsciousLoop } from "./types.js";
-import { ChatCompletionCreateParamsStreaming } from "openai/src/resources/index.js";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 const LLM_MAX_RETRY_ATTEMPTS = 3;
@@ -213,7 +213,11 @@ export class OpenAIConsciousLoop
             );
           }
 
-          const result = await this.agent.executeTool(tool.function.name, args);
+          const result = await this.agent.executeTool(
+            botTool.id,
+            tool.function.name,
+            args,
+          );
 
           return { result, tool };
         } catch (error) {
