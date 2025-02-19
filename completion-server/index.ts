@@ -7,7 +7,7 @@ import {
   makeTransferToFlexHandoff,
   type TransferToFlexHandoff,
 } from "../packages/flex-transfer-to-agent/index.js";
-import { initialHumanConsultationContext } from "../packages/human-consultation/context.js";
+import { initialHumanConsultationContext } from "../packages/human-consultation/index.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
 import type { CallDetails } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";
