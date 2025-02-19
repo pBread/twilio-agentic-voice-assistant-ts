@@ -1,9 +1,9 @@
 import type { Procedure } from "../../agent/types.js";
+import type { HumanConsultationContext } from "../../packages/human-consultation/types.js";
 import type { UserRecord } from "../db-entities.js";
 
-export interface SessionContext {
+export interface SessionContext extends HumanConsultationContext {
   call?: CallDetails;
-  consultations?: Record<string, HumanConsultRequest>;
   procedures?: Record<string, Procedure>;
   toolConfig?: Record<string, ToolConfiguration>;
   user?: UserRecord;
@@ -36,23 +36,3 @@ export type CallDetails = {
     | "failed"
     | "no-answer";
 };
-
-export interface HumanConsultRequest {
-  callSid: string;
-  createdAt: string; // iso
-  id: string;
-
-  approvals: ApprovalRequest[];
-}
-
-export interface ApprovalRequest {
-  createdAt: string; // iso
-  id: string;
-  callSid: string;
-  question: string;
-  explanation: string;
-  recommendation: string;
-
-  response: string;
-  status: "new" | "approved" | "rejected";
-}
