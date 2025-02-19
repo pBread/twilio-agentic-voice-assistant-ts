@@ -241,6 +241,14 @@ export function getMakeLogger(callSid?: string) {
   log = new StopwatchLogger(callSid);
   loggerCache.set(callSid, log);
 
+  setTimeout(
+    // the logger should be deleted after the call ends, but just to be safe, remove the logger after some long period of time
+    () => {
+      deleteLogger(callSid);
+    },
+    24 * 60 * 60 * 1000,
+  );
+
   return log;
 }
 
