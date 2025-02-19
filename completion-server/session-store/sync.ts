@@ -56,7 +56,7 @@ export function getSyncClient(callSid: string) {
  * @returns A connected Sync client ready for use
  * @throws {Error} If client connection fails or map creation fails
  */
-export async function setupSyncSession(callSid: string) {
+export async function warmUpSyncSession(callSid: string) {
   const log = getMakeLogger(callSid);
   const sync = await createSyncClient(callSid); // initialize client and wait for connection
 

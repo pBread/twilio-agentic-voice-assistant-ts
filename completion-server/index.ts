@@ -10,7 +10,7 @@ import type { AgentResolverConfig } from "./agent-resolver/types.js";
 import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
 import { makeCallDetail } from "./helpers.js";
 import { SessionStore } from "./session-store/index.js";
-import { setupSyncSession, updateCallStatus } from "./session-store/sync.js";
+import { updateCallStatus, warmUpSyncSession } from "./session-store/sync.js";
 import {
   ConversationRelayAdapter,
   HandoffData,
@@ -35,7 +35,7 @@ router.post("/incoming-call", async (req, res) => {
 
   try {
     const agent = await getAgentConfig();
-    await setupSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
+    await warmUpSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
 
     const welcomeGreeting = "Hello there. I am a voice bot";
     const twiml = makeConversationRelayTwiML({
@@ -118,7 +118,7 @@ router.post("/outbound/answer", async (req, res) => {
 
   try {
     const agent = await getAgentConfig();
-    await setupSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
+    await warmUpSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
 
     const twiml = makeConversationRelayTwiML({
       callSid: call.callSid,
