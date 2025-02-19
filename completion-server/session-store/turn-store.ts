@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
+import { getMakeLogger } from "../../lib/logger.js";
 import type {
   BotDTMFTurn,
   BotDTMFTurnParams,
@@ -20,7 +20,7 @@ import { createVersionedObject } from "./versioning.js";
 
 export class TurnStore {
   private turnMap: Map<string, TurnRecord> = new Map(); // map order enforces turn ordering, not the order property on the turns
-  private log: StopwatchLogger;
+  private log: ReturnType<typeof getMakeLogger>;
 
   constructor(
     private callSid: string,

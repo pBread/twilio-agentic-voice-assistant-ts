@@ -9,11 +9,7 @@ import type { Stream } from "openai/streaming";
 import { v4 as uuidV4 } from "uuid";
 import type { ToolResponse, ToolSpec } from "../../agent/types.js";
 import { TypedEventEmitter } from "../../lib/events.js";
-import log, {
-  createLogStreamer,
-  getMakeLogger,
-  type StopwatchLogger,
-} from "../../lib/logger.js";
+import log, { createLogStreamer, getMakeLogger } from "../../lib/logger.js";
 import { OPENAI_API_KEY } from "../../shared/env/server.js";
 import type { OpenAIConfig } from "../../shared/openai.js";
 import type {
@@ -40,7 +36,7 @@ export class OpenAIConsciousLoop
       ChatCompletionMessageParam[]
     >
 {
-  private log: StopwatchLogger;
+  private log: ReturnType<typeof getMakeLogger>;
   constructor(
     public store: SessionStore,
     public agent: IAgentResolver,

@@ -1,7 +1,7 @@
 import { getToolExecutor } from "../../agent/tools/index.js";
 import { executeRequestTool } from "../../agent/tools/request.js";
 import type { LLMConfig, ToolResponse, ToolSpec } from "../../agent/types.js";
-import { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
+import { getMakeLogger } from "../../lib/logger.js";
 import { chunkIntoSentences } from "../../lib/strings.js";
 import { interpolateTemplate } from "../../lib/template.js";
 import type { BotToolTurn } from "../../shared/session/turns.js";
@@ -10,7 +10,7 @@ import type { ConversationRelayAdapter } from "../twilio/conversation-relay.js";
 import type { AgentResolverConfig, IAgentResolver } from "./types.js";
 
 export class AgentResolver implements IAgentResolver {
-  private log: StopwatchLogger;
+  private log: ReturnType<typeof getMakeLogger>;
   protected instructions?: string;
   protected llm?: LLMConfig;
   protected toolMap = new Map<string, ToolSpec>();

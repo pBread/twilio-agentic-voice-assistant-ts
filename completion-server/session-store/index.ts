@@ -1,7 +1,7 @@
 import deepDiff from "deep-diff";
 import type { SyncClient } from "twilio-sync";
 import { TypedEventEmitter } from "../../lib/events.js";
-import { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
+import { getMakeLogger } from "../../lib/logger.js";
 import type { SessionContext } from "../../shared/session/context.js";
 import type { TurnRecord } from "../../shared/session/turns.js";
 import type {
@@ -20,7 +20,7 @@ export class SessionStore {
 
   private syncClient: SyncClient;
   private syncQueue: SyncQueueService;
-  private log: StopwatchLogger;
+  private log: ReturnType<typeof getMakeLogger>;
 
   constructor(
     public callSid: string,

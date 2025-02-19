@@ -64,7 +64,7 @@ const Levels = {
   INVERT: "\x1b[7m",
 } as const;
 
-export class StopwatchLogger {
+class StopwatchLogger {
   start: number; // initialization timestamp
   prev: number; // previous log's timestamp
 

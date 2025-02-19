@@ -1,7 +1,7 @@
 import PQueue from "p-queue";
 import twilio from "twilio";
 import { SyncClient, type SyncMap } from "twilio-sync";
-import { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
+import { getMakeLogger } from "../../lib/logger.js";
 import {
   TWILIO_ACCOUNT_SID as accountSid,
   TWILIO_API_KEY,
@@ -167,7 +167,7 @@ export class SyncQueueService {
 
   public ctxMapPromise: Promise<SyncMap>;
   public turnMapPromise: Promise<SyncMap>;
-  private log: StopwatchLogger;
+  private log: ReturnType<typeof getMakeLogger>;
 
   constructor(
     private callSid: string,
