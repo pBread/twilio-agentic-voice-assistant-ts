@@ -1,5 +1,5 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
-import { TurnRecord } from "@shared/session/turns";
+import type { TurnRecord } from "@shared/session/turns";
 import type { RootState } from "./store";
 
 const SLICE_NAME = "turns";
