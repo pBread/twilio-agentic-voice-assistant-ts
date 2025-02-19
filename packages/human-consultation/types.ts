@@ -1,5 +1,5 @@
 export interface HumanConsultationContext {
-  consultations: Record<string, HumanConsultRequest>;
+  consultations?: Record<string, HumanConsultRequest>;
 }
 
 export interface HumanConsultRequest {

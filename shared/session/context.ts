@@ -3,6 +3,8 @@ import type { HumanConsultationContext } from "../../packages/human-consultation
 import type { UserRecord } from "../db-entities.js";
 
 export interface SessionContext extends HumanConsultationContext {
+  // todo: make some properties required
+
   call?: CallDetails;
   procedures?: Record<string, Procedure>;
   toolConfig?: Record<string, ToolConfiguration>;
