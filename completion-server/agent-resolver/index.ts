@@ -1,7 +1,7 @@
 import { getToolExecutor } from "../../agent/tools/index.js";
 import { executeRequestTool } from "../../agent/tools/request.js";
 import type { LLMConfig, ToolResponse, ToolSpec } from "../../agent/types.js";
-import { getMakeLogger, StopwatchLogger } from "../../lib/logger.js";
+import { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
 import { chunkIntoSentences } from "../../lib/strings.js";
 import { interpolateTemplate } from "../../lib/template.js";
 import type { BotToolTurn } from "../../shared/session/turns.js";
