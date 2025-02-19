@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { getMakeLogger, StopwatchLogger } from "../../lib/logger.js";
+import { getMakeLogger, type StopwatchLogger } from "../../lib/logger.js";
 import type {
   BotDTMFTurn,
   BotDTMFTurnParams,
