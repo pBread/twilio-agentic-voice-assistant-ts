@@ -43,9 +43,12 @@ if (IS_TRANSFER_TO_FLEX_ENABLED) {
       "I am transferring you to a live agent. Have a nice day, {{user.first_name}}.",
       "Please hold while I transfer you to an agent.",
     ],
+    // function executor
     async fn(args: TransferToFlexAgent, deps) {
       const relay =
         deps.relay as ConversationRelayAdapter<TransferToFlexHandoff>;
+
+      await sleep(3000); // let the filler phrase be spoken
 
       relay.end({
         reasonCode: "transfer-to-flex",
@@ -61,4 +64,12 @@ if (IS_TRANSFER_TO_FLEX_ENABLED) {
       return "Call transfered";
     },
   };
+}
+
+async function sleep(ms: number) {
+  return new Promise((resolve) =>
+    setTimeout(() => {
+      resolve(true);
+    }, ms),
+  );
 }

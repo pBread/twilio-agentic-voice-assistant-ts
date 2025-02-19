@@ -16,6 +16,7 @@ import {
   HandoffData,
 } from "./twilio/conversation-relay-adapter.js";
 import {
+  makeTransferToFlexHandoff,
   WrapupCallWebhookPayload,
   type TransferToFlexHandoff,
 } from "./twilio/flex.js";
@@ -266,22 +267,35 @@ router.post("/wrapup-call", async (req, res) => {
     return;
   }
 
-  switch (handoffData.reasonCode) {
-    case "error":
-      log.info(
-        "/wrapup-call",
-        `wrapping up call that failed due to error, callSid: ${callSid}, message: ${handoffData.message}`,
-      );
+  try {
+    switch (handoffData.reasonCode) {
+      case "transfer-to-flex":
+        const twiml = makeTransferToFlexHandoff(payload, handoffData);
+        res.type("xml").send(twiml);
+        break;
 
-      await endCall(callSid);
-      res.status(200).send("complete");
-      break;
+      case "error":
+        log.info(
+          "/wrapup-call",
+          `wrapping up call that failed due to error, callSid: ${callSid}, message: ${handoffData.message}`,
+        );
 
-    default:
-      log.warn(
-        "/wrapup-call",
-        `unknown handoff reasonCode, ${handoffData.reasonCode} callSid: ${callSid}`,
-      );
+        await endCall(callSid);
+        res.status(200).send("complete");
+        break;
+
+      default:
+        log.warn(
+          "/wrapup-call",
+          `unknown handoff reasonCode, callSid: ${callSid}`,
+          JSON.stringify(handoffData),
+        );
+        await endCall(callSid);
+        res.status(200).send("complete");
+    }
+  } catch (error) {
+    log.error("/wrapup-call", "error while wrapping up a call. ", error);
+    res.status(500).send(error);
   }
 });
 
