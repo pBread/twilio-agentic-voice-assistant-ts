@@ -54,8 +54,9 @@ export interface TransferToFlexHandoff {
   reasonCode: "transfer-to-flex";
   reason: string;
   accountSid: string;
-  customerData: object;
   from: string;
   sessionId: string;
   to: string;
+  conversationSummary: string;
+  customerData: object;
 }
