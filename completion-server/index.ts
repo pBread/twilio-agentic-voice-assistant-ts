@@ -7,7 +7,6 @@ import {
   makeTransferToFlexHandoff,
   type TransferToFlexHandoff,
 } from "../packages/flex-transfer-to-agent/index.js";
-import { initialHumanConsultationContext } from "../packages/human-consultation-flex/index.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
 import type { CallDetails } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";
@@ -167,7 +166,6 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     const context = "context" in params ? JSON.parse(params.context) : {};
     store.setContext({
       ...context,
-      ...initialHumanConsultationContext(),
       call: { ...context.call, conversationRelaySessionId: ev.sessionId },
     });
 

@@ -1,8 +1,7 @@
 import type { Procedure } from "../../agent/types.js";
-import type { HumanConsultationContext } from "../../packages/human-consultation-flex/types.js";
 import type { UserRecord } from "../db-entities.js";
 
-export interface SessionContext extends HumanConsultationContext {
+export interface SessionContext {
   // todo: make some properties required
 
   call?: CallDetails;
