@@ -1,4 +1,4 @@
-import { HOSTNAME } from "./env/server.js";
+import { HOSTNAME } from "./env.js";
 
 export const baseUrl = `https://${HOSTNAME}`;
 

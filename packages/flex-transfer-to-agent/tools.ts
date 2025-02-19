@@ -3,7 +3,7 @@ import { ConversationRelayAdapter } from "../../completion-server/twilio/convers
 import {
   IS_TRANSFER_TO_FLEX_ENABLED,
   TWILIO_ACCOUNT_SID,
-} from "../../shared/env/server.js";
+} from "../../shared/env.js";
 import type { TransferToFlexHandoff } from "./types.js";
 
 /****************************************************

@@ -1,7 +1,7 @@
 import twilio from "twilio";
 import type { WrapupCallWebhookPayload } from "../../completion-server/twilio/conversation-relay.js";
 import log from "../../lib/logger.js";
-import { FLEX_WORKFLOW_SID } from "../../shared/env/server.js";
+import { FLEX_WORKFLOW_SID } from "../../shared/env.js";
 import type { TransferToFlexHandoff } from "./types.js";
 
 const VoiceResponse = twilio.twiml.VoiceResponse;

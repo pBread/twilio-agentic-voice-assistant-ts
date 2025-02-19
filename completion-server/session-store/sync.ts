@@ -7,7 +7,7 @@ import {
   TWILIO_API_KEY,
   TWILIO_API_SECRET,
   TWILIO_SYNC_SVC_SID,
-} from "../../shared/env/server.js";
+} from "../../shared/env.js";
 import type {
   CallDetails,
   SessionContext,

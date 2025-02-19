@@ -1,7 +1,7 @@
 import twilio from "twilio";
 import type { ConversationRelayAttributes } from "twilio/lib/twiml/VoiceResponse.js";
 import type { WebSocket } from "ws";
-import { HOSTNAME } from "../../shared/env/server.js";
+import { HOSTNAME } from "../../shared/env.js";
 
 interface MakeConversationRelayTwiML
   extends Omit<ConversationRelayAttributes, "url"> {
