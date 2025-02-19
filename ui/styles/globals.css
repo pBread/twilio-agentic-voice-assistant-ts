@@ -10,7 +10,7 @@ main {
 }
 
 body {
-  background-color: var(--background-color) !important;
+  background-color: var(--mantine-color-gray-1) !important;
 }
 
 header {
@@ -21,4 +21,9 @@ header {
   align-items: center;
   height: 80px;
   justify-content: space-between;
+}
+
+.header-logo {
+  width: var(--logo-width);
+  height: auto;
 }
