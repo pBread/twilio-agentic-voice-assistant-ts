@@ -1,6 +1,14 @@
 import log from "../../lib/logger.js";
-import type { ToolExecutor, ToolSpec } from "../types.js";
-import * as tools from "./functions.js";
+import type { ToolDefinition, ToolExecutor, ToolSpec } from "../types.js";
+import * as flexTools from "./flex.js";
+import * as fnTools from "./functions.js";
+
+const tools = Object.entries({ ...fnTools, ...flexTools })
+  .filter(([exportName, tool]) => !!tool)
+  .reduce(
+    (acc, [exportName, tool]) => Object.assign(acc, { [exportName]: tool }),
+    {} as { [key: string]: ToolDefinition },
+  );
 
 // check for duplicates
 const duplicateTools = new Map<string, string[]>();

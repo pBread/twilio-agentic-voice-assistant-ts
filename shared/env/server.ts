@@ -49,8 +49,9 @@ export const FLEX_WORKFLOW_SID = process.env.FLEX_WORKFLOW_SID as string; // req
 
 export const IS_TRANSFER_TO_FLEX_ENABLED = !!FLEX_WORKFLOW_SID;
 
-if (IS_TRANSFER_TO_FLEX_ENABLED) log.green("Transfer to Flex is enabled");
-else log.yellow("Transfer to Flex is disabled. Missing env variable");
+if (IS_TRANSFER_TO_FLEX_ENABLED)
+  console.log("Flex: Transfer to agent is enabled");
+else log.yellow("Flex: Transfer to Flex is disabled. Env vars missing");
 
 export const FLEX_WORKSPACE_SID = process.env.FLEX_WORKSPACE_SID as string; // required to ask agent a question
 export const FLEX_QUEUE_SID = process.env.FLEX_QUEUE_SID as string; // required to ask agent a question
@@ -62,8 +63,9 @@ export const IS_ASK_FLEX_AGENT_ENABLED =
   !!FLEX_QUEUE_SID &&
   !!FLEX_WORKER_SID;
 
-if (IS_ASK_FLEX_AGENT_ENABLED) log.green("Flex is enabled");
-else log.yellow("Flex is not enabled. Missing env variables.");
+if (IS_ASK_FLEX_AGENT_ENABLED)
+  console.log("Flex: Live agent conversation enabled");
+else log.yellow("Flex: Live agent conversation disabled. Env vars missing");
 
 /****************************************************
  Environment Configuration

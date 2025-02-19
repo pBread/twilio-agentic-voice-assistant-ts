@@ -239,17 +239,17 @@ router.post("/wrapup-call", async (req, res) => {
 
   const callSid = req.body.CallSid;
   const log = getMakeLogger(callSid);
+  log.debug("/wrapup-call", "payload", payload);
 
-  const isHandoff = "HandoffData" in req.body;
-
-  if (!isHandoff) {
+  if (!payload.HandoffData) {
     log.info(`/wrapup-call`, "call completed w/out handoff data");
     res.status(200).send("complete");
     return;
   }
+
   let handoffData: AppHandoffData;
   try {
-    handoffData = JSON.parse(req.body.HandoffData) as AppHandoffData;
+    handoffData = JSON.parse(payload.HandoffData) as AppHandoffData;
   } catch (error) {
     log.error(
       `/wrapup-call`,
