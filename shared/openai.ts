@@ -19,5 +19,3 @@ export interface OpenAIConfig
     | "seed"
     | "tool_choice"
   > {}
-
-let x: OpenAIConfig = { model: "gpt-3.5-turbo" };
