@@ -1,6 +1,6 @@
-import type { WebSocket } from "ws";
 import twilio from "twilio";
 import type { ConversationRelayAttributes } from "twilio/lib/twiml/VoiceResponse.js";
+import type { WebSocket } from "ws";
 import { HOSTNAME } from "../../shared/env/server.js";
 
 interface MakeConversationRelayTwiML
@@ -270,3 +270,35 @@ export interface HandoffDueToError {
 export type HandoffData<T extends { reasonCode: string } = any> =
   | HandoffDueToError
   | T;
+
+export interface WrapupCallWebhookPayload {
+  HandoffData?: string; // json string
+  AccountSid: string;
+  ApiVersion: string;
+  Called: string;
+  CalledCity: string;
+  CalledCountry: string;
+  CalledState: string;
+  CalledZip: string;
+  Caller: string;
+  CallerCity: string;
+  CallerCountry: string;
+  CallerState: string;
+  CallerZip: string;
+  CallSid: string;
+  CallStatus: string;
+  Direction: string;
+  From: string;
+  FromCity: string;
+  FromCountry: string;
+  FromState: string;
+  FromZip: string;
+  SessionDuration: string;
+  SessionId: string;
+  SessionStatus: string;
+  To: string;
+  ToCity: string;
+  ToCountry: string;
+  ToState: string;
+  ToZip: string;
+}

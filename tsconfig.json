@@ -21,6 +21,7 @@
     "completion-server/**/*",
     "integration-server/**/*",
     "lib/**/*",
+    "modules/**/*",
     "scripts/**/*.ts",
     "shared/**/*"
   ]

@@ -3,6 +3,10 @@ import type { WebsocketRequestHandler } from "express-ws";
 import { getAgentConfig } from "../agent/index.js";
 import { deleteLogger, getMakeLogger } from "../lib/logger.js";
 import { prettyXML } from "../lib/xml.js";
+import {
+  makeTransferToFlexHandoff,
+  type TransferToFlexHandoff,
+} from "../modules/flex-transfer-to-agent/index.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
 import type { CallDetails } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";
@@ -15,12 +19,8 @@ import {
   ConversationRelayAdapter,
   makeConversationRelayTwiML,
   type HandoffData,
+  type WrapupCallWebhookPayload,
 } from "./twilio/conversation-relay.js";
-import {
-  makeTransferToFlexHandoff,
-  WrapupCallWebhookPayload,
-  type TransferToFlexHandoff,
-} from "./twilio/flex.js";
 import {
   endCall,
   placeCall,
