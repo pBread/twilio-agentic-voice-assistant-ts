@@ -52,7 +52,7 @@ if (IS_TRANSFER_TO_FLEX_ENABLED) {
 
       relay.end({
         reasonCode: "transfer-to-flex",
-        accountSid: TWILIO_ACCOUNT_SID,
+        accountSid: TWILIO_ACCOUNT_SID, // todo: make this injected from dependencies
         from: deps.store.context.call?.from ?? "",
         to: deps.store.context.call?.to ?? "",
         sessionId: deps.store.context.call?.conversationRelaySessionId ?? "",
