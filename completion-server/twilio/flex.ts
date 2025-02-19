@@ -51,7 +51,8 @@ export function createTransferToFlexHandoff(
 
 // todo: the accountSid, from, to, etc. are all included in the webhook payload so they may not be necessary for handoff data
 export interface TransferToFlexHandoff {
-  reason: "transfer-to-flex";
+  reasonCode: "transfer-to-flex";
+  reason: string;
   accountSid: string;
   customerData: object;
   from: string;

@@ -7,7 +7,7 @@ import type { WebSocket } from "ws";
  */
 
 export class ConversationRelayAdapter<
-  THandoff extends { reason: string } = any,
+  THandoff extends { reasonCode: string } = any,
 > {
   constructor(public ws: WebSocket) {}
 
@@ -221,10 +221,10 @@ type SetupMessage = {
  Handoff Types
 ****************************************************/
 export interface HandoffDueToError {
-  reason: "error";
+  reasonCode: "error";
   message: string;
 }
 
-export type HandoffData<T extends { reason: string } = any> =
+export type HandoffData<T extends { reasonCode: string } = any> =
   | HandoffDueToError
   | T;
