@@ -1,4 +1,4 @@
-import twilio, { twiml as TwiML } from "twilio";
+import twilio from "twilio";
 import log from "../../lib/logger.js";
 import {
   TWILIO_ACCOUNT_SID as accountSid,
@@ -8,7 +8,7 @@ import {
 } from "../../shared/env/server.js";
 
 const client = twilio(TWILIO_API_KEY, TWILIO_API_SECRET, { accountSid });
-const VoiceResponse = TwiML.VoiceResponse;
+const VoiceResponse = twilio.twiml.VoiceResponse;
 
 export interface WrapupCallWebhookPayload {
   AccountSid: string;
@@ -20,17 +20,10 @@ export interface WrapupCallWebhookPayload {
   HandoffData?: string; // json string
 }
 
-export function createTransferToFlexHandoff(
-  payload: WrapupCallWebhookPayload & { HandoffData: string },
+export function makeTransferToFlexHandoff(
+  payload: WrapupCallWebhookPayload,
+  handoffData: TransferToFlexHandoff,
 ) {
-  let handoffData: TransferToFlexHandoff;
-  try {
-    handoffData = JSON.parse(payload.HandoffData);
-  } catch (error) {
-    log.error("flex", "Unable to parse transfer to flex handoff data");
-    return;
-  }
-
   const taskAttributes = {
     ...handoffData,
     accountSid: payload.AccountSid,
