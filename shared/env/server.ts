@@ -46,8 +46,10 @@ if (!DEFAULT_TWILIO_NUMBER) warnMissing("DEFAULT_TWILIO_NUMBER");
 export const DEVELOPERS_PHONE_NUMBER = process.env.DEVELOPERS_PHONE_NUMBER;
 
 export const FLEX_WORKFLOW_SID = process.env.FLEX_WORKFLOW_SID as string; // required for transfer to flex
+const ENABLE_TRANSFER_TO_FLEX = bool(process.env.ENABLE_TRANSFER_TO_FLEX);
 
-export const IS_TRANSFER_TO_FLEX_ENABLED = !!FLEX_WORKFLOW_SID;
+export const IS_TRANSFER_TO_FLEX_ENABLED =
+  ENABLE_TRANSFER_TO_FLEX && !!FLEX_WORKFLOW_SID;
 
 if (IS_TRANSFER_TO_FLEX_ENABLED)
   console.log("Flex: Transfer to agent is enabled");
@@ -57,7 +59,9 @@ export const FLEX_WORKSPACE_SID = process.env.FLEX_WORKSPACE_SID as string; // r
 export const FLEX_QUEUE_SID = process.env.FLEX_QUEUE_SID as string; // required to ask agent a question
 export const FLEX_WORKER_SID = process.env.FLEX_WORKER_SID as string; // required to ask agent a question
 
+const ENABLE_ASK_FLEX_AGENT_QUESTIONS = bool(process.env.FLEX_WORKER_SID);
 export const IS_ASK_FLEX_AGENT_ENABLED =
+  ENABLE_ASK_FLEX_AGENT_QUESTIONS &&
   !!FLEX_WORKSPACE_SID &&
   !!FLEX_WORKFLOW_SID &&
   !!FLEX_QUEUE_SID &&
@@ -89,4 +93,10 @@ if (errors.length) {
       .map((err, idx) => `\t(${idx + 1}) ${err}`)
       .join("\n")}`,
   );
+}
+
+function bool(value: any) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") return value.toUpperCase() === "TRUE";
+  return false;
 }

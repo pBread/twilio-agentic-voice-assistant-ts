@@ -10,16 +10,6 @@ import {
 const client = twilio(TWILIO_API_KEY, TWILIO_API_SECRET, { accountSid });
 const VoiceResponse = twilio.twiml.VoiceResponse;
 
-export interface WrapupCallWebhookPayload {
-  AccountSid: string;
-  CallSid: string;
-  From: string;
-  To: string;
-  SessionId: string;
-  SessionDuration: string;
-  HandoffData?: string; // json string
-}
-
 export function makeTransferToFlexHandoff(
   payload: WrapupCallWebhookPayload,
   handoffData: TransferToFlexHandoff,
@@ -39,7 +29,7 @@ export function makeTransferToFlexHandoff(
     .enqueue({ workflowSid: FLEX_WORKFLOW_SID })
     .task({ priority: 1000 }, JSON.stringify(taskAttributes));
 
-  return twiml;
+  return twiml.toString();
 }
 
 // todo: the accountSid, from, to, etc. are all included in the webhook payload so they may not be necessary for handoff data
@@ -52,4 +42,36 @@ export interface TransferToFlexHandoff {
   to: string;
   conversationSummary: string;
   customerData: object;
+}
+
+export interface WrapupCallWebhookPayload {
+  HandoffData?: string; // json string
+  AccountSid: string;
+  ApiVersion: string;
+  Called: string;
+  CalledCity: string;
+  CalledCountry: string;
+  CalledState: string;
+  CalledZip: string;
+  Caller: string;
+  CallerCity: string;
+  CallerCountry: string;
+  CallerState: string;
+  CallerZip: string;
+  CallSid: string;
+  CallStatus: string;
+  Direction: string;
+  From: string;
+  FromCity: string;
+  FromCountry: string;
+  FromState: string;
+  FromZip: string;
+  SessionDuration: string;
+  SessionId: string;
+  SessionStatus: string;
+  To: string;
+  ToCity: string;
+  ToCountry: string;
+  ToState: string;
+  ToZip: string;
 }

@@ -13,14 +13,14 @@ import { SessionStore } from "./session-store/index.js";
 import { updateCallStatus, warmUpSyncSession } from "./session-store/sync.js";
 import {
   ConversationRelayAdapter,
-  HandoffData,
+  makeConversationRelayTwiML,
+  type HandoffData,
 } from "./twilio/conversation-relay.js";
 import {
   makeTransferToFlexHandoff,
   WrapupCallWebhookPayload,
   type TransferToFlexHandoff,
 } from "./twilio/flex.js";
-import { makeConversationRelayTwiML } from "./twilio/twiml.js";
 import {
   endCall,
   placeCall,
@@ -220,10 +220,6 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   });
 
   ws.on("close", () => {
-    setTimeout(() => {
-      deleteLogger(callSid);
-    }, 5000);
-
     log.info(
       "relay",
       "conversation relay ws closed.",
@@ -245,7 +241,6 @@ router.post("/wrapup-call", async (req, res) => {
 
   const callSid = req.body.CallSid;
   const log = getMakeLogger(callSid);
-  log.debug("/wrapup-call", "payload", payload);
 
   if (!payload.HandoffData) {
     log.info(`/wrapup-call`, "call completed w/out handoff data");
