@@ -1,7 +1,7 @@
 import { Router, type RequestHandler } from "express";
 import type { WebsocketRequestHandler } from "express-ws";
 import { getAgentConfig } from "../agent/index.js";
-import { getMakeLogger } from "../lib/logger.js";
+import { deleteLogger, getMakeLogger } from "../lib/logger.js";
 import { prettyXML } from "../lib/xml.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
 import type { CallDetails } from "../shared/session/context.js";
@@ -77,6 +77,7 @@ router.post("/call-status", async (req, res) => {
     );
   }
 
+  deleteLogger(callSid);
   res.status(200).send();
 });
 
@@ -218,6 +219,10 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   });
 
   ws.on("close", () => {
+    setTimeout(() => {
+      deleteLogger(callSid);
+    }, 5000);
+
     log.info(
       "relay",
       "conversation relay ws closed.",
@@ -261,7 +266,7 @@ router.post("/wrapup-call", async (req, res) => {
     return;
   }
 
-  switch (handoffData.reason) {
+  switch (handoffData.reasonCode) {
     case "error":
       log.info(
         "/wrapup-call",
@@ -275,7 +280,7 @@ router.post("/wrapup-call", async (req, res) => {
     default:
       log.warn(
         "/wrapup-call",
-        `unknown handoff reason, ${handoffData.reason} callSid: ${callSid}`,
+        `unknown handoff reasonCode, ${handoffData.reasonCode} callSid: ${callSid}`,
       );
   }
 });

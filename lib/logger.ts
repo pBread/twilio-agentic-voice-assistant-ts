@@ -244,6 +244,6 @@ export function getMakeLogger(callSid?: string) {
   return log;
 }
 
-export function clearLogger(callSid: string) {
+export function deleteLogger(callSid: string) {
   loggerCache.delete(callSid);
 }
