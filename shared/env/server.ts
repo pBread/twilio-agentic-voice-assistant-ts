@@ -59,7 +59,9 @@ export const FLEX_WORKSPACE_SID = process.env.FLEX_WORKSPACE_SID as string; // r
 export const FLEX_QUEUE_SID = process.env.FLEX_QUEUE_SID as string; // required to ask agent a question
 export const FLEX_WORKER_SID = process.env.FLEX_WORKER_SID as string; // required to ask agent a question
 
-const ENABLE_ASK_FLEX_AGENT_QUESTIONS = bool(process.env.FLEX_WORKER_SID);
+const ENABLE_ASK_FLEX_AGENT_QUESTIONS = bool(
+  process.env.ENABLE_ASK_FLEX_AGENT_QUESTIONS,
+);
 export const IS_ASK_FLEX_AGENT_ENABLED =
   ENABLE_ASK_FLEX_AGENT_QUESTIONS &&
   !!FLEX_WORKSPACE_SID &&
