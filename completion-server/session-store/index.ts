@@ -3,8 +3,8 @@ import type { SyncClient } from "twilio-sync";
 import { TypedEventEmitter } from "../../lib/events.js";
 import { getMakeLogger, StopwatchLogger } from "../../lib/logger.js";
 import type { SessionContext } from "../../shared/session/context.js";
-import { TurnRecord } from "../../shared/session/turns.js";
-import {
+import type { TurnRecord } from "../../shared/session/turns.js";
+import type {
   MapItemAddedEvent,
   MapItemRemovedEvent,
   MapItemUpdatedEvent,
