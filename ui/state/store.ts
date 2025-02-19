@@ -1,6 +1,7 @@
 import { configureStore, type Middleware } from "@reduxjs/toolkit";
 import { createLogger } from "redux-logger";
 import { turnsSlice } from "./turns";
+import { syncSlice } from "./sync";
 
 const middleware: Middleware[] = [];
 if (process.env.NODE_ENV === "development") middleware.push(createLogger());
@@ -10,7 +11,10 @@ export const makeStore = () => {
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(createLogger()),
 
-    reducer: { [turnsSlice.name]: turnsSlice.reducer },
+    reducer: {
+      [syncSlice.name]: syncSlice.reducer,
+      [turnsSlice.name]: turnsSlice.reducer,
+    },
   });
 };
 
