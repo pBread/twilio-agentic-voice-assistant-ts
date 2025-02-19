@@ -1,7 +1,7 @@
 import type { BotToolTurn, StoreToolCall } from "../../shared/session/turns.js";
 import type { IAgentResolver } from "../agent-resolver/types.js";
 import type { SessionStore } from "../session-store/index.js";
-import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
+import type { ConversationRelayAdapter } from "../twilio/conversation-relay.js";
 
 export interface IConsciousLoop<TConfig, TToolManifest, TTurns> {
   run(): Promise<undefined | Promise<any>>;

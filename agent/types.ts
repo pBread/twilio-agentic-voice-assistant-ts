@@ -1,6 +1,6 @@
 import type { IAgentResolver } from "../completion-server/agent-resolver/types.js";
 import type { SessionStore } from "../completion-server/session-store/index.js";
-import type { ConversationRelayAdapter } from "../completion-server/twilio/conversation-relay-adapter.js";
+import type { ConversationRelayAdapter } from "../completion-server/twilio/conversation-relay.js";
 
 /****************************************************
  LLM Config

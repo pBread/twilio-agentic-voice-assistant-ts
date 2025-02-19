@@ -6,7 +6,7 @@ import { chunkIntoSentences } from "../../lib/strings.js";
 import { interpolateTemplate } from "../../lib/template.js";
 import type { BotToolTurn } from "../../shared/session/turns.js";
 import type { SessionStore } from "../session-store/index.js";
-import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
+import type { ConversationRelayAdapter } from "../twilio/conversation-relay.js";
 import type { AgentResolverConfig, IAgentResolver } from "./types.js";
 
 export class AgentResolver implements IAgentResolver {

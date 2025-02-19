@@ -14,7 +14,7 @@ import { updateCallStatus, warmUpSyncSession } from "./session-store/sync.js";
 import {
   ConversationRelayAdapter,
   HandoffData,
-} from "./twilio/conversation-relay-adapter.js";
+} from "./twilio/conversation-relay.js";
 import {
   makeTransferToFlexHandoff,
   WrapupCallWebhookPayload,

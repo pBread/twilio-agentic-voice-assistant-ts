@@ -26,7 +26,7 @@ import type {
 } from "../../shared/session/turns.js";
 import type { IAgentResolver } from "../agent-resolver/types.js";
 import type { SessionStore } from "../session-store/index.js";
-import type { ConversationRelayAdapter } from "../twilio/conversation-relay-adapter.js";
+import type { ConversationRelayAdapter } from "../twilio/conversation-relay.js";
 import type { ConsciousLoopEvents, IConsciousLoop } from "./types.js";
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });

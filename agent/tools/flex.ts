@@ -1,4 +1,4 @@
-import { ConversationRelayAdapter } from "../../completion-server/twilio/conversation-relay-adapter.js";
+import { ConversationRelayAdapter } from "../../completion-server/twilio/conversation-relay.js";
 import { TransferToFlexHandoff } from "../../completion-server/twilio/flex.js";
 import {
   IS_TRANSFER_TO_FLEX_ENABLED,
