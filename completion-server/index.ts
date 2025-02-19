@@ -1,10 +1,9 @@
-import { type RequestHandler, Router } from "express";
+import { Router, type RequestHandler } from "express";
 import type { WebsocketRequestHandler } from "express-ws";
 import { getAgentConfig } from "../agent/index.js";
 import { getMakeLogger } from "../lib/logger.js";
 import { prettyXML } from "../lib/xml.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
-import type { HandoffData } from "../shared/handoff.js";
 import type { CallDetails } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";
 import type { AgentResolverConfig } from "./agent-resolver/types.js";
@@ -12,7 +11,14 @@ import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
 import { makeCallDetail } from "./helpers.js";
 import { SessionStore } from "./session-store/index.js";
 import { updateCallStatus, warmUpSyncSession } from "./session-store/sync.js";
-import { ConversationRelayAdapter } from "./twilio/conversation-relay-adapter.js";
+import {
+  ConversationRelayAdapter,
+  HandoffData,
+} from "./twilio/conversation-relay-adapter.js";
+import {
+  WrapupCallWebhookPayload,
+  type TransferToFlexHandoff,
+} from "./twilio/flex.js";
 import { makeConversationRelayTwiML } from "./twilio/twiml.js";
 import {
   endCall,
@@ -142,7 +148,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const log = getMakeLogger(callSid);
   log.info("/convo-relay", `websocket initializing, CallSid ${callSid}`);
 
-  const relay = new ConversationRelayAdapter(ws);
+  const relay = new ConversationRelayAdapter<TransferToFlexHandoff>(ws);
   const store = new SessionStore(callSid);
 
   const agent = new AgentResolver(relay, store);
@@ -227,23 +233,26 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
  Executed After Conversation Relay Session Ends
  https://www.twilio.com/docs/voice/twiml/connect/conversationrelay#end-session-message
 ****************************************************/
-router.post("/wrapup-router", async (req, res) => {
+type AppHandoffData = HandoffData<TransferToFlexHandoff>;
+router.post("/wrapup-call", async (req, res) => {
+  const payload = req.body as WrapupCallWebhookPayload;
+
   const callSid = req.body.CallSid;
   const log = getMakeLogger(callSid);
 
   const isHandoff = "HandoffData" in req.body;
 
   if (!isHandoff) {
-    log.info(`/wrapup-router`, "call completed w/out handoff data");
+    log.info(`/wrapup-call`, "call completed w/out handoff data");
     res.status(200).send("complete");
     return;
   }
-  let handoffData: HandoffData;
+  let handoffData: AppHandoffData;
   try {
-    handoffData = JSON.parse(req.body.HandoffData) as HandoffData;
+    handoffData = JSON.parse(req.body.HandoffData) as AppHandoffData;
   } catch (error) {
     log.error(
-      `/wrapup-router`,
+      `/wrapup-call`,
       "Unable to parse handoffData in wrapup webhook. ",
       "Request Body: ",
       JSON.stringify(req.body),
@@ -255,7 +264,7 @@ router.post("/wrapup-router", async (req, res) => {
   switch (handoffData.reason) {
     case "error":
       log.info(
-        "/wrapup-router",
+        "/wrapup-call",
         `wrapping up call that failed due to error, callSid: ${callSid}, message: ${handoffData.message}`,
       );
 
@@ -265,7 +274,7 @@ router.post("/wrapup-router", async (req, res) => {
 
     default:
       log.warn(
-        "/wrapup-router",
+        "/wrapup-call",
         `unknown handoff reason, ${handoffData.reason} callSid: ${callSid}`,
       );
   }

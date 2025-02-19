@@ -1,5 +1,4 @@
 import type { WebSocket } from "ws";
-import type { HandoffData } from "../../shared/handoff.js";
 
 /**
  * @class ConversationRelayAdapter
@@ -7,7 +6,9 @@ import type { HandoffData } from "../../shared/handoff.js";
  * speech-to-text, text-to-speech, DTMF tones, interruptions, and call control.
  */
 
-export class ConversationRelayAdapter {
+export class ConversationRelayAdapter<
+  THandoff extends { reason: string } = any,
+> {
   constructor(public ws: WebSocket) {}
 
   /****************************************************
@@ -23,7 +24,7 @@ export class ConversationRelayAdapter {
    * Ends the session and optionally provides handoff data.
    * @param {object} [handoffData={}] - Data to pass during session handoff.
    */
-  end = (handoffData?: HandoffData) =>
+  end = (handoffData?: HandoffData<THandoff>) =>
     this.dispatch({
       type: "end",
       handoffData: JSON.stringify(handoffData ?? {}),
@@ -215,3 +216,15 @@ type SetupMessage = {
   to: string;
   type: "setup";
 };
+
+/****************************************************
+ Handoff Types
+****************************************************/
+export interface HandoffDueToError {
+  reason: "error";
+  message: string;
+}
+
+export type HandoffData<T extends { reason: string } = any> =
+  | HandoffDueToError
+  | T;
