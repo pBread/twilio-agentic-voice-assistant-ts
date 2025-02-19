@@ -45,6 +45,20 @@ if (!DEFAULT_TWILIO_NUMBER) warnMissing("DEFAULT_TWILIO_NUMBER");
 
 export const DEVELOPERS_PHONE_NUMBER = process.env.DEVELOPERS_PHONE_NUMBER;
 
+export const FLEX_WORKSPACE_SID = process.env.FLEX_WORKSPACE_SID as string;
+export const FLEX_WORKFLOW_SID = process.env.FLEX_WORKFLOW_SID as string;
+export const FLEX_QUEUE_SID = process.env.FLEX_QUEUE_SID as string;
+export const FLEX_WORKER_SID = process.env.FLEX_WORKER_SID as string;
+
+export let IS_FLEX_ENABLED =
+  !!FLEX_WORKSPACE_SID &&
+  !!FLEX_WORKFLOW_SID &&
+  !!FLEX_QUEUE_SID &&
+  !!FLEX_WORKER_SID;
+
+if (IS_FLEX_ENABLED) log.green("Flex is enabled");
+else log.yellow("Flex is not enabled. Missing env variables.");
+
 /****************************************************
  Environment Configuration
 ****************************************************/
