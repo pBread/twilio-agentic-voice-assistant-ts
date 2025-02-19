@@ -12,7 +12,7 @@ import { TypedEventEmitter } from "../../lib/events.js";
 import log, {
   createLogStreamer,
   getMakeLogger,
-  StopwatchLogger,
+  type StopwatchLogger,
 } from "../../lib/logger.js";
 import { OPENAI_API_KEY } from "../../shared/env/server.js";
 import type { OpenAIConfig } from "../../shared/openai.js";
