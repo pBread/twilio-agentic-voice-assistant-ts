@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { getMakeLogger } from "../lib/logger.js";
-import { integrationServerRoute } from "../shared/endpoints.js";
+import { integServerRoute } from "../shared/endpoints.js";
 
 const router = Router();
 
 // receives events from sync
-router.post(`${integrationServerRoute}/sync-webhook`, async (req, res) => {
+router.post(`${integServerRoute}/sync-webhook`, async (req, res) => {
   const payload = req.body;
   const log = getMakeLogger(payload.CallSid);
 
@@ -14,7 +14,7 @@ router.post(`${integrationServerRoute}/sync-webhook`, async (req, res) => {
   res.status(200).send({ status: "success" });
 });
 
-router.post(`${integrationServerRoute}/get-user`, async (req, res) => {
+router.post(`${integServerRoute}/get-user`, async (req, res) => {
   const payload = req.body;
   const log = getMakeLogger(payload.callSid);
 
