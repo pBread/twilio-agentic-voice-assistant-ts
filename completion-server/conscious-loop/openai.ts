@@ -75,7 +75,9 @@ export class OpenAIConsciousLoop
     }
   };
 
-  doCompletion = async (attempt = 0): Promise<undefined | Promise<any>> => {
+  private doCompletion = async (
+    attempt = 0,
+  ): Promise<undefined | Promise<any>> => {
     const completionId = uuidV4();
     this.activeCompletionId = completionId;
     const messages = this.getTurns();
