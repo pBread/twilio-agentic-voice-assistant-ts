@@ -167,6 +167,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     store.setContext({
       ...context,
       call: { ...context.call, conversationRelaySessionId: ev.sessionId },
+      consultations: {},
     });
 
     // set the agent configuration

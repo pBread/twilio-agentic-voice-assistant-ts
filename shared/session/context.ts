@@ -3,7 +3,7 @@ import type { UserRecord } from "../db-entities.js";
 
 export interface SessionContext {
   call?: CallDetails;
-  humanAssistantRequests?: Record<string, HumanAssistanceRequest>;
+  consultations?: Record<string, HumanConsultRequest>;
   procedures?: Record<string, Procedure>;
   toolConfig?: Record<string, ToolConfiguration>;
   user?: UserRecord;
@@ -37,10 +37,7 @@ export type CallDetails = {
     | "no-answer";
 };
 
-/****************************************************
- Facilitates two way dialogue w/human agent
-****************************************************/
-export interface HumanAssistanceRequest {
+export interface HumanConsultRequest {
   callSid: string;
   createdAt: string; // iso
   id: string;
@@ -48,7 +45,7 @@ export interface HumanAssistanceRequest {
   approvals: ApprovalRequest[];
 }
 
-interface ApprovalRequest {
+export interface ApprovalRequest {
   createdAt: string; // iso
   id: string;
   callSid: string;
