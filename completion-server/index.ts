@@ -6,7 +6,7 @@ import { prettyXML } from "../lib/xml.js";
 import {
   makeTransferToFlexHandoff,
   type TransferToFlexHandoff,
-} from "../modules/flex-transfer-to-agent/index.js";
+} from "../packages/flex-transfer-to-agent/index.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
 import type { CallDetails } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";

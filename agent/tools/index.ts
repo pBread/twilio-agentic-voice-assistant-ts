@@ -1,5 +1,5 @@
 import log from "../../lib/logger.js";
-import * as flexTools from "../../modules/flex-transfer-to-agent/tools.js";
+import * as flexTools from "../../packages/flex-transfer-to-agent/tools.js";
 import type { ToolDefinition, ToolExecutor, ToolSpec } from "../types.js";
 import * as fnTools from "./functions.js";
 
