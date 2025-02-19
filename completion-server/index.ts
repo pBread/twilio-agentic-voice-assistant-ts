@@ -4,6 +4,7 @@ import { getAgentConfig } from "../agent/index.js";
 import { getMakeLogger } from "../lib/logger.js";
 import { prettyXML } from "../lib/xml.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env/server.js";
+import type { HandoffData } from "../shared/handoff.js";
 import type { CallDetails } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";
 import type { AgentResolverConfig } from "./agent-resolver/types.js";
@@ -11,10 +12,7 @@ import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
 import { makeCallDetail } from "./helpers.js";
 import { SessionStore } from "./session-store/index.js";
 import { updateCallStatus, warmUpSyncSession } from "./session-store/sync.js";
-import {
-  ConversationRelayAdapter,
-  HandoffData,
-} from "./twilio/conversation-relay-adapter.js";
+import { ConversationRelayAdapter } from "./twilio/conversation-relay-adapter.js";
 import { makeConversationRelayTwiML } from "./twilio/twiml.js";
 import {
   endCall,
@@ -228,26 +226,24 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
 /****************************************************
  Executed After Conversation Relay Session Ends
  https://www.twilio.com/docs/voice/twiml/connect/conversationrelay#end-session-message
- Used for transfering calls to a human agent.
 ****************************************************/
-router.post("/call-wrapup", async (req, res) => {
-  const isHandoff = "HandoffData" in req.body;
+router.post("/wrapup-router", async (req, res) => {
   const callSid = req.body.CallSid;
-
   const log = getMakeLogger(callSid);
 
+  const isHandoff = "HandoffData" in req.body;
+
   if (!isHandoff) {
-    log.info(`/call-wrapup`, "call completed w/out handoff data");
+    log.info(`/wrapup-router`, "call completed w/out handoff data");
     res.status(200).send("complete");
     return;
   }
-
   let handoffData: HandoffData;
   try {
     handoffData = JSON.parse(req.body.HandoffData) as HandoffData;
   } catch (error) {
     log.error(
-      `/call-wrapup`,
+      `/wrapup-router`,
       "Unable to parse handoffData in wrapup webhook. ",
       "Request Body: ",
       JSON.stringify(req.body),
@@ -256,23 +252,22 @@ router.post("/call-wrapup", async (req, res) => {
     return;
   }
 
-  if (handoffData.reason === "error") {
-    log.info(
-      "/call-wrapup",
-      `wrapping up call that failed due to error, callSid: ${callSid}, message: ${handoffData.message}`,
-    );
+  switch (handoffData.reason) {
+    case "error":
+      log.info(
+        "/wrapup-router",
+        `wrapping up call that failed due to error, callSid: ${callSid}, message: ${handoffData.message}`,
+      );
 
-    await endCall(callSid);
+      await endCall(callSid);
+      res.status(200).send("complete");
+      break;
 
-    res.status(200).send("complete");
-    return;
-  }
-
-  if (isHandoff) {
-    log.info(
-      "/call-wrapup",
-      `Live agent handoff starting. CallSid: ${callSid}`,
-    );
+    default:
+      log.warn(
+        "/wrapup-router",
+        `unknown handoff reason, ${handoffData.reason} callSid: ${callSid}`,
+      );
   }
 });
 

@@ -1,4 +1,5 @@
 import type { WebSocket } from "ws";
+import type { HandoffData } from "../../shared/handoff.js";
 
 /**
  * @class ConversationRelayAdapter
@@ -214,13 +215,3 @@ type SetupMessage = {
   to: string;
   type: "setup";
 };
-
-/****************************************************
- Call Wrapup
-****************************************************/
-export type HandoffData = HandoffDueToError;
-
-interface HandoffDueToError {
-  reason: "error";
-  message: string;
-}
