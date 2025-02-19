@@ -1,6 +1,6 @@
 import log from "../../lib/logger.js";
+import * as flexTools from "../../modules/flex-transfer-to-agent/tools.js";
 import type { ToolDefinition, ToolExecutor, ToolSpec } from "../types.js";
-import * as flexTools from "./flex.js";
 import * as fnTools from "./functions.js";
 
 const tools = Object.entries({ ...fnTools, ...flexTools })
