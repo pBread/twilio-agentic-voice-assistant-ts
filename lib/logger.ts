@@ -231,6 +231,7 @@ export const createLogStreamer = (fileName: string) => {
   };
 };
 
+const timeouts = new Map<string, NodeJS.Timeout>();
 const loggerCache = new Map<string, StopwatchLogger>();
 export function getMakeLogger(callSid?: string) {
   if (!callSid) return new StopwatchLogger();
@@ -241,17 +242,19 @@ export function getMakeLogger(callSid?: string) {
   log = new StopwatchLogger(callSid);
   loggerCache.set(callSid, log);
 
-  setTimeout(
+  const timer = setTimeout(
     // the logger should be deleted after the call ends, but just to be safe, remove the logger after some long period of time
     () => {
       deleteLogger(callSid);
     },
     24 * 60 * 60 * 1000,
   );
+  timeouts.set(callSid, timer);
 
   return log;
 }
 
 export function deleteLogger(callSid: string) {
   loggerCache.delete(callSid);
+  timeouts.delete(callSid);
 }
