@@ -51,9 +51,9 @@ export class OpenAIConsciousLoop
     this.logStream = createLogStreamer("completion-chunks"); // saves the raw completion chunks for each completion. note: it is overridden every session
   }
 
-  logStream: ReturnType<typeof createLogStreamer>;
+  private logStream: ReturnType<typeof createLogStreamer>;
 
-  stream?: Stream<ChatCompletionChunk>;
+  private stream?: Stream<ChatCompletionChunk>;
   private activeCompletionId: string | undefined;
 
   run = async (): Promise<undefined | Promise<any>> => {
@@ -255,7 +255,7 @@ export class OpenAIConsciousLoop
     this.logStream.write("\n");
   };
 
-  handleRetry = async (attempt: number) =>
+  private handleRetry = async (attempt: number) =>
     new Promise((resolve) => {
       this.abort(); // set stream to undefined
 
@@ -299,7 +299,9 @@ export class OpenAIConsciousLoop
     return tools.length ? tools : undefined;
   };
 
-  translateToolSpec = (tool: ToolSpec): ChatCompletionTool | undefined => {
+  private translateToolSpec = (
+    tool: ToolSpec,
+  ): ChatCompletionTool | undefined => {
     if (tool.type === "function") {
       return {
         type: "function",
@@ -344,7 +346,7 @@ export class OpenAIConsciousLoop
         }),
     ] as ChatCompletionMessageParam[];
 
-  makeSystemParam = () => ({
+  private makeSystemParam = () => ({
     content: this.agent.getInstructions(),
     role: "system",
   });
