@@ -194,12 +194,12 @@ async function fetchToken() {
 
 const tracker: { [key: string]: number } = {};
 
-export function useInitializeCall(callSid: string) {
+export function useInitializeCall(callSid?: string) {
   const dispatch = useAppDispatch();
   const syncClient = useSyncClient();
 
-  const callStatuses = useAppSelector((state) =>
-    getCallFetchStatus(state, callSid),
+  const callStatuses = useAppSelector(
+    (state) => callSid && getCallFetchStatus(state, callSid),
   );
 
   return useEffect(() => {

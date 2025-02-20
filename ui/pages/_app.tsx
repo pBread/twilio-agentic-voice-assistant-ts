@@ -2,7 +2,11 @@ import { Header } from "@/components/Header";
 import { Helmet } from "@/components/Helmet";
 import { fetchAllCalls } from "@/state/calls";
 import { AppStore, makeStore } from "@/state/store";
-import { initSyncClient, useInitSyncListener } from "@/state/sync";
+import {
+  initSyncClient,
+  useInitializeCall,
+  useInitSyncListener,
+} from "@/state/sync";
 import "@/styles/globals.css";
 import { theme } from "@/styles/theme";
 import { isServer } from "@/util/env";
@@ -33,6 +37,10 @@ export default function App(props: AppProps) {
 
 function Main({ Component, pageProps, router }: AppProps) {
   useInitSyncListener();
+
+  const callSid = router.query.callSid as string | undefined;
+  useInitializeCall(callSid);
+
   return (
     <>
       <Helmet />
