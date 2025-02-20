@@ -1,13 +1,13 @@
-interface BaseRecord {
+export interface BaseDBRecord {
   id: string;
-  created_at: Date;
-  updated_at: Date;
+  created_at: string;
+  updated_at: string;
 }
 
 /****************************************************
  Users
 ****************************************************/
-export interface UserRecord extends BaseRecord {
+export interface UserRecord extends BaseDBRecord {
   first_name: string;
   last_name: string;
 
@@ -16,14 +16,14 @@ export interface UserRecord extends BaseRecord {
 
   payment_methods: PaymentMethod[];
 
-  date_of_birth?: Date;
+  date_of_birth?: string;
 
   city?: string;
   state?: string;
   zip?: string;
 }
 
-interface PaymentMethod extends BaseRecord {
+interface PaymentMethod extends BaseDBRecord {
   user_id: string;
   last_four: string;
   type: "card";
@@ -32,7 +32,7 @@ interface PaymentMethod extends BaseRecord {
 /****************************************************
  Orders
 ****************************************************/
-export interface Order extends BaseRecord {
+export interface Order extends BaseDBRecord {
   user_id: string;
   lines: OrderLine[];
 
@@ -46,7 +46,7 @@ export interface Order extends BaseRecord {
 
 type OrderStatus = "pending" | "delivered" | "cancelled";
 
-interface OrderLine extends BaseRecord {
+interface OrderLine extends BaseDBRecord {
   order_id: string;
 
   product?: Product;
@@ -61,7 +61,7 @@ interface OrderLine extends BaseRecord {
 /****************************************************
  Products
 ****************************************************/
-interface Product extends BaseRecord {
+interface Product extends BaseDBRecord {
   name: string;
   description: string;
 
