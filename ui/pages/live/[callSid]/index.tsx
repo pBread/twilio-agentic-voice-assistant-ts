@@ -49,15 +49,16 @@ function Conscious() {
         className="paper"
         style={{
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          flexDirection: "column",
+          minHeight: "200px",
+          maxHeight: "400px",
+          overflow: "scroll",
         }}
       >
-        <div
-          style={{ minHeight: "200px", maxHeight: "400px", overflow: "scroll" }}
-        >
-          <TurnsTable callSid={callSid} />
+        <div>
+          <Title order={4}>Turns</Title>
         </div>
+        <TurnsTable callSid={callSid} />
       </Paper>
     </div>
   );
@@ -72,7 +73,7 @@ function TurnsTable({ callSid }: { callSid: string }) {
         <Table.Tr>
           <Table.Th style={{ width: "60px" }}>Role</Table.Th>
           <Table.Th style={{ width: "60px" }}>Type</Table.Th>
-          <Table.Th>Content</Table.Th>
+          <Table.Th style={{ width: "100%" }}>Content</Table.Th>
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
@@ -109,7 +110,7 @@ function BotRow({ turnId }: TurnRow) {
     <>
       <Table.Td>{turn.role}</Table.Td>
       <Table.Td>{turn.type}</Table.Td>
-      <Table.Td>
+      <Table.Td style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
             display: "flex",
@@ -117,7 +118,7 @@ function BotRow({ turnId }: TurnRow) {
             gap: theme.spacing.xs,
           }}
         >
-          <div style={{ flex: 1 }}> {content}</div>
+          <div style={{ flex: 1, minWidth: 0 }}> {content}</div>
           <span>
             {turn.status === "interrupted" && (
               <Badge color="yellow">Interrupted</Badge>
