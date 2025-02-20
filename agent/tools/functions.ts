@@ -27,7 +27,7 @@ export const getUserByEmailOrPhone: ToolDefinition<GetProfile> = {
   parameters: GetProfileParams,
   type: "function",
   async fn(args: GetProfile, deps) {
-    await new Promise((resolve) => setTimeout(() => resolve(null), 2 * 1000));
+    await new Promise((resolve) => setTimeout(() => resolve(null), 600));
     if (!args.email && !args.phone) return;
 
     const _email = args.email?.toLowerCase().trim();
