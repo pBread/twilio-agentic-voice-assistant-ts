@@ -280,7 +280,6 @@ export function useInitializeCall(callSid?: string) {
     const initSyncContext = async () => {
       const uniqueName = makeContextMapName(callSid);
 
-      console.debug("initSyncContext", callSid);
       const map = await syncClient.map(uniqueName);
 
       dispatch(
