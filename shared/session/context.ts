@@ -4,10 +4,10 @@ import type { UserRecord } from "../db-entities.js";
 export interface SessionContext {
   // todo: make some properties required
 
-  call?: CallDetails;
-  procedures?: Record<string, Procedure>;
-  toolConfig?: Record<string, ToolConfiguration>;
-  user?: UserRecord;
+  call: CallDetails;
+  procedures: Record<string, Procedure>;
+  toolConfig: Record<string, ToolConfiguration>;
+  user: UserRecord;
 }
 
 export interface ToolConfiguration {

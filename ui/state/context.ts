@@ -2,15 +2,20 @@ import { parseCallSid } from "@/util/sync-ids";
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import type { SyncMapInstance } from "twilio/lib/rest/sync/v1/service/syncMap";
 import type { AppDispatch, RootState } from "./store";
-import { CallRecord } from "@shared/session/call";
+import type { SessionContext } from "@shared/session/context";
 
-const SLICE_NAME = "calls";
+const SLICE_NAME = "context";
 
-interface InitialState {}
+interface InitialState extends Partial<SessionContext> {}
 
-const initialState: InitialState = {};
+const initialState: InitialState = {
+  call: undefined,
+  procedures: undefined,
+  toolConfig: undefined,
+  user: undefined,
+};
 
-export const callsSlice = createSlice({
+export const contextSlice = createSlice({
   name: SLICE_NAME,
   initialState,
   reducers: {},
@@ -26,4 +31,4 @@ function getSlice(state: RootState) {
 /****************************************************
  Actions
 ****************************************************/
-export const {} = callsSlice.actions;
+export const {} = contextSlice.actions;

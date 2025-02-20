@@ -177,7 +177,7 @@ export class SyncQueueService {
   constructor(
     private callSid: string,
     private sync: SyncClient,
-    private getContext: () => SessionContext,
+    private getContext: () => Partial<SessionContext>,
     private getTurn: (turnId: string) => TurnRecord | undefined,
   ) {
     this.log = getMakeLogger(callSid);

@@ -15,7 +15,7 @@ import { TurnStore } from "./turn-store.js";
 export type * from "./turn-store.js";
 
 export class SessionStore {
-  public context: SessionContext;
+  public context: Partial<SessionContext>;
   public turns: TurnStore;
 
   private syncClient: SyncClient;
@@ -24,7 +24,7 @@ export class SessionStore {
 
   constructor(
     public callSid: string,
-    context?: SessionContext,
+    context?: Partial<SessionContext>,
   ) {
     this.log = getMakeLogger(callSid);
     this.eventEmitter = new TypedEventEmitter<TurnEvents>();
@@ -80,7 +80,7 @@ export class SessionStore {
   setContext = (update: Partial<SessionContext>, sendToSync = true) => {
     const prev = this.context;
 
-    const context = { ...this.context, ...update };
+    const context = { ...(this.context ?? {}), ...update };
 
     const diff = deepDiff(prev, context);
     if (!diff) return;
@@ -104,8 +104,8 @@ export type StoreEventEmitter = TypedEventEmitter<TurnEvents & ContextEvents>;
 
 export interface ContextEvents {
   contextUpdated: (payload: {
-    context: SessionContext;
-    prev: SessionContext;
+    context: Partial<SessionContext>;
+    prev: Partial<SessionContext>;
     keys: (keyof SessionContext)[];
   }) => void;
 }
