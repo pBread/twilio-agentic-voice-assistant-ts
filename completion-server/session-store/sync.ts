@@ -11,6 +11,7 @@ import {
 import type {
   CallDetails,
   SessionContext,
+  SessionMetaData,
 } from "../../shared/session/context.js";
 import type { TurnRecord } from "../../shared/session/turns.js";
 import { createSyncToken } from "../../shared/sync/create-token.js";
@@ -19,7 +20,6 @@ import {
   makeContextMapName,
   makeTurnMapName,
 } from "../../shared/sync/ids.js";
-import { syncMapToCallRecord } from "../../shared/sync/translators.js";
 
 /****************************************************
  Sync Client
@@ -197,8 +197,6 @@ export class SyncQueueService {
       .syncMaps(makeContextMapName(this.callSid))
       .fetch();
 
-    const call = syncMapToCallRecord(map);
-
     await syncSvcApi.syncStreams
       .create({ uniqueName: CALL_STREAM })
       .catch((error) => {
@@ -213,9 +211,16 @@ export class SyncQueueService {
         log.error("sync.queue", "error creating stream", error);
       });
 
+    // note: this must match the SessionMetaData in the UI's store
+    const session: SessionMetaData = {
+      id: this.callSid,
+      callSid: this.callSid,
+      dateCreated: map.dateCreated.toISOString(),
+    };
+
     await syncSvcApi
       .syncStreams(CALL_STREAM)
-      .streamMessages.create({ data: call });
+      .streamMessages.create({ data: session });
   };
 
   updateContext = async <K extends keyof SessionContext>(
