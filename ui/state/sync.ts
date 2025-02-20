@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { type ConnectionState, SyncClient } from "twilio-sync";
+import { v4 as uuidV4 } from "uuid";
 import { useAppSelector } from "./hooks";
 import type { AppDispatch, RootState } from "./store";
-import { v4 as uuidV4 } from "uuid";
 
 const SLICE_NAME = "sync";
 
@@ -63,6 +63,14 @@ export const { setSyncConnectionState, addNewCallId, removeNewCallId } =
 
 export async function initSync(dispatch: AppDispatch) {
   initSyncClient(dispatch);
+}
+
+export function useSyncClient() {
+  const connectionState = useAppSelector(getSyncConnectionState);
+
+  if (connectionState !== "connected") return;
+
+  return syncClient as SyncClient;
 }
 
 async function initSyncClient(dispatch: AppDispatch) {

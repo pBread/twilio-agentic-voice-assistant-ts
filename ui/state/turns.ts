@@ -44,6 +44,14 @@ function getSlice(state: RootState) {
   return state[SLICE_NAME];
 }
 
+export const {
+  selectAll: selectAllTurns,
+  selectById: selectTurnById,
+  selectIds: selectTurnIds,
+  selectEntities: selectTurnEntities,
+  selectTotal: selectTurnTotal,
+} = adapter.getSelectors(getSlice);
+
 /****************************************************
  Actions
 ****************************************************/
