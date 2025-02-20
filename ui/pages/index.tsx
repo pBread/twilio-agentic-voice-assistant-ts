@@ -1,14 +1,6 @@
 import { selectCallById, selectCallIds } from "@/state/calls";
 import { useAppSelector } from "@/state/hooks";
-import {
-  CopyButton,
-  HoverCard,
-  Paper,
-  Table,
-  Text,
-  Title,
-  Pagination,
-} from "@mantine/core";
+import { Pagination, Paper, Table, Text, Title } from "@mantine/core";
 import Link from "next/link";
 import { useState } from "react";
 
