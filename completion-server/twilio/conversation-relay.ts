@@ -3,7 +3,7 @@ import type { ConversationRelayAttributes } from "twilio/lib/twiml/VoiceResponse
 import type { WebSocket } from "ws";
 import { HOSTNAME } from "../../shared/env.js";
 
-interface MakeConversationRelayTwiML
+export interface MakeConversationRelayTwiML
   extends Omit<ConversationRelayAttributes, "url"> {
   callSid: string;
   context: {};

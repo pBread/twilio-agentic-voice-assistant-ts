@@ -44,6 +44,7 @@ router.post("/incoming-call", async (req, res) => {
 
     const welcomeGreeting = "Hello there. I am a voice bot";
     const twiml = makeConversationRelayTwiML({
+      ...agent.relayConfig,
       callSid: call.callSid,
       context: { ...agent.context, call },
       welcomeGreeting,
@@ -125,10 +126,14 @@ router.post("/outbound/answer", async (req, res) => {
   try {
     const agent = await getAgentConfig();
     await warmUpSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
+    const welcomeGreeting = "Hello there. I am a voice bot";
 
     const twiml = makeConversationRelayTwiML({
+      ...agent.relayConfig,
       callSid: call.callSid,
-      context: { agent, call },
+      context: { ...agent.context, call },
+      welcomeGreeting,
+      parameters: { agent, welcomeGreeting },
     });
     res.status(200).type("text/xml").end(twiml);
   } catch (error) {
