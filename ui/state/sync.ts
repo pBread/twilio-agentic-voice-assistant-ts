@@ -21,6 +21,7 @@ import {
   setCallContext,
   StoreSessionContext,
 } from "./context";
+import { isServer } from "@/util/env";
 
 const SLICE_NAME = "sync";
 
@@ -166,6 +167,7 @@ export function useInitSyncClient() {
   const connectionState = useAppSelector(getSyncConnectionState);
 
   useEffect(() => {
+    if (isServer) return;
     if (!connectionState) return;
     dispatch(setSyncConnectionState("started"));
     initSyncClient(dispatch);
@@ -216,8 +218,10 @@ export function useListenForNewCalls() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
+    if (isServer) return;
     if (!syncClient) return;
     if (syncInitStatus) return;
+
     dispatch(setSyncInitStatus("started"));
 
     (async () => {
@@ -249,6 +253,7 @@ export function useInitializeCall(callSid?: string) {
   );
 
   return useEffect(() => {
+    if (isServer) return;
     if (!callSid) return;
     if (!syncClient) return;
     if (callStatuses) return;
@@ -312,6 +317,7 @@ export function useFetchAllCalls() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
+    if (isServer) return;
     if (dataInitStatus) return;
     dispatch(setDataInitStatus("started"));
     fetchAllCalls(dispatch);

@@ -9,7 +9,6 @@ import {
 } from "@/state/sync";
 import "@/styles/globals.css";
 import { theme } from "@/styles/theme";
-import { isServer } from "@/util/env";
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
 import type { AppProps } from "next/app";
