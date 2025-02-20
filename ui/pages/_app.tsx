@@ -1,11 +1,11 @@
 import { Header } from "@/components/Header";
 import { Helmet } from "@/components/Helmet";
-import { fetchAllCalls } from "@/state/calls";
-import { AppDispatch, AppStore, makeStore } from "@/state/store";
+import { AppStore, makeStore } from "@/state/store";
 import {
-  initSyncClient,
+  useFetchAllCalls,
+  useInitSyncClient,
   useInitializeCall,
-  useInitSyncListener,
+  useListenForNewCalls,
 } from "@/state/sync";
 import "@/styles/globals.css";
 import { theme } from "@/styles/theme";
@@ -20,10 +20,6 @@ export default function App(props: AppProps) {
   const storeRef = useRef<AppStore | null>(null);
   if (!storeRef.current) {
     storeRef.current = makeStore();
-    if (!isServer) {
-      initSyncClient(storeRef.current.dispatch);
-      fetchAllCalls(storeRef.current.dispatch);
-    }
   }
 
   return (
@@ -36,7 +32,9 @@ export default function App(props: AppProps) {
 }
 
 function Main({ Component, pageProps, router }: AppProps) {
-  useInitSyncListener();
+  useInitSyncClient();
+  useFetchAllCalls();
+  useListenForNewCalls();
 
   const callSid = router.query.callSid as string | undefined;
   useInitializeCall(callSid);

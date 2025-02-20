@@ -29,9 +29,11 @@ const main = async () => {
   const syncMapApi = client.sync.v1.services(TWILIO_SYNC_SVC_SID).syncMaps;
   const maps = await syncMapApi.list();
 
-  const mapsToDelete = maps.filter(
-    (map) => isContextMapName(map.uniqueName) || isTurnMapName(map.uniqueName),
-  );
+  const mapsToDelete = maps;
+
+  // const mapsToDelete = maps.filter(
+  //   (map) => isContextMapName(map.uniqueName) || isTurnMapName(map.uniqueName),
+  // );
 
   console.log(
     `found ${maps.length} total sync maps, identified ${mapsToDelete.length} for deletion`,

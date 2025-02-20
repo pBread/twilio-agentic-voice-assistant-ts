@@ -9,10 +9,13 @@ import type { RootState } from "./store";
 
 const SLICE_NAME = "context";
 
-export interface StoreSessionContext extends SessionContext {
+export interface CallMetadata {
   id: string; // id is callSid
   callSid: string;
+  dateCreated: string; // iso
 }
+
+export interface StoreSessionContext extends CallMetadata, SessionContext {}
 
 const adapter = createEntityAdapter<StoreSessionContext>({
   sortComparer: (a, b) => {
@@ -31,6 +34,8 @@ export const contextSlice = createSlice({
   initialState: adapter.getInitialState({} as InitialState),
   reducers: {
     addOneContext: adapter.addOne, // represents one entire call context, which aligns to the entire sync map
+    addManyContext: adapter.addMany,
+
     removeOneContext: adapter.removeOne,
     setOneContext: adapter.setOne,
   },
@@ -50,8 +55,12 @@ function getSlice(state: RootState) {
 /****************************************************
  Actions
 ****************************************************/
-export const { addOneContext, removeOneContext, setOneContext } =
-  contextSlice.actions;
+export const {
+  addOneContext,
+  addManyContext,
+  removeOneContext,
+  setOneContext,
+} = contextSlice.actions;
 
 type SetInContextAction<K extends keyof SessionContext = keyof SessionContext> =
   {

@@ -14,7 +14,9 @@ import { useAppDispatch, useAppSelector } from "./hooks";
 import type { AppDispatch, RootState } from "./store";
 import { addOneTurn, removeOneTurn, setOneTurn } from "./turns";
 import {
+  addManyContext,
   addOneContext,
+  CallMetadata,
   removeOneContext,
   setCallContext,
   StoreSessionContext,
@@ -25,9 +27,12 @@ const SLICE_NAME = "sync";
 let syncClient: SyncClient | undefined;
 const identity = `ui-${uuidV4()}`;
 
+type SyncConnectionState = ConnectionState | "started";
+
 interface InitialState {
   newCallSids: string[];
-  syncConnectionState: ConnectionState;
+  syncConnectionState: SyncConnectionState;
+  dataInitStatus: FetchStatus | undefined; // tracks the initialization of calls
   syncInitStatus: FetchStatus | undefined; // tracks whether the map subscribers have been added
   callFetchStatusMap: Record<
     string,
@@ -35,10 +40,11 @@ interface InitialState {
   >;
 }
 
-type FetchStatus = "started" | "done";
+type FetchStatus = "started" | "done" | "error";
 
 const initialState: InitialState = {
   newCallSids: [],
+  dataInitStatus: undefined,
   syncInitStatus: undefined,
   syncConnectionState: "unknown",
   callFetchStatusMap: {},
@@ -75,8 +81,15 @@ export const syncSlice = createSlice({
       state.callFetchStatusMap[payload.callSid] = { context, turns };
     },
 
-    setSyncConnectionState(state, { payload }: PayloadAction<ConnectionState>) {
+    setSyncConnectionState(
+      state,
+      { payload }: PayloadAction<SyncConnectionState>,
+    ) {
       state.syncConnectionState = payload;
+    },
+
+    setDataInitStatus(state, { payload }: PayloadAction<FetchStatus>) {
+      state.dataInitStatus = payload;
     },
 
     setSyncInitStatus(state, { payload }: PayloadAction<FetchStatus>) {
@@ -94,6 +107,10 @@ function getSlice(state: RootState) {
 
 export function getSyncConnectionState(state: RootState) {
   return getSlice(state).syncConnectionState;
+}
+
+function getDataInitStatus(state: RootState) {
+  return getSlice(state).dataInitStatus;
 }
 
 export function getSyncInitStatus(state: RootState) {
@@ -128,36 +145,14 @@ export const {
   addNewCallId,
   removeNewCallId,
   setCallFetchStatus,
+  setDataInitStatus,
   setSyncConnectionState,
   setSyncInitStatus,
 } = syncSlice.actions;
 
-export function useInitSyncListener() {
-  const syncClient = useSyncClient();
-  const syncInitStatus = useAppSelector(getSyncInitStatus);
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    if (!syncClient) return;
-    if (syncInitStatus) return;
-    dispatch(setSyncInitStatus("started"));
-
-    (async () => {
-      const stream = await syncClient.stream(CALL_STREAM);
-      stream.on("messagePublished", async (ev) => {
-        const call = ev.message.data as CallRecord;
-        dispatch(setOneCall(call));
-        dispatch(addNewCallId(call.id));
-        setTimeout(() => {
-          dispatch(removeNewCallId(call.id));
-        }, 3000);
-
-        // useInitializeCall will naturally add the subscribers to the maps for context & turns when a component is rendered that requires that data
-      });
-    })();
-  }, [syncClient, syncInitStatus]);
-}
-
+/****************************************************
+ Sync Client
+****************************************************/
 export function useSyncClient() {
   const connectionState = useAppSelector(getSyncConnectionState);
 
@@ -166,7 +161,18 @@ export function useSyncClient() {
   return syncClient as SyncClient;
 }
 
-export async function initSyncClient(dispatch: AppDispatch) {
+export function useInitSyncClient() {
+  const dispatch = useAppDispatch();
+  const connectionState = useAppSelector(getSyncConnectionState);
+
+  useEffect(() => {
+    if (!connectionState) return;
+    dispatch(setSyncConnectionState("started"));
+    initSyncClient(dispatch);
+  }, [connectionState]);
+}
+
+async function initSyncClient(dispatch: AppDispatch) {
   const initialToken = await fetchToken();
 
   syncClient = new SyncClient(initialToken);
@@ -199,6 +205,40 @@ async function fetchToken() {
 }
 
 const tracker: { [key: string]: number } = {};
+
+/****************************************************
+ New Call Listener
+****************************************************/
+
+export function useListenForNewCalls() {
+  const syncClient = useSyncClient();
+  const syncInitStatus = useAppSelector(getSyncInitStatus);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (!syncClient) return;
+    if (syncInitStatus) return;
+    dispatch(setSyncInitStatus("started"));
+
+    (async () => {
+      const stream = await syncClient.stream(CALL_STREAM);
+      stream.on("messagePublished", async (ev) => {
+        const call = ev.message.data as CallRecord;
+        dispatch(setOneCall(call));
+        dispatch(addNewCallId(call.id));
+        setTimeout(() => {
+          dispatch(removeNewCallId(call.id));
+        }, 3000);
+
+        // useInitializeCall will naturally add the subscribers to the maps for context & turns when a component is rendered that requires that data
+      });
+    })();
+  }, [syncClient, syncInitStatus]);
+}
+
+/****************************************************
+ Initialize Data
+****************************************************/
 
 export function useInitializeCall(callSid?: string) {
   const dispatch = useAppDispatch();
@@ -265,4 +305,41 @@ export function useInitializeCall(callSid?: string) {
 
     Promise.all([initSyncContext(), initTurns()]);
   }, [callSid, callStatuses, syncClient]);
+}
+
+export function useFetchAllCalls() {
+  const dataInitStatus = useAppSelector(getDataInitStatus);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (dataInitStatus) return;
+    dispatch(setDataInitStatus("started"));
+    fetchAllCalls(dispatch);
+  }, [dataInitStatus]);
+}
+
+async function fetchAllCalls(dispatch: AppDispatch) {
+  try {
+    let pageNumber = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await fetch(`/api/calls?page=${pageNumber}`);
+      if (!response.ok) throw new Error("Network response was not ok");
+
+      const data = (await response.json()) as CallMetadata[];
+
+      if (data.length === 0) hasMore = false;
+      else {
+        dispatch(addManyContext(data as StoreSessionContext[]));
+        pageNumber++;
+      }
+    }
+
+    dispatch(setDataInitStatus("done"));
+  } catch (error) {
+    console.error("Error initializing call data.\n", error);
+    dispatch(setDataInitStatus("error"));
+    console.error("error occured while initializing calls", error);
+  }
 }
