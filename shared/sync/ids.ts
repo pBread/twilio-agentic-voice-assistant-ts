@@ -2,7 +2,7 @@
  Session Store
 ****************************************************/
 const callSidRe = /CA[a-f0-9]{32}/;
-function parseCallSid(idOrSid: string) {
+export function parseCallSid(idOrSid: string) {
   const match = idOrSid.match(callSidRe);
   if (!match) throw Error(`Unable to parse callSid from ${idOrSid}`);
   return match[0];

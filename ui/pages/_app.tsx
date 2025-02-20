@@ -10,12 +10,16 @@ import "@mantine/core/styles.css";
 import type { AppProps } from "next/app";
 import { useRef } from "react";
 import { Provider } from "react-redux";
+import { fetchAllCalls } from "@/state/calls";
 
 export default function App(props: AppProps) {
   const storeRef = useRef<AppStore | null>(null);
   if (!storeRef.current) {
     storeRef.current = makeStore();
-    if (!isServer) initSync(storeRef.current.dispatch);
+    if (!isServer) {
+      initSync(storeRef.current.dispatch);
+      fetchAllCalls(storeRef.current.dispatch);
+    }
   }
 
   return (
