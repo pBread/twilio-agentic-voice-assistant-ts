@@ -13,6 +13,12 @@ import { setOneCall } from "./calls";
 import { useAppDispatch, useAppSelector } from "./hooks";
 import type { AppDispatch, RootState } from "./store";
 import { addOneTurn, removeOneTurn, setOneTurn } from "./turns";
+import {
+  addOneContext,
+  removeOneContext,
+  setCallContext,
+  StoreSessionContext,
+} from "./context";
 
 const SLICE_NAME = "sync";
 
@@ -208,6 +214,7 @@ export function useInitializeCall(callSid?: string) {
     if (callStatuses) return;
 
     tracker[callSid] = (tracker[callSid] ?? 0) + 1;
+    console.debug("useInitializeCall", callSid);
 
     dispatch(
       setCallFetchStatus({ callSid, context: "started", turns: "started" }),
@@ -216,9 +223,17 @@ export function useInitializeCall(callSid?: string) {
     const initSyncContext = async () => {
       const uniqueName = makeContextMapName(callSid);
 
+      console.debug("initSyncContext");
       const map = await syncClient.map(uniqueName);
-      // map.on("itemAdded", (ev) => dispatch(addOneCall(ev.item.data)));
-      // map.on("itemRemoved", (ev) => dispatch(removeOneCall(ev.key)));
+
+      dispatch(
+        addOneContext({ callSid: callSid, id: callSid } as StoreSessionContext),
+      );
+
+      map.on("itemAdded", (ev) => console.debug(ev));
+
+      // map.on("itemAdded", (ev) => dispatch(setCallContext({callSid, key: ev})));
+      // map.on("itemRemoved", (ev) => dispatch(removeOneContext(callSid)));
       // map.on("itemUpdated", (ev) => dispatch(setOneCall(ev.item.data)));
 
       const items = await map.getItems();

@@ -6,6 +6,8 @@ import { CallRecord } from "@shared/session/call";
 
 const SLICE_NAME = "calls";
 
+// todo: this slice is redundant. the context slice includes all of this information
+
 const adapter = createEntityAdapter<CallRecord>({
   sortComparer: (a, b) =>
     new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime(),

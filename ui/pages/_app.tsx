@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Helmet } from "@/components/Helmet";
 import { fetchAllCalls } from "@/state/calls";
-import { AppStore, makeStore } from "@/state/store";
+import { AppDispatch, AppStore, makeStore } from "@/state/store";
 import {
   initSyncClient,
   useInitializeCall,
