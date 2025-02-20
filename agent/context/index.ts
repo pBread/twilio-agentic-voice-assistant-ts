@@ -2,5 +2,6 @@
 
 import { ToolConfiguration } from "../../shared/session/context.js";
 
+export { company } from "./company.js";
 export { procedures } from "./procedures.js";
 export const toolConfig: Record<string, ToolConfiguration> = {};

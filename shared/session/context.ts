@@ -4,6 +4,7 @@ import type { UserRecord } from "../db-entities.js";
 export interface SessionContext {
   call: CallDetails;
   contactCenter: ContactCenter;
+  company: CompanyDetails;
   procedures: Record<string, Procedure>;
   toolConfig: Record<string, ToolConfiguration>;
   user: UserRecord;
@@ -46,4 +47,9 @@ export interface CallDetails {
 
 export interface ContactCenter {
   waitTime: number; // minutes
+}
+
+export interface CompanyDetails {
+  name: string;
+  description: string;
 }
