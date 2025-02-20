@@ -172,6 +172,9 @@ export class SyncQueueService {
 
   public ctxMapPromise: Promise<SyncMap>;
   public turnMapPromise: Promise<SyncMap>;
+  readyPromise: Promise<boolean>;
+  readyPromiseResolver!: (val: boolean) => void;
+
   private log: ReturnType<typeof getMakeLogger>;
 
   constructor(
@@ -181,8 +184,13 @@ export class SyncQueueService {
     private getTurn: (turnId: string) => TurnRecord | undefined,
   ) {
     this.log = getMakeLogger(callSid);
-    this.ctxMapPromise = this.sync.map(makeContextMapName(callSid));
-    this.turnMapPromise = this.sync.map(makeTurnMapName(callSid));
+
+    this.readyPromise = new Promise((resolve) => {
+      this.readyPromiseResolver = resolve;
+    });
+
+    this.ctxMapPromise = this.sync.map(makeContextMapName(this.callSid));
+    this.turnMapPromise = this.sync.map(makeTurnMapName(this.callSid));
 
     this.initialize();
   }
@@ -221,6 +229,8 @@ export class SyncQueueService {
     await syncSvcApi
       .syncStreams(CALL_STREAM)
       .streamMessages.create({ data: session });
+
+    this.readyPromiseResolver(true);
   };
 
   updateContext = async <K extends keyof SessionContext>(
@@ -229,6 +239,7 @@ export class SyncQueueService {
     const queueKey = `${this.callSid}:context:${key}`;
     const queue = this.getQueue(queueKey);
 
+    await this.readyPromise;
     try {
       await queue.add(async () => {
         const count = this.queueCounts.get(queueKey) || 0;
@@ -271,7 +282,7 @@ export class SyncQueueService {
   updateTurn = async (turnId: string): Promise<void> => {
     const queueKey = `${this.callSid}:turn:${turnId}`;
     const queue = this.getQueue(queueKey);
-
+    await this.readyPromise;
     try {
       await queue.add(async () => {
         const count = this.queueCounts.get(queueKey) || 0;
@@ -298,7 +309,7 @@ export class SyncQueueService {
   addTurn = async (turn: TurnRecord): Promise<void> => {
     const queueKey = `${this.callSid}:turn:${turn.id}`;
     const queue = this.getQueue(queueKey);
-
+    await this.readyPromise;
     try {
       await queue.add(
         async () => {
@@ -324,7 +335,7 @@ export class SyncQueueService {
   deleteTurn = async (turnId: string): Promise<void> => {
     const queueKey = `${this.callSid}:turn:${turnId}`;
     const queue = this.getQueue(queueKey);
-
+    await this.readyPromise;
     try {
       await queue.add(async () => {
         const turnMap = await this.turnMapPromise;
