@@ -1,4 +1,4 @@
-import type { CallMetadata } from "@/state/sessions";
+import type { SessionMetaData } from "@/state/sessions";
 import {
   TWILIO_ACCOUNT_SID,
   TWILIO_API_KEY,
@@ -31,14 +31,14 @@ const handler: NextApiHandler = async (req: NextApiRequest, res) => {
 
   const records = Object.values(
     result
-      .map(toCallMetadata)
+      .map(toSessionMetaData)
       .reduce((acc, cur) => Object.assign(acc, { [cur.callSid]: cur }), {}), // deduplicate
   );
 
   res.json(records);
 };
 
-function toCallMetadata(map: SyncMapInstance): CallMetadata {
+function toSessionMetaData(map: SyncMapInstance): SessionMetaData {
   const callSid = parseCallSid(map.uniqueName);
   return { id: callSid, callSid, dateCreated: map.dateCreated.toISOString() };
 }

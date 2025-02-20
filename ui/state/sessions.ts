@@ -9,13 +9,13 @@ import type { RootState } from "./store";
 
 const SLICE_NAME = "sessions";
 
-export interface CallMetadata {
+export interface SessionMetaData {
   id: string; // id is callSid
   callSid: string;
   dateCreated: string; // iso
 }
 
-export interface StoreSessionContext extends CallMetadata, SessionContext {}
+export interface StoreSessionContext extends SessionMetaData, SessionContext {}
 
 const adapter = createEntityAdapter<StoreSessionContext>({
   sortComparer: (a, b) => {

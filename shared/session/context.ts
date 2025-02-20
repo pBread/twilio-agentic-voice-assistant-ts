@@ -8,6 +8,13 @@ export interface SessionContext {
   user: UserRecord;
 }
 
+// this is also defined in the UI store
+export interface SessionMetaData {
+  id: string; // callSid
+  callSid: string;
+  dateCreated: string;
+}
+
 export interface ToolConfiguration {
   restricted?: boolean;
 }

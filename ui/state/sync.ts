@@ -15,7 +15,7 @@ import { addOneTurn, removeOneTurn, setOneTurn } from "./turns";
 import {
   addManySessions,
   addOneSession,
-  CallMetadata,
+  SessionMetaData,
   removeOneSession,
   setCallContext,
   setOneSession,
@@ -173,7 +173,7 @@ export async function fetchAllCalls(dispatch: AppDispatch) {
       const response = await fetch(`/api/calls?page=${pageNumber}`);
       if (!response.ok) throw new Error("Network response was not ok");
 
-      const data = (await response.json()) as CallMetadata[];
+      const data = (await response.json()) as SessionMetaData[];
 
       if (data.length === 0) hasMore = false;
       else {
@@ -243,7 +243,7 @@ export function useListenForNewCalls() {
     (async () => {
       const stream = await syncClient.stream(CALL_STREAM);
       stream.on("messagePublished", async (ev) => {
-        const session = ev.message.data as CallMetadata;
+        const session = ev.message.data as SessionMetaData;
         dispatch(setOneSession(session as StoreSessionContext));
         dispatch(addNewCallId(session.id));
         setTimeout(() => {
