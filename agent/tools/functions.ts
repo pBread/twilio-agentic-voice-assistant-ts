@@ -107,3 +107,74 @@ export const getUserOrders: ToolDefinition<GetUserOrders> = {
     );
   },
 };
+
+/****************************************************
+ Get User Orders
+****************************************************/
+const ExecuteRefundParams: ToolParameters = {
+  type: "object",
+  properties: {
+    authority: {
+      type: "string",
+      description:
+        "Explain why you have the authority to process this refund. The permission requirements are listed in the procedures section of the system instructions.",
+    },
+    orderId: {
+      type: "string",
+      description: "The id of the order being refunded.",
+    },
+    orderLineIds: {
+      type: "array",
+      items: { type: "string" },
+      description: "The ids of the line items that are needed to be refunded.",
+    },
+    reason: {
+      type: "string",
+      description: "The reason the order is being refunded.",
+    },
+  },
+  required: ["authority", "orderId", "reason"],
+};
+
+interface ExecuteRefund {
+  userId: string;
+}
+
+export const executeRefund: ToolDefinition<ExecuteRefund> = {
+  name: "executeRefund",
+  description: "Execute a refund for a given order. Be sure ",
+  parameters: ExecuteRefundParams,
+  type: "function",
+  async fn(args: ExecuteRefund, deps) {
+    deps.log.debug("tool", "executeRefund", args);
+
+    return "refund-processed";
+  },
+};
+
+/****************************************************
+ Ask Agent
+****************************************************/
+const AskAgentParams: ToolParameters = {
+  type: "object",
+  properties: {
+    userId: { type: "string", description: "The user id from the user record" },
+  },
+  required: ["userId"],
+};
+
+interface AskAgent {
+  userId: string;
+}
+
+export const askAgent: ToolDefinition<AskAgent> = {
+  name: "askAgent",
+  description: "Ask a human agent a question.",
+  parameters: AskAgentParams,
+  type: "function",
+  async fn(args: AskAgent, deps) {
+    deps.log.debug("tool", "askAgent", args);
+
+    return "asked an agent";
+  },
+};

@@ -1,6 +1,7 @@
 import type { IAgentResolver } from "../completion-server/agent-resolver/types.js";
 import type { SessionStore } from "../completion-server/session-store/index.js";
 import type { ConversationRelayAdapter } from "../completion-server/twilio/conversation-relay.js";
+import { getMakeLogger } from "../lib/logger.js";
 
 /****************************************************
  LLM Config
@@ -68,6 +69,7 @@ export interface RequestToolSpec extends BaseTool {
 
 export interface ToolDependencies {
   agent: IAgentResolver;
+  log: ReturnType<typeof getMakeLogger>;
   relay: ConversationRelayAdapter;
   store: SessionStore;
 }

@@ -134,6 +134,7 @@ export class AgentResolver implements IAgentResolver {
           status: "complete",
           result: await exec(args, {
             agent: this,
+            log: this.log,
             relay: this.relay,
             store: this.store,
           }),
