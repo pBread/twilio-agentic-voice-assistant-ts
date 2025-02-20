@@ -19,8 +19,8 @@ export interface StoreSessionContext extends SessionMetaData, SessionContext {}
 
 const adapter = createEntityAdapter<StoreSessionContext>({
   sortComparer: (a, b) => {
-    const dateA = a.call?.startedAt ? new Date(a.call.startedAt).getTime() : 0;
-    const dateB = b.call?.startedAt ? new Date(b.call.startedAt).getTime() : 0;
+    const dateA = new Date(a.dateCreated).getTime();
+    const dateB = new Date(b.dateCreated).getTime();
     return dateB - dateA;
   },
 });
