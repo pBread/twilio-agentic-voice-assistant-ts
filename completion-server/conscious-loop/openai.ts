@@ -121,7 +121,7 @@ export class OpenAIConsciousLoop
         params = {
           content,
           id: chunk.id,
-          origin: "completion",
+          origin: "llm",
           status: "streaming",
         };
         botText = this.store.turns.addBotText(params);
@@ -140,7 +140,7 @@ export class OpenAIConsciousLoop
         if (!("tool_calls" in delta)) throw Error("No tool_calls in 1st delta"); // should be unreachable
         params = {
           id: chunk.id,
-          origin: "completion",
+          origin: "llm",
           status: "streaming",
           tool_calls: delta.tool_calls as StoreToolCall[],
         }; // isFirstToolDelta

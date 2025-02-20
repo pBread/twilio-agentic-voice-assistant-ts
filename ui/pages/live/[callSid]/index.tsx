@@ -72,7 +72,7 @@ function TurnsTable({ callSid }: { callSid: string }) {
       <Table.Thead>
         <Table.Tr>
           <Table.Th style={{ width: "60px" }}>Role</Table.Th>
-          <Table.Th style={{ width: "60px" }}>Type</Table.Th>
+          <Table.Th style={{ width: "60px" }}>Origin</Table.Th>
           <Table.Th style={{ width: "100%" }}>Content</Table.Th>
         </Table.Tr>
       </Table.Thead>
@@ -80,6 +80,7 @@ function TurnsTable({ callSid }: { callSid: string }) {
         {turns.map((turn) => (
           <Table.Tr key={`me7-${turn.id}`}>
             {turn.role === "bot" && <BotRow turnId={turn.id} />}
+            {turn.role === "human" && <HumanRow turnId={turn.id} />}
           </Table.Tr>
         ))}
       </Table.Tbody>
@@ -93,7 +94,8 @@ interface TurnRow {
 
 function BotRow({ turnId }: TurnRow) {
   const turn = useAppSelector((state) => selectTurnById(state, turnId));
-  if (turn.role !== "bot") return; // typeguard
+  if (turn.role !== "bot")
+    throw Error(`Expected bot turn ${JSON.stringify(turn)}`); // typeguard
 
   let content: string[] = [];
   if (turn.type === "tool") {
@@ -109,7 +111,7 @@ function BotRow({ turnId }: TurnRow) {
   return (
     <>
       <Table.Td>{turn.role}</Table.Td>
-      <Table.Td>{turn.type}</Table.Td>
+      <Table.Td>{turn.origin}</Table.Td>
       <Table.Td style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
@@ -130,7 +132,19 @@ function BotRow({ turnId }: TurnRow) {
   );
 }
 
-function HumanRow({}: TurnRow) {}
+function HumanRow({ turnId }: TurnRow) {
+  const turn = useAppSelector((state) => selectTurnById(state, turnId));
+  if (turn.role !== "human")
+    throw Error(`Expected human turn ${JSON.stringify(turn)}`); // typeguard
+
+  return (
+    <>
+      <Table.Td> {turn.role}</Table.Td>
+      <Table.Td> {turn.type}</Table.Td>
+      <Table.Td> {turn.content}</Table.Td>
+    </>
+  );
+}
 
 /****************************************************
  Subconscious

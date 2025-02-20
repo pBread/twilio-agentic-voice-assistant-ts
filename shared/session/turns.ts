@@ -27,7 +27,7 @@ export type BotTurnParams =
   | BotTextTurnParams
   | BotToolTurnParams;
 
-type BotOrigins = "completion" | "greeting" | "filler";
+type BotOrigins = "llm" | "greeting" | "filler";
 type BotTurnStatus = "streaming" | "complete" | "interrupted";
 
 // represents DTMF tones from the bot
