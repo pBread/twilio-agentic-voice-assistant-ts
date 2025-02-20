@@ -15,7 +15,6 @@ import { useState } from "react";
 export default function Home() {
   return (
     <div>
-      Home Page
       <CallTable />
     </div>
   );
@@ -37,6 +36,7 @@ function CallTable() {
           total={callIds.length / pageSize}
           value={activePage}
           onChange={setPage}
+          size="sm"
         />
       </div>
       <Table>
@@ -74,23 +74,34 @@ function CallRow({ callSid }: { callSid: string }) {
 
   return (
     <Table.Tr>
-      <Table.Td>Some Call</Table.Td>
       <Table.Td>
         <Link href={`/live/${callSid}`}>
-          <Text>{call.id}</Text>
+          <Text size="sm">Some Call </Text>
         </Link>
       </Table.Td>
       <Table.Td>
-        +12223330001
-        <br />
-        +12223330002
+        <Text size="xs">{call.id}</Text>
       </Table.Td>
-      <Table.Td>N/A</Table.Td>
       <Table.Td>
-        {date} <br />
-        {time}
+        <Text size="sm">
+          +12223330001
+          <br />
+          +12223330002
+        </Text>
       </Table.Td>
-      <Table.Td>Some Call</Table.Td>
+      <Table.Td>
+        <Text size="sm">N/A</Text>
+      </Table.Td>
+      <Table.Td>
+        <Text size="sm">
+          {date}
+          <br />
+          {time}
+        </Text>
+      </Table.Td>
+      <Table.Td>
+        <Text size="sm">Some Call</Text>
+      </Table.Td>
     </Table.Tr>
   );
 }
