@@ -31,7 +31,7 @@ const initialState: InitialState = {};
 
 export const sessionsSlice = createSlice({
   name: SLICE_NAME,
-  initialState: adapter.getInitialState({} as InitialState),
+  initialState: adapter.getInitialState(initialState),
   reducers: {
     addOneSession: adapter.addOne, // represents one entire call session, which aligns to the entire sync map
     addManySessions: adapter.addMany,
