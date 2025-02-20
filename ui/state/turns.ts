@@ -8,17 +8,11 @@ const adapter = createEntityAdapter<TurnRecord>({
   sortComparer: (a, b) => b.order - a.order,
 });
 
-interface InitialState {
-  loadingStates: Record<string, "loading" | "succeeded" | "failed">;
-  loadingErrors: Record<string, string>;
-}
+interface InitialState {}
 
 export const turnsSlice = createSlice({
   name: SLICE_NAME,
-  initialState: adapter.getInitialState({
-    loadingStates: {},
-    loadingErrors: {},
-  } as InitialState),
+  initialState: adapter.getInitialState({} as InitialState),
   reducers: {
     addManyTurns: adapter.addMany,
     addOneTurn: adapter.addOne,

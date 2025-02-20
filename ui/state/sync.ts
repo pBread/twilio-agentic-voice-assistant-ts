@@ -1,18 +1,18 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { type ConnectionState, SyncClient } from "twilio-sync";
-import { v4 as uuidV4 } from "uuid";
-import { useAppDispatch, useAppSelector } from "./hooks";
-import type { AppDispatch, RootState } from "./store";
-import { useEffect } from "react";
-import { addOneCall, removeOneCall, selectCallById, setOneCall } from "./calls";
 import {
   CALL_STREAM,
   makeContextMapName,
   makeTurnMapName,
 } from "@/util/sync-ids";
-import { addOneTurn, removeOneTurn, setOneTurn } from "./turns";
-import { TurnRecord } from "@shared/session/turns";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { CallRecord } from "@shared/session/call";
+import { TurnRecord } from "@shared/session/turns";
+import { useEffect } from "react";
+import { type ConnectionState, SyncClient } from "twilio-sync";
+import { v4 as uuidV4 } from "uuid";
+import { setOneCall } from "./calls";
+import { useAppDispatch, useAppSelector } from "./hooks";
+import type { AppDispatch, RootState } from "./store";
+import { addOneTurn, removeOneTurn, setOneTurn } from "./turns";
 
 const SLICE_NAME = "sync";
 
@@ -192,6 +192,8 @@ async function fetchToken() {
   }
 }
 
+const tracker: { [key: string]: number } = {};
+
 export function useInitializeCall(callSid: string) {
   const dispatch = useAppDispatch();
   const syncClient = useSyncClient();
@@ -201,9 +203,11 @@ export function useInitializeCall(callSid: string) {
   );
 
   return useEffect(() => {
+    if (!callSid) return;
     if (!syncClient) return;
     if (callStatuses) return;
-    if (!callSid) return;
+
+    tracker[callSid] = (tracker[callSid] ?? 0) + 1;
 
     dispatch(
       setCallFetchStatus({ callSid, context: "started", turns: "started" }),
@@ -218,7 +222,6 @@ export function useInitializeCall(callSid: string) {
       // map.on("itemUpdated", (ev) => dispatch(setOneCall(ev.item.data)));
 
       const items = await map.getItems();
-      console.debug("initContext items", items);
 
       dispatch(setCallFetchStatus({ callSid, context: "done" }));
     };
@@ -228,22 +231,17 @@ export function useInitializeCall(callSid: string) {
 
       const map = await syncClient.map(uniqueName);
       map.on("itemAdded", (ev) => {
-        console.debug("turn itemAdded", ev);
         dispatch(addOneTurn(ev.item.data));
       });
       map.on("itemRemoved", (ev) => {
-        console.debug("turn itemRemoved", ev);
-
         dispatch(removeOneTurn(ev.key));
       });
       map.on("itemUpdated", (ev) => {
-        console.debug("turn itemUpdated", ev);
-
         dispatch(setOneTurn(ev.item.data));
       });
 
       const result = await map.getItems();
-      console.debug("initConteinitTurnsxt result", result);
+
       for (const item of result.items)
         dispatch(addOneTurn(item.data as TurnRecord));
 
