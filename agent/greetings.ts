@@ -1,8 +1,8 @@
-import log from "../lib/logger.js";
+import { createRoundRobinPicker } from "../lib/round-robin-picker.js";
 import { interpolateTemplate } from "../lib/template.js";
-import { SessionContext } from "../shared/session/context.js";
+import type { SessionContext } from "../shared/session/context.js";
 
-const picker = createPhrasePicker();
+const picker = createRoundRobinPicker();
 
 export const greetings = [
   "You've reached {{company.name}}. A live agent will be available in approximately {{contactCenter.waitTime}} minutes. Can you tell me why you're calling so I can pass it along to the agent?",
@@ -12,25 +12,4 @@ export const greetings = [
 export function getGreeting(context: Partial<SessionContext>) {
   const template = picker(greetings);
   return interpolateTemplate(template, context);
-}
-
-function createPhrasePicker() {
-  let phraseCounters: { [key: string]: number } = {};
-
-  return function pickLeastUsedPhrase(phrases: string[]): string {
-    const minUsage = Math.min(
-      ...phrases.map((phrase) => phraseCounters[phrase] ?? 0),
-    );
-
-    const leastUsedPhrases = phrases.filter(
-      (phrase) => (phraseCounters[phrase] ?? 0) === minUsage,
-    );
-
-    const selected =
-      leastUsedPhrases[Math.floor(Math.random() * leastUsedPhrases.length)];
-
-    phraseCounters[selected] = (phraseCounters[selected] ?? 0) + 1;
-
-    return selected;
-  };
 }

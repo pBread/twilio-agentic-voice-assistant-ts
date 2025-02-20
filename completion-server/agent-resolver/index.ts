@@ -2,6 +2,7 @@ import { getToolExecutor } from "../../agent/tools/index.js";
 import { executeRequestTool } from "../../agent/tools/request.js";
 import type { LLMConfig, ToolResponse, ToolSpec } from "../../agent/types.js";
 import { getMakeLogger } from "../../lib/logger.js";
+import { createRoundRobinPicker } from "../../lib/round-robin-picker.js";
 import { chunkIntoSentences } from "../../lib/strings.js";
 import { interpolateTemplate } from "../../lib/template.js";
 import type { BotToolTurn } from "../../shared/session/turns.js";
@@ -26,6 +27,7 @@ export class AgentResolver implements IAgentResolver {
   ) {
     this.log = getMakeLogger(store.callSid);
     if (config) this.configure(config);
+    this.phrasePicker = createRoundRobinPicker();
   }
 
   configure = (config: Partial<AgentResolverConfig>) => {
@@ -144,6 +146,7 @@ export class AgentResolver implements IAgentResolver {
     return { status: "error", error: "Unknown tool type" };
   };
 
+  private phrasePicker: ReturnType<typeof createRoundRobinPicker>;
   private makeFillerPhraseTimer = (
     turnId: string,
     tool: ToolSpec,
@@ -160,7 +163,7 @@ export class AgentResolver implements IAgentResolver {
           ? this.fillerPhrases.primary
           : [];
 
-      const bestPhrase = this.pickLeastUsedPhrase(phrases);
+      const bestPhrase = this.phrasePicker(phrases);
       this.sayPhrase(bestPhrase, args);
     }, 500);
 
@@ -170,7 +173,7 @@ export class AgentResolver implements IAgentResolver {
       if (tool.fillers === null) return; // null means no fillers for this tool
 
       const phrases = this.fillerPhrases?.secondary ?? [];
-      const bestPhrase = this.pickLeastUsedPhrase(phrases);
+      const bestPhrase = this.phrasePicker(phrases);
       this.sayPhrase(bestPhrase, args);
     }, 4000);
 
@@ -178,24 +181,6 @@ export class AgentResolver implements IAgentResolver {
       clearTimeout(primary);
       clearTimeout(secondary);
     };
-  };
-
-  private phraseCounters: { [key: string]: number } = {};
-  private pickLeastUsedPhrase = (phrases: string[]) => {
-    if (!phrases.length) return;
-
-    const minUsage = Math.min(
-      ...phrases.map((phrase) => this.phraseCounters[phrase] ?? 0),
-    );
-
-    const leastUsedPhrases = phrases.filter(
-      (phrase) => (this.phraseCounters[phrase] ?? 0) === minUsage,
-    );
-    const selected =
-      leastUsedPhrases[Math.floor(Math.random() * leastUsedPhrases.length)];
-    this.phraseCounters[selected] = (this.phraseCounters[selected] ?? 0) + 1;
-
-    return selected;
   };
 
   private sayPhrase = (template?: string, args: object = {}) => {
