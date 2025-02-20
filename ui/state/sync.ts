@@ -12,6 +12,7 @@ import {
 } from "@/util/sync-ids";
 import { addOneTurn, removeOneTurn, setOneTurn } from "./turns";
 import { TurnRecord } from "@shared/session/turns";
+import { CallRecord } from "@shared/session/call";
 
 const SLICE_NAME = "sync";
 
@@ -125,7 +126,7 @@ export const {
   setSyncInitStatus,
 } = syncSlice.actions;
 
-export function useInitSync() {
+export function useInitSyncListener() {
   const syncClient = useSyncClient();
   const syncInitStatus = useAppSelector(getSyncInitStatus);
   const dispatch = useAppDispatch();
@@ -137,15 +138,18 @@ export function useInitSync() {
 
     (async () => {
       const stream = await syncClient.stream(CALL_STREAM);
-      stream.on("itemAdded", (ev) => {
-        console.debug("stream itemAdded", ev);
+      stream.on("messagePublished", async (ev) => {
+        const call = ev.message.data as CallRecord;
+        dispatch(setOneCall(call));
+        dispatch(addNewCallId(call.id));
+        setTimeout(() => {
+          dispatch(removeNewCallId(call.id));
+        }, 3000);
+
+        // useInitializeCall will naturally add the subscribers to the maps for context & turns when a component is rendered that requires that data
       });
     })();
   }, [syncClient, syncInitStatus]);
-}
-
-export async function initSync(dispatch: AppDispatch) {
-  initSyncClient(dispatch);
 }
 
 export function useSyncClient() {
@@ -156,7 +160,7 @@ export function useSyncClient() {
   return syncClient as SyncClient;
 }
 
-async function initSyncClient(dispatch: AppDispatch) {
+export async function initSyncClient(dispatch: AppDispatch) {
   const initialToken = await fetchToken();
 
   syncClient = new SyncClient(initialToken);
@@ -205,7 +209,7 @@ export function useInitializeCall(callSid: string) {
       setCallFetchStatus({ callSid, context: "started", turns: "started" }),
     );
 
-    const initContext = async () => {
+    const initSyncContext = async () => {
       const uniqueName = makeContextMapName(callSid);
 
       const map = await syncClient.map(uniqueName);
@@ -246,6 +250,6 @@ export function useInitializeCall(callSid: string) {
       dispatch(setCallFetchStatus({ callSid, turns: "done" }));
     };
 
-    Promise.all([initContext(), initTurns()]);
+    Promise.all([initSyncContext(), initTurns()]);
   }, [callSid, callStatuses, syncClient]);
 }
