@@ -11,6 +11,7 @@
     "@mantine/core": "^7.17.0",
     "@mantine/hooks": "^7.17.0",
     "@reduxjs/toolkit": "^2.5.1",
+    "framer-motion": "^12.4.5",
     "next": "15.1.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

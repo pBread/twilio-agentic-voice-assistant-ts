@@ -46,6 +46,15 @@ export const {
   selectTotal: selectTurnTotal,
 } = adapter.getSelectors(getSlice);
 
+export function getCallTurns(state: RootState, callSid: string) {
+  return selectAllTurns(state).filter((turn) => turn.callSid === callSid);
+}
+
+export function getCallTurnIds(state: RootState, callSid: string) {
+  const entities = selectTurnEntities(state);
+  return selectTurnIds(state).filter((id) => entities[id].callSid === callSid);
+}
+
 /****************************************************
  Actions
 ****************************************************/
