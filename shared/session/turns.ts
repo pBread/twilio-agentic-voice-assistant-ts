@@ -149,8 +149,11 @@ export type HumanTextTurnParams = Omit<
 ****************************************************/
 export interface SystemTurn extends TurnRecordBase {
   content: string;
+  origin: SystemOrigins;
   role: "system";
 }
+
+type SystemOrigins = "human";
 
 export type SystemTurnParams = Omit<
   SystemTurn,

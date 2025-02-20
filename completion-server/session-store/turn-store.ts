@@ -181,6 +181,7 @@ export class TurnStore {
         content: params.content,
         createdAt: new Date().toISOString(),
         id,
+        origin: params.origin,
         order: this.nextOrder(),
         role: "system",
         version: 0,
