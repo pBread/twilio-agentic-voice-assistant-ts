@@ -27,3 +27,9 @@ header {
   width: var(--logo-width);
   height: auto;
 }
+
+.paper {
+  --paper-shadow: var(--mantine-shadow-xs);
+  border: 1px solid var(--mantine-color-gray-3);
+  padding: 8px;
+}
