@@ -32,12 +32,12 @@ export default function App(props: AppProps) {
 }
 
 function Main({ Component, pageProps, router }: AppProps) {
-  useInitSyncClient();
-  useFetchAllCalls();
-  useListenForNewCalls();
+  useInitSyncClient(); // initialize sync client
+  useFetchAllCalls(); // fetch the initial data needed for the app
+  useListenForNewCalls(); // add a listener for new calls
 
   const callSid = router.query.callSid as string | undefined;
-  useInitializeCall(callSid);
+  useInitializeCall(callSid); // fetch the turns & context for calls
 
   return (
     <>
