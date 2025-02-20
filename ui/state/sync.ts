@@ -4,6 +4,9 @@ import { v4 as uuidV4 } from "uuid";
 import { useAppDispatch, useAppSelector } from "./hooks";
 import type { AppDispatch, RootState } from "./store";
 import { useEffect } from "react";
+import { addOneCall, removeOneCall, selectCallById, setOneCall } from "./calls";
+import { makeContextMapName, makeTurnMapName } from "@/util/sync-ids";
+import { addOneTurn, removeOneTurn, setOneTurn } from "./turns";
 
 const SLICE_NAME = "sync";
 
@@ -161,9 +164,40 @@ export function useInitializeCall(callSid: string) {
   return useEffect(() => {
     if (!syncClient) return;
     if (callStatuses) return;
+    if (!callSid) return;
 
     dispatch(
       setCallFetchStatus({ callSid, context: "started", turns: "started" }),
     );
-  }, [callStatuses, syncClient]);
+
+    const initContext = async () => {
+      const uniqueName = makeContextMapName(callSid);
+
+      const map = await syncClient.map(uniqueName);
+      // map.on("itemAdded", (ev) => dispatch(addOneCall(ev.item.data)));
+      // map.on("itemRemoved", (ev) => dispatch(removeOneCall(ev.key)));
+      // map.on("itemUpdated", (ev) => dispatch(setOneCall(ev.item.data)));
+
+      const items = await map.getItems();
+      console.debug("initContext items", items);
+
+      dispatch(setCallFetchStatus({ callSid, context: "done" }));
+    };
+
+    const initTurns = async () => {
+      const uniqueName = makeTurnMapName(callSid);
+
+      const map = await syncClient.map(uniqueName);
+      map.on("itemAdded", (ev) => dispatch(addOneTurn(ev.item.data)));
+      map.on("itemRemoved", (ev) => dispatch(removeOneTurn(ev.key)));
+      map.on("itemUpdated", (ev) => dispatch(setOneTurn(ev.item.data)));
+
+      const items = await map.getItems();
+      console.debug("initConteinitTurnsxt items", items);
+
+      dispatch(setCallFetchStatus({ callSid, turns: "done" }));
+    };
+
+    Promise.all([initContext(), initTurns()]);
+  }, [callSid, callStatuses, syncClient]);
 }

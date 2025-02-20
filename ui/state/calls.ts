@@ -1,4 +1,4 @@
-import { parseCallSid } from "@/util/sids";
+import { parseCallSid } from "@/util/sync-ids";
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import type { SyncMapInstance } from "twilio/lib/rest/sync/v1/service/syncMap";
 import type { AppDispatch, RootState } from "./store";
@@ -14,7 +14,6 @@ interface CallRecord {
   dateUpdated: string;
 
   serviceSid: string;
-  uniqueName: string;
 }
 
 const SLICE_NAME = "calls";
@@ -128,15 +127,15 @@ export async function fetchAllCalls(dispatch: AppDispatch) {
 ****************************************************/
 
 export function syncMapToCallRecord(map: SyncMapInstance): CallRecord {
-  const callSid = parseCallSid(map.uniqueName);
+  const callSid = parseCallSid(map.uniqueName) as string;
+
   return {
     accountSid: map.accountSid,
+    callSid,
     createdBy: map.createdBy,
     dateCreated: map.dateCreated.toISOString(),
     dateUpdated: map.dateUpdated.toISOString(),
     id: callSid,
-    callSid,
     serviceSid: map.serviceSid,
-    uniqueName: map.uniqueName,
   };
 }

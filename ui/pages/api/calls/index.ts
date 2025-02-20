@@ -7,6 +7,7 @@ import {
   TWILIO_SYNC_SVC_SID,
 } from "@/util/env.server";
 import { syncMapToCallRecord } from "@/state/calls";
+import { parseCallSid } from "@/util/sync-ids";
 
 const client = twilio(TWILIO_API_KEY, TWILIO_API_SECRET, {
   accountSid: TWILIO_ACCOUNT_SID,
@@ -29,6 +30,13 @@ const handler: NextApiHandler = async (req: NextApiRequest, res) => {
 
   const records = Object.values(
     result
+      .filter((map) => {
+        try {
+          return !!parseCallSid(map.uniqueName);
+        } catch (error) {
+          return false;
+        }
+      })
       .map((map) => syncMapToCallRecord(map))
       .reduce((acc, cur) => Object.assign(acc, { [cur.callSid]: cur }), {}),
   );
