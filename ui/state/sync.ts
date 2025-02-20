@@ -1,27 +1,26 @@
+import { isServer } from "@/util/env";
 import {
   CALL_STREAM,
   makeContextMapName,
   makeTurnMapName,
 } from "@/util/sync-ids";
-import { createSlice, PayloadAction, Store } from "@reduxjs/toolkit";
-import { CallRecord } from "@shared/session/call";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { TurnRecord } from "@shared/session/turns";
 import { useEffect } from "react";
 import { type ConnectionState, SyncClient } from "twilio-sync";
 import { v4 as uuidV4 } from "uuid";
 import { useAppDispatch, useAppSelector } from "./hooks";
-import type { AppDispatch, RootState } from "./store";
-import { addOneTurn, removeOneTurn, setOneTurn } from "./turns";
 import {
   addManySessions,
   addOneSession,
   SessionMetaData,
-  removeOneSession,
-  setCallContext,
+  setInSessionContext,
   setOneSession,
+  SetSessionContext,
   StoreSessionContext,
 } from "./sessions";
-import { isServer } from "@/util/env";
+import type { AppDispatch, RootState } from "./store";
+import { addOneTurn, removeOneTurn, setOneTurn } from "./turns";
 
 const SLICE_NAME = "sync";
 
@@ -274,7 +273,6 @@ export function useInitializeCall(callSid?: string) {
     if (callStatuses) return;
 
     tracker[callSid] = (tracker[callSid] ?? 0) + 1;
-    console.debug("useInitializeCall", callSid);
 
     dispatch(
       setCallFetchStatus({ callSid, context: "started", turns: "started" }),
@@ -283,20 +281,45 @@ export function useInitializeCall(callSid?: string) {
     const initSyncContext = async () => {
       const uniqueName = makeContextMapName(callSid);
 
-      console.debug("initSyncContext");
+      console.debug("initSyncContext", callSid);
       const map = await syncClient.map(uniqueName);
 
       dispatch(
         addOneSession({ callSid: callSid, id: callSid } as StoreSessionContext),
       );
 
-      map.on("itemAdded", (ev) => console.debug(ev));
+      map.on("itemAdded", (ev) =>
+        dispatch(
+          setInSessionContext({
+            callSid,
+            key: ev.item.key,
+            value: ev.item.data,
+          } as SetSessionContext),
+        ),
+      );
 
-      // map.on("itemAdded", (ev) => dispatch(setCallContext({callSid, key: ev})));
+      map.on("itemUpdated", (ev) => console.debug("itemUpdated", callSid, ev));
+      map.on("itemUpdated", (ev) =>
+        dispatch(
+          setInSessionContext({
+            callSid,
+            key: ev.item.key,
+            value: ev.item.data,
+          } as SetSessionContext),
+        ),
+      );
+
       // map.on("itemRemoved", (ev) => dispatch(removeOneSession(callSid)));
-      // map.on("itemUpdated", (ev) => dispatch(setOneCall(ev.item.data)));
 
-      const items = await map.getItems();
+      const result = await map.getItems();
+      for (const item of result.items)
+        dispatch(
+          setInSessionContext({
+            callSid,
+            key: item.key,
+            value: item.data,
+          } as SetSessionContext),
+        );
 
       dispatch(setCallFetchStatus({ callSid, context: "done" }));
     };

@@ -67,22 +67,24 @@ export const {
   setOneSession,
 } = sessionsSlice.actions;
 
-type SetInContextAction<K extends keyof SessionContext = keyof SessionContext> =
-  {
-    callSid: string;
-    key: K;
-    value: SessionContext[K];
-  };
+export type SetSessionContext<
+  K extends keyof SessionContext = keyof SessionContext,
+> = {
+  callSid: string;
+  key: K;
+  value: SessionContext[K];
+};
 
 type SetInThunk = <K extends keyof SessionContext>(
-  action: SetInContextAction<K>,
+  action: SetSessionContext<K>,
 ) => ThunkAction<void, RootState, unknown, Action>;
 
-export const setCallContext: SetInThunk = (action) => (dispatch, getState) => {
-  const currentContext = selectSessionById(getState(), action.callSid) ?? {
-    id: action.callSid,
-    callSid: action.callSid,
+export const setInSessionContext: SetInThunk =
+  (action) => (dispatch, getState) => {
+    const currentContext = selectSessionById(getState(), action.callSid) ?? {
+      id: action.callSid,
+      callSid: action.callSid,
+    };
+    const nextContext = { ...currentContext, [action.key]: action.value };
+    dispatch(setOneSession(nextContext));
   };
-  const nextContext = { ...currentContext, [action.key]: action.value };
-  dispatch(setOneSession(nextContext));
-};
