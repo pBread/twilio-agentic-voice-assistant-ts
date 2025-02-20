@@ -1,8 +1,10 @@
 import { selectCallById, selectCallIds } from "@/state/calls";
 import { useAppSelector } from "@/state/hooks";
-import { Pagination, Paper, Table, Text, Title } from "@mantine/core";
+import { useInitializeCall } from "@/state/sync";
+import { Loader, Pagination, Paper, Table, Text, Title } from "@mantine/core";
 import Link from "next/link";
-import { useState } from "react";
+import { PropsWithChildren, useState } from "react";
+import { useIsCallLoaded } from "@/state/sync";
 
 export default function Home() {
   return (
@@ -61,25 +63,34 @@ function chunk<T>(array: T[], size: number): T[][] {
 }
 
 function CallRow({ callSid }: { callSid: string }) {
+  useInitializeCall(callSid);
   const call = useAppSelector((state) => selectCallById(state, callSid));
   const [date, time] = new Date(call.dateCreated).toLocaleString().split(",");
+
+  const isCallLoaded = useIsCallLoaded(callSid);
 
   return (
     <Table.Tr>
       <Table.Td>
+        <CallLoader callSid={callSid}>
+          <Link href={`/live/${callSid}`}>
+            <Text size="sm">Call Title </Text>
+          </Link>
+        </CallLoader>
+      </Table.Td>
+      <Table.Td>
         <Link href={`/live/${callSid}`}>
-          <Text size="sm">Some Call </Text>
+          <Text size="xs">{call.id}</Text>
         </Link>
       </Table.Td>
       <Table.Td>
-        <Text size="xs">{call.id}</Text>
-      </Table.Td>
-      <Table.Td>
-        <Text size="sm">
-          +12223330001
-          <br />
-          +12223330002
-        </Text>
+        <CallLoader callSid={callSid}>
+          <Text size="sm">
+            +12223330001
+            <br />
+            +12223330002
+          </Text>
+        </CallLoader>
       </Table.Td>
       <Table.Td>
         <Text size="sm">N/A</Text>
@@ -92,8 +103,19 @@ function CallRow({ callSid }: { callSid: string }) {
         </Text>
       </Table.Td>
       <Table.Td>
-        <Text size="sm">Some Call</Text>
+        <CallLoader callSid={callSid}>
+          <Text size="sm">Some Call</Text>
+        </CallLoader>
       </Table.Td>
     </Table.Tr>
   );
+}
+
+function CallLoader({
+  callSid,
+  children,
+}: PropsWithChildren<{ callSid: string }>) {
+  const isCallLoaded = useIsCallLoaded(callSid);
+
+  return isCallLoaded ? children : <Loader size="sm" />;
 }
