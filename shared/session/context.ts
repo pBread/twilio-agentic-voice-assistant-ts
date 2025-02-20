@@ -3,6 +3,7 @@ import type { UserRecord } from "../db-entities.js";
 
 export interface SessionContext {
   call: CallDetails;
+  contactCenter: ContactCenter;
   procedures: Record<string, Procedure>;
   toolConfig: Record<string, ToolConfiguration>;
   user: UserRecord;
@@ -19,7 +20,7 @@ export interface ToolConfiguration {
   restricted?: boolean;
 }
 
-export type CallDetails = {
+export interface CallDetails {
   callSid: string;
   conversationRelaySessionId?: string; // the Conversation Relay session
 
@@ -41,4 +42,8 @@ export type CallDetails = {
     | "busy"
     | "failed"
     | "no-answer";
-};
+}
+
+export interface ContactCenter {
+  waitTime: number; // minutes
+}

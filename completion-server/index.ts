@@ -8,7 +8,7 @@ import {
   type TransferToFlexHandoff,
 } from "../packages/flex-transfer-to-agent/index.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env.js";
-import type { CallDetails } from "../shared/session/context.js";
+import type { CallDetails, SessionContext } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";
 import type { AgentResolverConfig } from "./agent-resolver/types.js";
 import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
@@ -42,11 +42,17 @@ router.post("/incoming-call", async (req, res) => {
     const agent = await getAgentConfig();
     await warmUpSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
 
-    const welcomeGreeting = "Hello there. I am a voice bot";
+    const context: Partial<SessionContext> = {
+      ...agent.context,
+      call,
+      contactCenter: { waitTime: 5 + Math.floor(Math.random() * 5) },
+    };
+    const welcomeGreeting = agent.getGreeting(context);
+
     const twiml = makeConversationRelayTwiML({
       ...agent.relayConfig,
       callSid: call.callSid,
-      context: { ...agent.context, call },
+      context,
       welcomeGreeting,
       parameters: { agent, welcomeGreeting },
     });
@@ -126,12 +132,18 @@ router.post("/outbound/answer", async (req, res) => {
   try {
     const agent = await getAgentConfig();
     await warmUpSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
-    const welcomeGreeting = "Hello there. I am a voice bot";
+
+    const context: Partial<SessionContext> = {
+      ...agent.context,
+      call,
+      contactCenter: { waitTime: 5 + Math.floor(Math.random() * 5) },
+    };
+    const welcomeGreeting = agent.getGreeting(context);
 
     const twiml = makeConversationRelayTwiML({
       ...agent.relayConfig,
       callSid: call.callSid,
-      context: { ...agent.context, call },
+      context,
       welcomeGreeting,
       parameters: { agent, welcomeGreeting },
     });
