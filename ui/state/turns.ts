@@ -1,4 +1,8 @@
-import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
+import {
+  createEntityAdapter,
+  createSelector,
+  createSlice,
+} from "@reduxjs/toolkit";
 import type { TurnRecord } from "@shared/session/turns";
 import type { RootState } from "./store";
 
@@ -46,14 +50,14 @@ export const {
   selectTotal: selectTurnTotal,
 } = adapter.getSelectors(getSlice);
 
-export function getCallTurns(state: RootState, callSid: string) {
-  return selectAllTurns(state).filter((turn) => turn.callSid === callSid);
-}
+export const selectCallTurns = createSelector(
+  [selectAllTurns, (_state: RootState, callSid: string) => callSid],
+  (turns, callSid) => turns.filter((turn) => turn.callSid === callSid),
+);
 
-export function getCallTurnIds(state: RootState, callSid: string) {
-  const entities = selectTurnEntities(state);
-  return selectTurnIds(state).filter((id) => entities[id].callSid === callSid);
-}
+export const selectCallTurnIds = createSelector(selectCallTurns, (turns) =>
+  turns.map((turn) => turn.id),
+);
 
 /****************************************************
  Actions

@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/state/hooks";
-import { getCallTurns, selectTurnById } from "@/state/turns";
+import { selectCallTurns, selectTurnById } from "@/state/turns";
 import { Badge, Paper, Table, Title, useMantineTheme } from "@mantine/core";
 import { useRouter } from "next/router";
 
@@ -64,7 +64,7 @@ function Conscious() {
 }
 
 function TurnsTable({ callSid }: { callSid: string }) {
-  const turns = useAppSelector((state) => getCallTurns(state, callSid));
+  const turns = useAppSelector((state) => selectCallTurns(state, callSid));
 
   return (
     <Table stickyHeader>
