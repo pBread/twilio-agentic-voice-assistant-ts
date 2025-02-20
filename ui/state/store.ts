@@ -1,10 +1,13 @@
-import { Action, configureStore, type Middleware } from "@reduxjs/toolkit";
+import {
+  Action,
+  configureStore,
+  ThunkAction,
+  type Middleware,
+} from "@reduxjs/toolkit";
 import { createLogger } from "redux-logger";
-import { callsSlice } from "./calls";
+import { sessionsSlice } from "./sessions";
 import { syncSlice } from "./sync";
 import { turnsSlice } from "./turns";
-import { contextSlice } from "./context";
-import { ThunkAction } from "@reduxjs/toolkit";
 
 const middleware: Middleware[] = [];
 if (process.env.NODE_ENV === "development") middleware.push(createLogger());
@@ -15,8 +18,7 @@ export const makeStore = () => {
       getDefaultMiddleware().concat(createLogger()),
 
     reducer: {
-      [callsSlice.name]: callsSlice.reducer,
-      [contextSlice.name]: contextSlice.reducer,
+      [sessionsSlice.name]: sessionsSlice.reducer,
       [syncSlice.name]: syncSlice.reducer,
       [turnsSlice.name]: turnsSlice.reducer,
     },

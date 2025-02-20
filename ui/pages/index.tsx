@@ -1,4 +1,4 @@
-import { selectCallById, selectCallIds } from "@/state/calls";
+import { selectSessionById, selectSessionIds } from "@/state/sessions";
 import { useAppSelector } from "@/state/hooks";
 import { useInitializeCall } from "@/state/sync";
 import { Loader, Pagination, Paper, Table, Text, Title } from "@mantine/core";
@@ -15,7 +15,7 @@ export default function Home() {
 }
 
 function CallTable() {
-  const callIds = useAppSelector(selectCallIds);
+  const callIds = useAppSelector(selectSessionIds);
   const [activePage, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const chunks = chunk(callIds, pageSize);
@@ -63,7 +63,7 @@ function chunk<T>(array: T[], size: number): T[][] {
 
 function CallRow({ callSid }: { callSid: string }) {
   useInitializeCall(callSid);
-  const call = useAppSelector((state) => selectCallById(state, callSid));
+  const call = useAppSelector((state) => selectSessionById(state, callSid));
   const [date, time] = new Date(call.dateCreated).toLocaleString().split(",");
 
   const isCallLoaded = useIsCallLoaded(callSid);

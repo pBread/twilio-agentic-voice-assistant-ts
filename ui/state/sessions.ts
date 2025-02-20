@@ -7,7 +7,7 @@ import {
 import type { SessionContext } from "@shared/session/context";
 import type { RootState } from "./store";
 
-const SLICE_NAME = "context";
+const SLICE_NAME = "sessions";
 
 export interface CallMetadata {
   id: string; // id is callSid
@@ -29,15 +29,15 @@ interface InitialState {}
 
 const initialState: InitialState = {};
 
-export const contextSlice = createSlice({
+export const sessionsSlice = createSlice({
   name: SLICE_NAME,
   initialState: adapter.getInitialState({} as InitialState),
   reducers: {
-    addOneContext: adapter.addOne, // represents one entire call context, which aligns to the entire sync map
-    addManyContext: adapter.addMany,
+    addOneSession: adapter.addOne, // represents one entire call session, which aligns to the entire sync map
+    addManySessions: adapter.addMany,
 
-    removeOneContext: adapter.removeOne,
-    setOneContext: adapter.setOne,
+    removeOneSession: adapter.removeOne,
+    setOneSession: adapter.setOne,
   },
 });
 
@@ -45,8 +45,13 @@ export const contextSlice = createSlice({
  Selectors
 ****************************************************/
 const selectors = adapter.getSelectors(getSlice);
-const { selectAll, selectById, selectEntities, selectTotal } = selectors;
-export const selectCallContext = selectById;
+export const {
+  selectAll: selectAllSessions,
+  selectById: selectSessionById,
+  selectEntities: selectSessionEntities,
+  selectIds: selectSessionIds,
+  selectTotal: selectSessionTotals,
+} = selectors;
 
 function getSlice(state: RootState) {
   return state[SLICE_NAME];
@@ -56,11 +61,11 @@ function getSlice(state: RootState) {
  Actions
 ****************************************************/
 export const {
-  addOneContext,
-  addManyContext,
-  removeOneContext,
-  setOneContext,
-} = contextSlice.actions;
+  addOneSession,
+  addManySessions,
+  removeOneSession,
+  setOneSession,
+} = sessionsSlice.actions;
 
 type SetInContextAction<K extends keyof SessionContext = keyof SessionContext> =
   {
@@ -74,10 +79,10 @@ type SetInThunk = <K extends keyof SessionContext>(
 ) => ThunkAction<void, RootState, unknown, Action>;
 
 export const setCallContext: SetInThunk = (action) => (dispatch, getState) => {
-  const currentContext = selectCallContext(getState(), action.callSid) ?? {
+  const currentContext = selectSessionById(getState(), action.callSid) ?? {
     id: action.callSid,
     callSid: action.callSid,
   };
   const nextContext = { ...currentContext, [action.key]: action.value };
-  dispatch(setOneContext(nextContext));
+  dispatch(setOneSession(nextContext));
 };

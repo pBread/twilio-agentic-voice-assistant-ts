@@ -3,24 +3,24 @@ import {
   makeContextMapName,
   makeTurnMapName,
 } from "@/util/sync-ids";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, Store } from "@reduxjs/toolkit";
 import { CallRecord } from "@shared/session/call";
 import { TurnRecord } from "@shared/session/turns";
 import { useEffect } from "react";
 import { type ConnectionState, SyncClient } from "twilio-sync";
 import { v4 as uuidV4 } from "uuid";
-import { setOneCall } from "./calls";
 import { useAppDispatch, useAppSelector } from "./hooks";
 import type { AppDispatch, RootState } from "./store";
 import { addOneTurn, removeOneTurn, setOneTurn } from "./turns";
 import {
-  addManyContext,
-  addOneContext,
+  addManySessions,
+  addOneSession,
   CallMetadata,
-  removeOneContext,
+  removeOneSession,
   setCallContext,
+  setOneSession,
   StoreSessionContext,
-} from "./context";
+} from "./sessions";
 import { isServer } from "@/util/env";
 
 const SLICE_NAME = "sync";
@@ -162,19 +162,36 @@ export function useSyncClient() {
   return syncClient as SyncClient;
 }
 
-export function useInitSyncClient() {
-  const dispatch = useAppDispatch();
-  const connectionState = useAppSelector(getSyncConnectionState);
+export async function fetchAllCalls(dispatch: AppDispatch) {
+  if (isServer) return;
+  try {
+    dispatch(setDataInitStatus("started"));
+    let pageNumber = 1;
+    let hasMore = true;
 
-  useEffect(() => {
-    if (isServer) return;
-    if (!connectionState) return;
-    dispatch(setSyncConnectionState("started"));
-    initSyncClient(dispatch);
-  }, [connectionState]);
+    while (hasMore) {
+      const response = await fetch(`/api/calls?page=${pageNumber}`);
+      if (!response.ok) throw new Error("Network response was not ok");
+
+      const data = (await response.json()) as CallMetadata[];
+
+      if (data.length === 0) hasMore = false;
+      else {
+        dispatch(addManySessions(data as StoreSessionContext[]));
+        pageNumber++;
+      }
+    }
+
+    dispatch(setDataInitStatus("done"));
+  } catch (error) {
+    console.error("Error initializing call data.\n", error);
+    dispatch(setDataInitStatus("error"));
+    console.error("error occured while initializing calls", error);
+  }
 }
 
-async function initSyncClient(dispatch: AppDispatch) {
+export async function initSyncClient(dispatch: AppDispatch) {
+  if (isServer) return;
   const initialToken = await fetchToken();
 
   syncClient = new SyncClient(initialToken);
@@ -218,7 +235,6 @@ export function useListenForNewCalls() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (isServer) return;
     if (!syncClient) return;
     if (syncInitStatus) return;
 
@@ -227,11 +243,11 @@ export function useListenForNewCalls() {
     (async () => {
       const stream = await syncClient.stream(CALL_STREAM);
       stream.on("messagePublished", async (ev) => {
-        const call = ev.message.data as CallRecord;
-        dispatch(setOneCall(call));
-        dispatch(addNewCallId(call.id));
+        const session = ev.message.data as CallMetadata;
+        dispatch(setOneSession(session as StoreSessionContext));
+        dispatch(addNewCallId(session.id));
         setTimeout(() => {
-          dispatch(removeNewCallId(call.id));
+          dispatch(removeNewCallId(session.id));
         }, 3000);
 
         // useInitializeCall will naturally add the subscribers to the maps for context & turns when a component is rendered that requires that data
@@ -241,7 +257,7 @@ export function useListenForNewCalls() {
 }
 
 /****************************************************
- Initialize Data
+ Fetch Context & Turns for a Call
 ****************************************************/
 
 export function useInitializeCall(callSid?: string) {
@@ -253,7 +269,6 @@ export function useInitializeCall(callSid?: string) {
   );
 
   return useEffect(() => {
-    if (isServer) return;
     if (!callSid) return;
     if (!syncClient) return;
     if (callStatuses) return;
@@ -272,13 +287,13 @@ export function useInitializeCall(callSid?: string) {
       const map = await syncClient.map(uniqueName);
 
       dispatch(
-        addOneContext({ callSid: callSid, id: callSid } as StoreSessionContext),
+        addOneSession({ callSid: callSid, id: callSid } as StoreSessionContext),
       );
 
       map.on("itemAdded", (ev) => console.debug(ev));
 
       // map.on("itemAdded", (ev) => dispatch(setCallContext({callSid, key: ev})));
-      // map.on("itemRemoved", (ev) => dispatch(removeOneContext(callSid)));
+      // map.on("itemRemoved", (ev) => dispatch(removeOneSession(callSid)));
       // map.on("itemUpdated", (ev) => dispatch(setOneCall(ev.item.data)));
 
       const items = await map.getItems();
@@ -310,42 +325,4 @@ export function useInitializeCall(callSid?: string) {
 
     Promise.all([initSyncContext(), initTurns()]);
   }, [callSid, callStatuses, syncClient]);
-}
-
-export function useFetchAllCalls() {
-  const dataInitStatus = useAppSelector(getDataInitStatus);
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    if (isServer) return;
-    if (dataInitStatus) return;
-    dispatch(setDataInitStatus("started"));
-    fetchAllCalls(dispatch);
-  }, [dataInitStatus]);
-}
-
-async function fetchAllCalls(dispatch: AppDispatch) {
-  try {
-    let pageNumber = 1;
-    let hasMore = true;
-
-    while (hasMore) {
-      const response = await fetch(`/api/calls?page=${pageNumber}`);
-      if (!response.ok) throw new Error("Network response was not ok");
-
-      const data = (await response.json()) as CallMetadata[];
-
-      if (data.length === 0) hasMore = false;
-      else {
-        dispatch(addManyContext(data as StoreSessionContext[]));
-        pageNumber++;
-      }
-    }
-
-    dispatch(setDataInitStatus("done"));
-  } catch (error) {
-    console.error("Error initializing call data.\n", error);
-    dispatch(setDataInitStatus("error"));
-    console.error("error occured while initializing calls", error);
-  }
 }
