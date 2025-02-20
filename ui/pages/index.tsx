@@ -70,6 +70,7 @@ function chunk<T>(array: T[], size: number): T[][] {
 
 function CallRow({ callSid }: { callSid: string }) {
   const call = useAppSelector((state) => selectCallById(state, callSid));
+  const [date, time] = new Date(call.dateCreated).toLocaleString().split(",");
 
   return (
     <Table.Tr>
@@ -79,9 +80,16 @@ function CallRow({ callSid }: { callSid: string }) {
           <Text>{call.id}</Text>
         </Link>
       </Table.Td>
-      <Table.Td>Some Call</Table.Td>
-      <Table.Td>Some Call</Table.Td>
-      <Table.Td>Some Call</Table.Td>
+      <Table.Td>
+        +12223330001
+        <br />
+        +12223330002
+      </Table.Td>
+      <Table.Td>N/A</Table.Td>
+      <Table.Td>
+        {date} <br />
+        {time}
+      </Table.Td>
       <Table.Td>Some Call</Table.Td>
     </Table.Tr>
   );
