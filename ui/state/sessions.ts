@@ -79,12 +79,13 @@ type SetInThunk = <K extends keyof SessionContext>(
   action: SetSessionContext<K>,
 ) => ThunkAction<void, RootState, unknown, Action>;
 
+// todo: make this a normal reducer
 export const setInSessionContext: SetInThunk =
   (action) => (dispatch, getState) => {
-    const currentContext = selectSessionById(getState(), action.callSid) ?? {
-      id: action.callSid,
-      callSid: action.callSid,
-    };
+    const currentContext = selectSessionById(getState(), action.callSid);
+    if (!currentContext)
+      throw Error("setInSessionContext couldn't find current context");
+
     const nextContext = { ...currentContext, [action.key]: action.value };
     dispatch(setOneSession(nextContext));
   };

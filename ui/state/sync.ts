@@ -258,7 +258,6 @@ export function useListenForNewCalls() {
 /****************************************************
  Fetch Context & Turns for a Call
 ****************************************************/
-
 export function useInitializeCall(callSid?: string) {
   const dispatch = useAppDispatch();
   const syncClient = useSyncClient();
@@ -307,8 +306,6 @@ export function useInitializeCall(callSid?: string) {
           } as SetSessionContext),
         ),
       );
-
-      map.on("itemRemoved", (ev) => console.debug("itemRemoved", ev));
 
       map.on("itemRemoved", (ev) =>
         dispatch(
