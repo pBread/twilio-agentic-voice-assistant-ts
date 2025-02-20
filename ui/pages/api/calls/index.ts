@@ -13,14 +13,27 @@ const client = twilio(TWILIO_API_KEY, TWILIO_API_SECRET, {
 });
 
 const handler: NextApiHandler = async (req: NextApiRequest, res) => {
-  const pageNumber = req.query.page ?? 1;
+  let pageNumber = (req.query.page as string | undefined) ?? 1;
+  if (typeof pageNumber === "string") pageNumber = parseInt(pageNumber);
 
-  const result = await client.sync.v1
-    .services(TWILIO_SYNC_SVC_SID)
-    // @ts-ignore
-    .syncMaps.page({ pageNumber, pageSize: 20 });
+  // todo: fix paging
+  const result =
+    pageNumber === 1
+      ? await client.sync.v1
+          .services(TWILIO_SYNC_SVC_SID)
+          .syncMaps.page({ pageSize: 20 })
+          .then((data) => data.instances)
+      : pageNumber === 2
+        ? await client.sync.v1.services(TWILIO_SYNC_SVC_SID).syncMaps.list()
+        : [];
 
-  res.json(result.instances.map((map) => syncMapToCallRecord(map)));
+  const records = Object.values(
+    result
+      .map((map) => syncMapToCallRecord(map))
+      .reduce((acc, cur) => Object.assign(acc, { [cur.callSid]: cur }), {}),
+  );
+
+  res.json(records);
 };
 
 export default handler;

@@ -65,6 +65,14 @@ function getSlice(state: RootState) {
   return state[SLICE_NAME];
 }
 
+export const {
+  selectAll: selectAllCalls,
+  selectById: selectCallById,
+  selectIds: selectCallIds,
+  selectEntities: selectCallEntities,
+  selectTotal: selectCallTotal,
+} = adapter.getSelectors(getSlice);
+
 /****************************************************
  Actions
 ****************************************************/
