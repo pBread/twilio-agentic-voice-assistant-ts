@@ -38,30 +38,27 @@ if (IS_TRANSFER_TO_FLEX_ENABLED) {
     description: "Transfers the call to a Flex agent",
     parameters: TransferToFlexAgentParams,
     type: "function",
-    fillers: [
-      "I will transfer you to an agent. Just one second.",
-      "I am transferring you to a live agent. Have a nice day, {{user.first_name}}.",
-      "Please hold while I transfer you to an agent.",
-    ],
+    fillers: null, // let the bot naturally create their own filler
     // function executor
     async fn(args: TransferToFlexAgent, deps) {
       const relay =
         deps.relay as ConversationRelayAdapter<TransferToFlexHandoff>;
 
-      await sleep(3000); // let the filler phrase be spoken
+      setTimeout(() => {
+        relay.end({
+          reasonCode: "transfer-to-flex",
+          accountSid: TWILIO_ACCOUNT_SID, // todo: make this injected from dependencies
+          from: deps.store.context.call?.from ?? "",
+          to: deps.store.context.call?.to ?? "",
+          sessionId: deps.store.context.call?.conversationRelaySessionId ?? "",
 
-      relay.end({
-        reasonCode: "transfer-to-flex",
-        accountSid: TWILIO_ACCOUNT_SID, // todo: make this injected from dependencies
-        from: deps.store.context.call?.from ?? "",
-        to: deps.store.context.call?.to ?? "",
-        sessionId: deps.store.context.call?.conversationRelaySessionId ?? "",
+          conversationSummary: args.conversationSummary ?? "N/A",
+          customerData: deps.store.context.user ?? {},
+          reason: args.reason ?? "N/A",
+        });
+      }, 3000);
 
-        conversationSummary: args.conversationSummary ?? "N/A",
-        customerData: deps.store.context.user ?? {},
-        reason: args.reason ?? "N/A",
-      });
-      return "Call transfered";
+      return "call-transfer-in-progress";
     },
   };
 }

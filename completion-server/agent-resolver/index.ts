@@ -152,6 +152,7 @@ export class AgentResolver implements IAgentResolver {
     const primary = setTimeout(() => {
       const turn = this.store.turns.get(turnId) as BotToolTurn | undefined;
       if (turn?.status === "interrupted") return;
+      if (tool.fillers === null) return; // null means no fillers for this tool
 
       const phrases = tool?.fillers?.length // use the tools filler phrases if they are defined
         ? tool.fillers
@@ -166,6 +167,7 @@ export class AgentResolver implements IAgentResolver {
     const secondary = setTimeout(() => {
       const turn = this.store.turns.get(turnId) as BotToolTurn | undefined;
       if (turn?.status === "interrupted") return;
+      if (tool.fillers === null) return; // null means no fillers for this tool
 
       const phrases = this.fillerPhrases?.secondary ?? [];
       const bestPhrase = this.pickLeastUsedPhrase(phrases);

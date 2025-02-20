@@ -48,7 +48,7 @@ interface BaseTool {
   description?: string;
   name: string;
   parameters?: ToolParameters;
-  fillers?: string[];
+  fillers?: string[] | null;
 }
 
 export interface FunctionToolSpec extends BaseTool {
