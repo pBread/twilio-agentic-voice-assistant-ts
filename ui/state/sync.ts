@@ -298,7 +298,6 @@ export function useInitializeCall(callSid?: string) {
         ),
       );
 
-      map.on("itemUpdated", (ev) => console.debug("itemUpdated", callSid, ev));
       map.on("itemUpdated", (ev) =>
         dispatch(
           setInSessionContext({
@@ -309,7 +308,17 @@ export function useInitializeCall(callSid?: string) {
         ),
       );
 
-      // map.on("itemRemoved", (ev) => dispatch(removeOneSession(callSid)));
+      map.on("itemRemoved", (ev) => console.debug("itemRemoved", ev));
+
+      map.on("itemRemoved", (ev) =>
+        dispatch(
+          setInSessionContext({
+            callSid,
+            key: ev.key,
+            value: ev?.undefined, // hack: undefined with item removed
+          } as SetSessionContext),
+        ),
+      );
 
       const result = await map.getItems();
       for (const item of result.items)
