@@ -50,15 +50,16 @@ function Conscious() {
         style={{
           display: "flex",
           flexDirection: "column",
-          minHeight: "200px",
-          maxHeight: "400px",
-          overflow: "scroll",
         }}
       >
         <div>
           <Title order={4}>Turns</Title>
         </div>
-        <TurnsTable callSid={callSid} />
+        <div
+          style={{ minHeight: "200px", maxHeight: "400px", overflow: "scroll" }}
+        >
+          <TurnsTable callSid={callSid} />
+        </div>
       </Paper>
     </div>
   );
