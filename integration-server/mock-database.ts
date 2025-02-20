@@ -1,6 +1,5 @@
 import { v4 as uuidV4 } from "uuid";
 import type {
-  BaseDBRecord,
   OrderRecord,
   ProductRecord,
   UserRecord,
@@ -189,7 +188,7 @@ const orders: OrderRecord[] = [
   },
 ];
 
-export const mockDatabase = { orders, products, users };
+export const db = { orders, products, users };
 
 /****************************************************
  Utilities
