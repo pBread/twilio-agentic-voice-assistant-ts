@@ -13,6 +13,7 @@ export default function Home() {
     </div>
   );
 }
+
 function CallTable() {
   const callIds = useAppSelector(selectCallIds);
   const [activePage, setPage] = useState(1);
