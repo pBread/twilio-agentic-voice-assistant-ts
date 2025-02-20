@@ -18,7 +18,6 @@ function CallTable() {
   const callIds = useAppSelector(selectCallIds);
   const [activePage, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-
   const chunks = chunk(callIds, pageSize);
   const visibleIds = chunks[activePage - 1] ?? [];
 
