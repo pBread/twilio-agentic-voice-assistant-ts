@@ -73,11 +73,16 @@ function CallRow({ callSid }: { callSid: string }) {
 
   return (
     <Table.Tr>
+      <Table.Td>Some Call</Table.Td>
       <Table.Td>
         <Link href={`/live/${callSid}`}>
           <Text>{call.id}</Text>
         </Link>
       </Table.Td>
+      <Table.Td>Some Call</Table.Td>
+      <Table.Td>Some Call</Table.Td>
+      <Table.Td>Some Call</Table.Td>
+      <Table.Td>Some Call</Table.Td>
     </Table.Tr>
   );
 }
