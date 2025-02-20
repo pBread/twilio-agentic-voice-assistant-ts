@@ -5,8 +5,13 @@ import { useAppDispatch, useAppSelector } from "./hooks";
 import type { AppDispatch, RootState } from "./store";
 import { useEffect } from "react";
 import { addOneCall, removeOneCall, selectCallById, setOneCall } from "./calls";
-import { makeContextMapName, makeTurnMapName } from "@/util/sync-ids";
+import {
+  CALL_STREAM,
+  makeContextMapName,
+  makeTurnMapName,
+} from "@/util/sync-ids";
 import { addOneTurn, removeOneTurn, setOneTurn } from "./turns";
+import { TurnRecord } from "@shared/session/turns";
 
 const SLICE_NAME = "sync";
 
@@ -16,6 +21,7 @@ const identity = `ui-${uuidV4()}`;
 interface InitialState {
   newCallSids: string[];
   syncConnectionState: ConnectionState;
+  syncInitStatus: FetchStatus | undefined; // tracks whether the map subscribers have been added
   callFetchStatusMap: Record<
     string,
     { context: FetchStatus; turns: FetchStatus }
@@ -26,6 +32,7 @@ type FetchStatus = "started" | "done";
 
 const initialState: InitialState = {
   newCallSids: [],
+  syncInitStatus: undefined,
   syncConnectionState: "unknown",
   callFetchStatusMap: {},
 };
@@ -64,6 +71,10 @@ export const syncSlice = createSlice({
     setSyncConnectionState(state, { payload }: PayloadAction<ConnectionState>) {
       state.syncConnectionState = payload;
     },
+
+    setSyncInitStatus(state, { payload }: PayloadAction<FetchStatus>) {
+      state.syncInitStatus = payload;
+    },
   },
 });
 
@@ -76,6 +87,10 @@ function getSlice(state: RootState) {
 
 export function getSyncConnectionState(state: RootState) {
   return getSlice(state).syncConnectionState;
+}
+
+export function getSyncInitStatus(state: RootState) {
+  return getSlice(state).syncInitStatus;
 }
 
 export function getNewCallSids(state: RootState) {
@@ -107,7 +122,27 @@ export const {
   removeNewCallId,
   setCallFetchStatus,
   setSyncConnectionState,
+  setSyncInitStatus,
 } = syncSlice.actions;
+
+export function useInitSync() {
+  const syncClient = useSyncClient();
+  const syncInitStatus = useAppSelector(getSyncInitStatus);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (!syncClient) return;
+    if (syncInitStatus) return;
+    dispatch(setSyncInitStatus("started"));
+
+    (async () => {
+      const stream = await syncClient.stream(CALL_STREAM);
+      stream.on("itemAdded", (ev) => {
+        console.debug("stream itemAdded", ev);
+      });
+    })();
+  }, [syncClient, syncInitStatus]);
+}
 
 export async function initSync(dispatch: AppDispatch) {
   initSyncClient(dispatch);
@@ -188,12 +223,25 @@ export function useInitializeCall(callSid: string) {
       const uniqueName = makeTurnMapName(callSid);
 
       const map = await syncClient.map(uniqueName);
-      map.on("itemAdded", (ev) => dispatch(addOneTurn(ev.item.data)));
-      map.on("itemRemoved", (ev) => dispatch(removeOneTurn(ev.key)));
-      map.on("itemUpdated", (ev) => dispatch(setOneTurn(ev.item.data)));
+      map.on("itemAdded", (ev) => {
+        console.debug("turn itemAdded", ev);
+        dispatch(addOneTurn(ev.item.data));
+      });
+      map.on("itemRemoved", (ev) => {
+        console.debug("turn itemRemoved", ev);
 
-      const items = await map.getItems();
-      console.debug("initConteinitTurnsxt items", items);
+        dispatch(removeOneTurn(ev.key));
+      });
+      map.on("itemUpdated", (ev) => {
+        console.debug("turn itemUpdated", ev);
+
+        dispatch(setOneTurn(ev.item.data));
+      });
+
+      const result = await map.getItems();
+      console.debug("initConteinitTurnsxt result", result);
+      for (const item of result.items)
+        dispatch(addOneTurn(item.data as TurnRecord));
 
       dispatch(setCallFetchStatus({ callSid, turns: "done" }));
     };

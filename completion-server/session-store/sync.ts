@@ -1,7 +1,7 @@
 import PQueue from "p-queue";
 import twilio from "twilio";
 import { SyncClient, type SyncMap } from "twilio-sync";
-import { getMakeLogger } from "../../lib/logger.js";
+import log, { getMakeLogger } from "../../lib/logger.js";
 import {
   TWILIO_ACCOUNT_SID as accountSid,
   TWILIO_API_KEY,
@@ -14,7 +14,12 @@ import type {
 } from "../../shared/session/context.js";
 import type { TurnRecord } from "../../shared/session/turns.js";
 import { createSyncToken } from "../../shared/sync/create-token.js";
-import { makeContextMapName, makeTurnMapName } from "../../shared/sync/ids.js";
+import {
+  CALL_STREAM,
+  makeContextMapName,
+  makeTurnMapName,
+} from "../../shared/sync/ids.js";
+import { syncMapToCallRecord } from "../../shared/sync/translators.js";
 
 /****************************************************
  Sync Client
@@ -178,7 +183,40 @@ export class SyncQueueService {
     this.log = getMakeLogger(callSid);
     this.ctxMapPromise = this.sync.map(makeContextMapName(callSid));
     this.turnMapPromise = this.sync.map(makeTurnMapName(callSid));
+
+    this.initialize();
   }
+
+  private initialize = async () => {
+    await this.ctxMapPromise;
+    await this.turnMapPromise;
+    const client = twilio(TWILIO_API_KEY, TWILIO_API_SECRET, { accountSid });
+
+    const syncSvcApi = client.sync.v1.services(TWILIO_SYNC_SVC_SID);
+    const map = await syncSvcApi
+      .syncMaps(makeContextMapName(this.callSid))
+      .fetch();
+
+    const call = syncMapToCallRecord(map);
+
+    await syncSvcApi.syncStreams
+      .create({ uniqueName: CALL_STREAM })
+      .catch((error) => {
+        if (
+          typeof error === "object" &&
+          "code" in error &&
+          error.code === 54301
+        ) {
+          return; // ignore unique name already exists errors because this is always called https://www.twilio.com/docs/api/errors/54301
+        }
+
+        log.error("sync.queue", "error creating stream", error);
+      });
+
+    await syncSvcApi
+      .syncStreams(CALL_STREAM)
+      .streamMessages.create({ data: call });
+  };
 
   updateContext = async <K extends keyof SessionContext>(
     key: K,

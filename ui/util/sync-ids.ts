@@ -1,11 +1,7 @@
-/****************************************************
- Session Store
-****************************************************/
 const callSidRe = /CA[a-f0-9]{32}/;
 export function parseCallSid(idOrSid: string) {
   const match = idOrSid.match(callSidRe);
   if (!match) {
-    return;
     const msg = `Unable to parse callSid from ${idOrSid}`;
     console.error(msg);
     throw Error(msg);
@@ -17,6 +13,7 @@ export function parseCallSid(idOrSid: string) {
 export function makeContextMapName(callSid: string) {
   return `context-${callSid}`;
 }
+
 export function isContextMapName(id: string) {
   return /^context-CA[a-f0-9]{32}$/.test(id);
 }
@@ -28,3 +25,5 @@ export function makeTurnMapName(callSid: string) {
 export function isTurnMapName(id: string) {
   return /^turns-CA[a-f0-9]{32}$/.test(id);
 }
+
+export const CALL_STREAM = "call-stream";

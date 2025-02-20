@@ -1,6 +1,3 @@
-/****************************************************
- Session Store
-****************************************************/
 const callSidRe = /CA[a-f0-9]{32}/;
 export function parseCallSid(idOrSid: string) {
   const match = idOrSid.match(callSidRe);
@@ -25,3 +22,5 @@ export function makeTurnMapName(callSid: string) {
 export function isTurnMapName(id: string) {
   return /^turns-CA[a-f0-9]{32}$/.test(id);
 }
+
+export const CALL_STREAM = "call-stream";

@@ -2,19 +2,7 @@ import { parseCallSid } from "@/util/sync-ids";
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import type { SyncMapInstance } from "twilio/lib/rest/sync/v1/service/syncMap";
 import type { AppDispatch, RootState } from "./store";
-
-interface CallRecord {
-  id: string; // also callSid
-  callSid: string;
-
-  accountSid: string;
-
-  createdBy: string;
-  dateCreated: string;
-  dateUpdated: string;
-
-  serviceSid: string;
-}
+import { CallRecord } from "@shared/session/call";
 
 const SLICE_NAME = "calls";
 
@@ -125,7 +113,7 @@ export async function fetchAllCalls(dispatch: AppDispatch) {
 /****************************************************
  Misc
 ****************************************************/
-
+// this is currently duplicated in the server
 export function syncMapToCallRecord(map: SyncMapInstance): CallRecord {
   const callSid = parseCallSid(map.uniqueName) as string;
 
