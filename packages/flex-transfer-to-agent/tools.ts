@@ -18,12 +18,14 @@ const TransferToFlexAgentParams: ToolParameters = {
         "A summarization of the conversation. This should be a few paragraphs long.",
     },
 
+    department: { type: "string", enum: ["finance", "general", "support"] },
+
     reason: {
       type: "string",
       description: "The reason the call is being transferred.",
     },
   },
-  required: ["conversationSummary", "reason"],
+  required: ["conversationSummary", "department", "reason"],
 };
 
 interface TransferToFlexAgent {
