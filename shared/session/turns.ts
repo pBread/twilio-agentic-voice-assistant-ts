@@ -113,9 +113,12 @@ export interface StoreToolCall {
 export type HumanTurn = HumanDTMFTurn | HumanTextTurn;
 export type HumanTurnParams = HumanDTMFTurnParams | HumanTextTurnParams;
 
+export type HumanOrigins = "stt";
+
 // represents DTMF tones from the bot
 export interface HumanDTMFTurn extends TurnRecordBase {
   content: string;
+  origin: HumanOrigins;
   role: "human";
   type: "dtmf";
 }
@@ -129,6 +132,7 @@ export type HumanDTMFTurnParams = Omit<
 
 export interface HumanTextTurn extends TurnRecordBase {
   content: string;
+  origin: HumanOrigins;
   role: "human";
   type: "text";
 }

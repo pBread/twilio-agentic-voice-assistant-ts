@@ -188,7 +188,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     if (!ev.last) return; // do nothing on partial speech
     log.info(`relay.prompt`, `"${ev.voicePrompt}"`);
 
-    store.turns.addHumanText({ content: ev.voicePrompt });
+    store.turns.addHumanText({ content: ev.voicePrompt, origin: "stt" });
     consciousLoop.run();
   });
 
