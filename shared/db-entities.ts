@@ -32,24 +32,23 @@ interface PaymentMethod extends BaseDBRecord {
 /****************************************************
  Orders
 ****************************************************/
-export interface Order extends BaseDBRecord {
+export interface OrderRecord extends BaseDBRecord {
   user_id: string;
-  lines: OrderLine[];
+  lines: OrderLineRecord[];
 
   net_total: number;
 
   status: OrderStatus;
 
-  name: string;
   description: string;
 }
 
 type OrderStatus = "pending" | "delivered" | "cancelled";
 
-interface OrderLine extends BaseDBRecord {
+export interface OrderLineRecord extends BaseDBRecord {
   order_id: string;
 
-  product?: Product;
+  product?: ProductRecord;
   product_id: string;
   product_name: string;
 
@@ -61,7 +60,7 @@ interface OrderLine extends BaseDBRecord {
 /****************************************************
  Products
 ****************************************************/
-interface Product extends BaseDBRecord {
+export interface ProductRecord extends BaseDBRecord {
   name: string;
   description: string;
 
