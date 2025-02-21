@@ -14,6 +14,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url)); // this directory
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
+const instructionsTemplate = readFileSync(
+  join(__dirname, "instructions-subconscious.md"),
+  "utf-8",
+);
+
 interface GovernanceServiceConfig {
   frequency: number;
 }
@@ -26,10 +31,7 @@ export class GovernanceService {
     private config: GovernanceServiceConfig,
   ) {
     this.log = getMakeLogger(store.callSid);
-    this.instructions = this.readInstructions();
   }
-
-  instructions: string;
 
   private timeout: NodeJS.Timeout | undefined;
   start = () => {
@@ -41,7 +43,7 @@ export class GovernanceService {
 
   executeGovernance = async () => {
     const transcript = this.getTranscript();
-    const instructions = interpolateTemplate(this.instructions, {
+    const instructions = interpolateTemplate(instructionsTemplate, {
       ...this.store.context,
       transcript,
     });
@@ -126,16 +128,4 @@ export class GovernanceService {
       })
       .filter((line) => !!line)
       .join("\n\n");
-
-  readInstructions = (): string => {
-    try {
-      return readFileSync(
-        join(__dirname, "instructions-subconscious.md"),
-        "utf-8",
-      );
-    } catch (error) {
-      this.log.error("governance", "Unable to read instructions", error);
-      throw error;
-    }
-  };
 }
