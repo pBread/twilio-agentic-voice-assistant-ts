@@ -28,6 +28,7 @@ import {
   startRecording,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
+import { SummarizationService } from "../packages/summarization/index.js";
 
 const router = Router();
 
@@ -178,6 +179,10 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     frequency: 5 * 1000,
   });
 
+  const summaryBot = new SummarizationService(store, agent, {
+    frequency: 6 * 1000,
+  });
+
   startRecording(callSid).then(({ mediaUrl }) => {
     log.success("/convo-relay", `call recording url: ${mediaUrl}`);
     store.setContext({
@@ -213,6 +218,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
 
     // start subconscious
     governanceBot.start();
+    summaryBot.start();
   });
 
   relay.onPrompt((ev) => {
@@ -252,6 +258,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
 
   ws.on("close", () => {
     governanceBot.stop();
+    summaryBot.stop();
 
     log.info(
       "relay",
