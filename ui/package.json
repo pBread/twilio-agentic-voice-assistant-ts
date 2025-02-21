@@ -11,6 +11,7 @@
     "@mantine/core": "^7.17.0",
     "@mantine/hooks": "^7.17.0",
     "@reduxjs/toolkit": "^2.5.1",
+    "lodash.startcase": "^4.4.0",
     "next": "15.1.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -19,6 +20,7 @@
     "twilio-sync": "^3.3.6"
   },
   "devDependencies": {
+    "@types/lodash.startcase": "^4.4.9",
     "@types/node": "^20.17.19",
     "@types/react": "^19",
     "@types/react-dom": "^19",

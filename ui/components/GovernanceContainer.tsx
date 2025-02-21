@@ -1,11 +1,15 @@
 import { useAppSelector } from "@/state/hooks";
 import { getGovernanceState } from "@/state/sessions";
-import { Rating, Text, Title } from "@mantine/core";
+import { Rating, Text, Title, useMantineTheme } from "@mantine/core";
+import startCase from "lodash.startcase";
+import { useRef, useState } from "react";
 
 export function GovernanceContainer({ callSid }: { callSid: string }) {
   const governance = useAppSelector((state) =>
     getGovernanceState(state, callSid),
   );
+
+  const theme = useMantineTheme();
 
   let color = "";
   if (governance?.rating > 4) color = "green";
@@ -15,13 +19,21 @@ export function GovernanceContainer({ callSid }: { callSid: string }) {
   else if (governance?.rating > 0) color = "red";
 
   return (
-    <>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "2px",
+      }}
+    >
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title order={4}>Governance Bot</Title>
         <Rating value={governance?.rating ?? 0} readOnly color={color} />
       </div>
       <GovernanceDetails callSid={callSid} />
-    </>
+
+      <GovernanceProcedures callSid={callSid} />
+    </div>
   );
 }
 
@@ -45,5 +57,82 @@ function GovernanceDetails({ callSid }: { callSid: string }) {
 function GovernanceProcedures({ callSid }: { callSid: string }) {
   const governance = useAppSelector((state) =>
     getGovernanceState(state, callSid),
+  );
+
+  const [closed, setClosed] = useState({});
+  const previousStepsRef = useRef({});
+
+  const toggle = (key: string) => {
+    setClosed((state) => ({ ...state, [key]: false }));
+  };
+
+  const data = !governance
+    ? []
+    : Object.entries(governance.procedures)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([procedureId, steps]) => ({
+          value: procedureId,
+          label: startCase(procedureId),
+          children: steps.map((step) => ({
+            value: step.id,
+            label: startCase(step.id),
+            status: step.status,
+          })),
+        }));
+
+  return (
+    <div>
+      {data.map((parent) => (
+        <div key={`s82-${parent.value}`}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "2px",
+              cursor: "pointer",
+            }}
+            onClick={() => toggle(parent.value)}
+          >
+            <Text fw="bold" size="sm">
+              {parent.label}
+            </Text>
+          </div>
+
+          {true &&
+            parent.children.map((child) => (
+              <div
+                key={`849-${parent.value}-${child.value}`}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  paddingLeft: "24px",
+                }}
+              >
+                <Text size="sm">{child.label}</Text>
+                <Text
+                  size="sm"
+                  data-status-element
+                  data-key={`${parent.value}-${child.value}`}
+                  style={{
+                    borderRadius: "0.25rem",
+                    padding: "0 0.25rem",
+                    transition: "background-color 0.5s",
+                  }}
+                >
+                  {child.status}
+                </Text>
+              </div>
+            ))}
+        </div>
+      ))}
+
+      <style jsx global>{`
+        .status-highlight {
+          background-color: rgb(209 213 219);
+          border-radius: 0.25rem;
+          padding: 0 0.25rem;
+        }
+      `}</style>
+    </div>
   );
 }
