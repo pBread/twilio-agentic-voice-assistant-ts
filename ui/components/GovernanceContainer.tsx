@@ -7,11 +7,18 @@ export function GovernanceContainer({ callSid }: { callSid: string }) {
     getGovernanceState(state, callSid),
   );
 
+  let color = "";
+  if (governance?.rating > 4) color = "green";
+  else if (governance?.rating > 3) color = "green";
+  else if (governance?.rating > 2) color = "yellow";
+  else if (governance?.rating > 1) color = "orange";
+  else if (governance?.rating > 0) color = "red";
+
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title order={4}>Governance Bot</Title>
-        <Rating value={governance?.rating ?? 0} readOnly />
+        <Rating value={governance?.rating ?? 0} readOnly color={color} />
       </div>
       <GovernanceDetails callSid={callSid} />
     </>
