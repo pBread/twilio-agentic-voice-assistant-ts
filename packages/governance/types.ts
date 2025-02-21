@@ -16,4 +16,5 @@ export type GovernanceStepStatus =
   | "missed" // the bot simply skipped this step
   | "in-progress" // the bot is currently performing this step
   | "complete" // the bot successfully completed this step
+  | "not-necessary" // the step was not needed based on the conditions
   | "unresolved"; // the bot attempted, but failed

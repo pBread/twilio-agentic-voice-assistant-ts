@@ -98,21 +98,12 @@ export const procedures: Record<string, Procedure> = [
         id: "gather_refund_reason",
         description:
           "Collect the reason for the refund request from the customer",
-        strictness: "required",
+        strictness: "conditional",
+        conditions:
+          "Do not ask the user for a reason if they have already stated one.",
         completionCriteria: "A clear reason for the refund has been documented",
         instructions:
           "Document the specific reason provided by the customer for requesting the refund",
-      },
-      {
-        id: "evaluate_standard_refund_eligibility",
-        description:
-          "Determine if the order meets standard automated refund criteria",
-        strictness: "conditional",
-        completionCriteria:
-          "Eligibility for standard automated refund has been determined",
-        conditions: "Apply if refund can be processed without human approval",
-        instructions:
-          "Verify that order total is under $50 AND the refund is being requested within 48 hours of delivery",
       },
       {
         id: "request_human_approval",

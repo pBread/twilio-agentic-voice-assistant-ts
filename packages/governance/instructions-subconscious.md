@@ -43,6 +43,7 @@ export type GovernanceStepStatus =
   | "missed" // the bot simply skipped this step
   | "in-progress" // the bot is currently performing this step
   | "complete" // the bot successfully completed this step
+  | "not-necessary" // the step was not needed based on the conditions
   | "unresolved"; // the bot attempted, but failed
 ```
 
@@ -71,14 +72,9 @@ export type GovernanceStepStatus =
         "status": "complete"
       },
       {
-        "id": "evaluate_standard_refund_eligibility",
-        "summary": "Agent determined order is eligible for standard automated refund as total was $35 and request was made within 24 hours of delivery",
-        "status": "complete"
-      },
-      {
         "id": "request_human_approval",
         "summary": "Step not applicable as order met standard refund criteria",
-        "status": "not-started"
+        "status": "not-necessary"
       },
       {
         "id": "send_confirmation_sms",
@@ -120,6 +116,14 @@ Here are the procedures the conscious bot should be following:
 
 ```
 {{procedures}}
+```
+
+# Previous Analysis
+
+Here is your previous analysis of this conversation. This was produced only a few seconds ago:
+
+```
+{{governance}}
 ```
 
 # Call Transcript

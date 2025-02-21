@@ -8,7 +8,7 @@ import { getMakeLogger } from "../../lib/logger.js";
 import { OPENAI_API_KEY } from "../../shared/env.js";
 import { interpolateTemplate } from "../../lib/template.js";
 import { ChatCompletion } from "openai/resources/index.mjs";
-import { GovernanceState } from "./types.js";
+import { GovernanceState, GovernanceStep } from "./types.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url)); // this directory
 
@@ -92,10 +92,13 @@ export class GovernanceService {
         return;
       }
 
+      const prev = this.store.context?.governance ?? ({} as GovernanceState);
+
       const governance: GovernanceState = {
-        ...(this.store.context.governance ?? {}),
+        ...prev,
         ...result,
-        // todo: merge procedures
+        rating: ((prev?.rating ?? 3) + result.rating) / 2,
+        procedures: { ...(prev?.procedures ?? {}), ...result.procedures },
       };
 
       this.store.setContext({ governance });
