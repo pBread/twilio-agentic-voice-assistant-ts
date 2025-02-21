@@ -92,9 +92,10 @@ export class GovernanceService {
         return;
       }
 
-      const governance = {
+      const governance: GovernanceState = {
         ...(this.store.context.governance ?? {}),
         ...result,
+        // todo: merge procedures
       };
 
       this.store.setContext({ governance });
