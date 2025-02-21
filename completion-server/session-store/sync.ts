@@ -365,7 +365,20 @@ export class SyncQueueService {
 
       queue.on("error", (error) => {
         if (isSyncMapItemNotFound(error)) {
+          log.warn(
+            "sync.queue",
+            `sync error: unable to find item. ${queueKey}`,
+          );
+          return;
         }
+        if (isSyncRateLimitError(error)) {
+          this.log.error(
+            "sync.queue",
+            `sync rate limiting error: ${error.code}`,
+          );
+          return;
+        }
+
         this.log.error("sync.queue", `Queue ${queueKey} error:`, error);
       });
 
@@ -390,6 +403,16 @@ function isSyncMapItemNotFound(error: any) {
     "code" in error &&
     error.status === 404 &&
     error.code === 54201
+  );
+}
+
+function isSyncRateLimitError(error: any) {
+  return (
+    typeof error === "object" &&
+    "status" in error &&
+    "code" in error &&
+    error.status === 429 &&
+    error.code === 54009
   );
 }
 
