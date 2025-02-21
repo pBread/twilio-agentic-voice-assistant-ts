@@ -1,10 +1,12 @@
 import type { Procedure } from "../../agent/types.js";
+import { GovernanceState } from "../../packages/governance/types.js";
 import type { UserRecord } from "../db-entities.js";
 
 export interface SessionContext {
   call: CallDetails;
-  contactCenter: ContactCenter;
   company: CompanyDetails;
+  contactCenter: ContactCenter;
+  governance: GovernanceState;
   procedures: Record<string, Procedure>;
   toolConfig: Record<string, ToolConfiguration>;
   user: UserRecord;

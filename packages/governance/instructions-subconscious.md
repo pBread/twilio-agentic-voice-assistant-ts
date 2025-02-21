@@ -97,3 +97,19 @@ export type GovernanceStepStatus =
   }
 }
 ```
+
+# Procedures
+
+Here are the procedures the conscious bot should be following:
+
+```
+{{procedures}}
+```
+
+# Call Transcript
+
+Here is a transcript of the current conversation:
+
+```
+{{transcript}}
+```
