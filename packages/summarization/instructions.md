@@ -45,3 +45,9 @@ Technical Issues:
 - app-crash
 - payment-problems
 - account-access
+
+# Transcript
+
+Here is the transcript of the call:
+
+{{transcript}}

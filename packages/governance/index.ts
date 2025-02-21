@@ -36,12 +36,12 @@ export class GovernanceService {
   private timeout: NodeJS.Timeout | undefined;
   start = () => {
     if (this.timeout) throw Error("The Governance loop is already started.");
-    this.timeout = setInterval(this.executeGovernance, this.config.frequency);
+    this.timeout = setInterval(this.execute, this.config.frequency);
   };
 
   stop = () => clearInterval(this.timeout);
 
-  executeGovernance = async () => {
+  execute = async () => {
     const transcript = this.getTranscript();
     const instructions = interpolateTemplate(instructionsTemplate, {
       ...this.store.context,
@@ -88,7 +88,7 @@ export class GovernanceService {
       } catch (error) {
         this.log.error(
           "sub.gov",
-          "executeGovernance LLM responded with a non-JSON format",
+          "execute LLM responded with a non-JSON format",
           content,
         );
         return;
