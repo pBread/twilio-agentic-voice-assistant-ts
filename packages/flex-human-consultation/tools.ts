@@ -155,14 +155,14 @@ async function createFlexTask(question: AIQuestion, deps: ToolDependencies) {
     log.debug("ask-agent", "messageAdded", ev);
   });
 
-  await twilio.conversations.v1
-    .conversations(attr.conversationSid)
-    .webhooks.create({
-      "configuration.filters": ["onMessageAdded"],
-      "configuration.method": "POST",
-      "configuration.url": `https://${HOSTNAME}/api/ai-question/${question.id}`,
-      target: "webhook",
-    });
+  // await twilio.conversations.v1
+  //   .conversations(attr.conversationSid)
+  //   .webhooks.create({
+  //     "configuration.filters": ["onMessageAdded"],
+  //     "configuration.method": "POST",
+  //     "configuration.url": `https://${HOSTNAME}/api/ai-question/${question.id}`,
+  //     target: "webhook",
+  //   });
 }
 
 export function createConversationsToken(identity: string) {
