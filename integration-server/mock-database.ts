@@ -4,7 +4,6 @@ import type {
   ProductRecord,
   UserRecord,
 } from "../shared/db-entities.js";
-import { DEMO_NAME } from "../shared/demo.js";
 
 const { DEVELOPERS_PHONE_NUMBER, DEVELOPERS_FIRST_NAME, DEVELOPERS_LAST_NAME } =
   process.env;
@@ -225,9 +224,7 @@ const orderExpensive: OrderRecord = {
   ],
 };
 
-const orders: OrderRecord[] = [];
-if (DEMO_NAME === "cheap") orders.push(orderCheap);
-if (DEMO_NAME === "expensive") orders.push(orderExpensive);
+const orders: OrderRecord[] = [orderCheap, orderExpensive];
 
 export const db = { orders, products, users };
 

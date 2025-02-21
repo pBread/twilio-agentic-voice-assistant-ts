@@ -1,4 +1,3 @@
-import { DEMO_NAME } from "../../shared/demo.js";
 import type { Procedure } from "../types.js";
 
 export const procedures: Record<string, Procedure> = [
@@ -149,10 +148,6 @@ export const procedures: Record<string, Procedure> = [
         instructions:
           "Use the refund processing tool to issue the refund to the original payment method",
       },
-    ].filter((item) => {
-      if (DEMO_NAME === "expensive") {
-        return item.id !== "request_human_approval";
-      } else return true;
-    }),
+    ],
   },
 ].reduce((acc, cur) => Object.assign(acc, { [cur.id]: cur }), {});

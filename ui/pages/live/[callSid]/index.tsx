@@ -134,7 +134,11 @@ function BotRow({ turnId }: TurnRow) {
             gap: theme.spacing.xs,
           }}
         >
-          <div style={{ flex: 1, minWidth: 0 }}> {content}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {content.map((item) => (
+              <div key={`d93-${item}`}> {item} </div>
+            ))}
+          </div>
           <span>
             {turn.status === "interrupted" && (
               <Badge color="yellow">Interrupted</Badge>
@@ -150,6 +154,7 @@ function HumanRow({ turnId }: TurnRow) {
   const turn = useAppSelector((state) => selectTurnById(state, turnId));
   if (turn.role !== "human")
     throw Error(`Expected human turn ${JSON.stringify(turn)}`); // typeguard
+  if (turn.origin === "hack") return;
 
   return (
     <>
