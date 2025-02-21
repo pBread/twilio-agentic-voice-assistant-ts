@@ -78,7 +78,7 @@ export const getOrderByConfirmationNumber: ToolDefinition<GetOrberByConfirmation
     parameters: GetOrberByConfirmationNumberParams,
     type: "function",
     async fn(args: GetOrberByConfirmationNumber, deps) {
-      await new Promise((resolve) => setTimeout(() => resolve(null), 500));
+      await sleep(500);
 
       const orderId = args.orderId.replace(/\-/g, "").toLowerCase();
 
@@ -183,8 +183,12 @@ export const askAgent: ToolDefinition<AskAgent> = {
   description: "Ask a human agent a question.",
   parameters: AskAgentParams,
   type: "function",
+  fillers: [
+    "I'm reaching out to a human agent. This should only take a second.",
+  ],
   async fn(args: AskAgent, deps) {
     deps.log.debug("tool", "askAgent", args);
+    await sleep(1000);
 
     return "asked an agent";
   },
@@ -236,7 +240,8 @@ export const sendSmsRefundNotification: ToolDefinition<SendSmsRefundNotification
       if (firstName) body += `Hello ${firstName},\n`;
       else body += "Hello,\n";
 
-      body += "Here are the details of your refund:\n";
+      const companyName = deps.store.context.company?.name;
+      body += `This is a message from the AI agent at ${companyName}. Here are the details of your refund:\n`;
 
       const order = db.orders.find((order) => order.id === args.orderId);
       if (!order) throw Error(`Invalid order id: ${args.orderId}`);
@@ -247,8 +252,16 @@ export const sendSmsRefundNotification: ToolDefinition<SendSmsRefundNotification
       if (!lines.length)
         throw Error(`Invalid order line ids: ${args.orderLineIds.join(", ")}`);
 
-      for (const line of lines)
-        body += `${line.net_total} - ${line.product_name}\n`;
+      for (const line of lines) {
+        const amount = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(line.net_total);
+
+        body += `${amount} - ${line.product_name}\n`;
+      }
 
       await twilio.messages.create({ from: DEFAULT_TWILIO_NUMBER, to, body });
 
@@ -256,6 +269,9 @@ export const sendSmsRefundNotification: ToolDefinition<SendSmsRefundNotification
     },
   };
 
+/****************************************************
+ Helpers
+****************************************************/
 async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(() => resolve(true), ms));
 }
