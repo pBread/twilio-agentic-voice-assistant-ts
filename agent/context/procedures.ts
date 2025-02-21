@@ -130,31 +130,32 @@ export const procedures: Record<string, Procedure> = [
         id: "send_confirmation_sms",
         description:
           "Send an SMS confirmation to the customer before processing the refund",
-        strictness: "required",
+        strictness: "critical",
         completionCriteria:
           "SMS confirmation has been sent to the customer's verified phone number",
         instructions:
-          "Include order number, refund amount, and estimated processing time in the SMS message",
+          "Execute the tool to send an SMS confirmation to the user. This SMS will include details about the refund. They should validate the details before the refund is processed.",
+      },
+      {
+        id: "verify_refund_details",
+        description:
+          "Verify that the details in the SMS confirmation the user received are accurate.",
+        strictness: "critical",
+        completionCriteria:
+          "The user has explicitly stated that the refund details are accurate.",
+        instructions:
+          "Ask the user to confirm that the refund details are correct. Do not execute the refund until they have give you their approval.",
       },
       {
         id: "execute_refund",
         description: "Process the refund through the payment system",
-        strictness: "critical",
+        strictness: "required",
         completionCriteria:
           "Refund has been successfully processed and confirmation received from payment system",
         conditions:
           "Only execute if either standard eligibility criteria are met OR human approval has been obtained",
         instructions:
           "Use the refund processing tool to issue the refund to the original payment method",
-      },
-      {
-        id: "document_refund",
-        description: "Record all details of the processed refund",
-        strictness: "required",
-        completionCriteria:
-          "All refund details have been documented in the order record",
-        instructions:
-          "Update order record with refund amount, reason, approval details (if applicable), and confirmation number",
       },
     ],
   },

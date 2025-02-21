@@ -1,5 +1,16 @@
 import { db } from "../../integration-server/mock-database.js";
 import type { ToolDefinition, ToolParameters } from "../types.js";
+import Twilio from "twilio";
+import {
+  DEFAULT_TWILIO_NUMBER,
+  TWILIO_ACCOUNT_SID,
+  TWILIO_API_KEY,
+  TWILIO_API_SECRET,
+} from "../../shared/env.js";
+
+const twilio = Twilio(TWILIO_API_KEY, TWILIO_API_SECRET, {
+  accountSid: TWILIO_ACCOUNT_SID,
+});
 
 /****************************************************
  Get User Profile
@@ -133,7 +144,7 @@ const ExecuteRefundParams: ToolParameters = {
       description: "The reason the order is being refunded.",
     },
   },
-  required: ["authority", "orderId", "reason"],
+  required: ["authority", "orderId", "orderLineIds", "reason"],
 };
 
 interface ExecuteRefund {
@@ -178,3 +189,73 @@ export const askAgent: ToolDefinition<AskAgent> = {
     return "asked an agent";
   },
 };
+
+/****************************************************
+ Send SMS Refund Confirmation
+****************************************************/
+
+const SendSmsRefundNotificationParams: ToolParameters = {
+  type: "object",
+  properties: {
+    orderId: {
+      type: "string",
+      description: "The id of the order being refunded.",
+    },
+    orderLineIds: {
+      type: "array",
+      items: { type: "string" },
+      description: "The ids of the line items that are needed to be refunded.",
+    },
+  },
+  required: ["orderId", "orderLineIds"],
+};
+
+interface SendSmsRefundNotification {
+  orderId: string;
+  orderLineIds: string[];
+}
+
+export const sendSmsRefundNotification: ToolDefinition<SendSmsRefundNotification> =
+  {
+    name: "sendSmsRefundNotification",
+    description:
+      "Send an SMS message to the user with details about the refund in question.",
+    parameters: SendSmsRefundNotificationParams,
+    type: "function",
+    fillers: ["Hold on while I "],
+    async fn(args: SendSmsRefundNotification, deps) {
+      deps.log.debug("tool", "sendSmsRefundNotification", args);
+
+      const to =
+        deps.store.context.user?.mobile_phone ??
+        (deps.store.context.call?.participantPhone as string);
+
+      const firstName = deps.store.context.user?.first_name;
+
+      let body = "";
+      if (firstName) body += `Hello ${firstName},\n`;
+      else body += "Hello,\n";
+
+      body += "Here are the details of your refund:\n";
+
+      const order = db.orders.find((order) => order.id === args.orderId);
+      if (!order) throw Error(`Invalid order id: ${args.orderId}`);
+
+      const lines = order.lines.filter((line) =>
+        args.orderLineIds.includes(line.id),
+      );
+      if (!lines.length)
+        throw Error(`Invalid order line ids: ${args.orderLineIds.join(", ")}`);
+
+      for (const line of lines)
+        body += `${line.net_total} - ${line.product_name}\n`;
+
+      await twilio.messages.create({ from: DEFAULT_TWILIO_NUMBER, to, body });
+
+      return "SMS sent successfully";
+    },
+  };
+
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(() => resolve(true), ms));
+}
