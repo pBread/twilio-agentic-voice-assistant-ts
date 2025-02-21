@@ -26,8 +26,9 @@ Format your response as a JSON object formatted to the schema of the Typescript 
 
 ```ts
 export interface GovernanceState {
-  summary: string; // a summary of the bot's compliance with the procedures
   guidance: string; // guidance for the conscious LLM
+  summary: string; // a summary of the bot's compliance with the procedures
+  rating: number; // scale of 1-5 (1=bad, 5=perfect) how well is the agent adhearing to procedures
   procedures: Record<string, GovernanceStep[]>; // the key is the procedureId and each step represents the status of the procedure's steps
 }
 
@@ -51,6 +52,7 @@ export type GovernanceStepStatus =
 {
   "guidance": "Tell the user you have made a mistake and that you will transfer to a human agent.",
   "summary": "A critical step has been missed. The agent did not send an SMS confirmation before processing an order.",
+  "rating": 1,
   "procedures": {
     "process_refund_request": [
       {
