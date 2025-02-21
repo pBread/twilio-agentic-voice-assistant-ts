@@ -1,6 +1,7 @@
 export interface GovernanceState {
-  procedures: Record<string, GovernanceStep>; // the key is the procedureId and each step represents the status of the procedure's steps
+  guidance: string; // guidance for the conscious LLM
   summary: string; // a summary of the bot's compliance with the procedures
+  procedures: Record<string, GovernanceStep[]>; // the key is the procedureId and each step represents the status of the procedure's steps
 }
 
 export interface GovernanceStep {

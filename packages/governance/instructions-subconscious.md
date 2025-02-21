@@ -26,8 +26,9 @@ Format your response as a JSON object formatted to the schema of the Typescript 
 
 ```ts
 export interface GovernanceState {
-  procedures: Record<string, GovernanceStep>; // the key is the procedureId and each step represents the status of the procedure's steps
   summary: string; // a summary of the bot's compliance with the procedures
+  guidance: string; // guidance for the conscious LLM
+  procedures: Record<string, GovernanceStep[]>; // the key is the procedureId and each step represents the status of the procedure's steps
 }
 
 export interface GovernanceStep {
@@ -48,6 +49,51 @@ export type GovernanceStepStatus =
 
 ```json
 {
-  "summary": "A critical step has been missed "
+  "guidance": "Tell the user you have made a mistake and that you will transfer to a human agent.",
+  "summary": "A critical step has been missed. The agent did not send an SMS confirmation before processing an order.",
+  "procedures": {
+    "process_refund_request": [
+      {
+        "id": "identify_user",
+        "summary": "Agent successfully verified user identity by confirming account details and email address associated with the order",
+        "status": "complete"
+      },
+      {
+        "id": "locate_order",
+        "summary": "Agent located the order using the provided order number and verified it matches the user information",
+        "status": "complete"
+      },
+      {
+        "id": "gather_refund_reason",
+        "summary": "Agent documented customer's reason for requesting refund as 'product arrived damaged'",
+        "status": "complete"
+      },
+      {
+        "id": "evaluate_standard_refund_eligibility",
+        "summary": "Agent determined order is eligible for standard automated refund as total was $35 and request was made within 24 hours of delivery",
+        "status": "complete"
+      },
+      {
+        "id": "request_human_approval",
+        "summary": "Step not applicable as order met standard refund criteria",
+        "status": "not-started"
+      },
+      {
+        "id": "send_confirmation_sms",
+        "summary": "Agent failed to send SMS confirmation to customer before processing the refund",
+        "status": "missed"
+      },
+      {
+        "id": "verify_refund_details",
+        "summary": "Agent could not verify refund details with user as SMS confirmation was not sent",
+        "status": "unresolved"
+      },
+      {
+        "id": "execute_refund",
+        "summary": "Agent processed the refund through the payment system without completing required confirmation steps",
+        "status": "complete"
+      }
+    ]
+  }
 }
 ```
