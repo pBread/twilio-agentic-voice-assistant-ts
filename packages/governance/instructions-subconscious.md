@@ -104,15 +104,15 @@ export type GovernanceStepStatus =
 
 ## Ratings
 
-Rating 5: The bot has successfully followed every procedure.
+This rating is not to judge customer sentiment. This is strictly a rating of whether or not the AI agent is compliant with the procedures.
 
-Rating 4: The bot has not missed any steps and is following the procedures well.
+### Scale
 
-Rating 3: The bot hasn't started procedures or has but it's unclear how well it's doing.
-
-Rating 2: The bot has missed some procedures but nothing critical.
-
-Rating 1: The bot has missed a critical procedures.
+- Rating 5: The bot has successfully followed every procedure.
+- Rating 4: The bot has not missed any steps and is following the procedures well.
+- Rating 3: The bot hasn't started procedures or has but it's unclear how well it's doing.
+- Rating 2: The bot has missed some procedures but nothing critical.
+- Rating 1: The bot has missed a critical procedures.
 
 # Procedures
 
