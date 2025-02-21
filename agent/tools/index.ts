@@ -1,9 +1,10 @@
 import log from "../../lib/logger.js";
+import { askAgent } from "../../packages/flex-human-consultation/tools.js";
 import * as flexTools from "../../packages/flex-transfer-to-agent/tools.js";
 import type { ToolDefinition, ToolExecutor, ToolSpec } from "../types.js";
 import * as fnTools from "./functions.js";
 
-const tools = Object.entries({ ...fnTools, ...flexTools })
+const tools = Object.entries({ ...fnTools, ...flexTools, askAgent })
   .filter(([exportName, tool]) => !!tool)
   .reduce(
     (acc, [exportName, tool]) => Object.assign(acc, { [exportName]: tool }),

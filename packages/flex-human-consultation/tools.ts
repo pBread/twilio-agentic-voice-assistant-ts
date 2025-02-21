@@ -10,7 +10,6 @@ import {
   FLEX_WORKER_SID,
   FLEX_WORKFLOW_SID,
   FLEX_WORKSPACE_SID,
-  HOSTNAME,
   IS_TRANSFER_TO_FLEX_ENABLED,
   TWILIO_ACCOUNT_SID,
   TWILIO_API_KEY,
@@ -89,6 +88,8 @@ if (IS_TRANSFER_TO_FLEX_ENABLED) {
 
       deps.store.setContext({ questions });
 
+      createFlexTask(question, deps);
+
       return "question-sent-to-agent";
     },
   };
@@ -165,7 +166,7 @@ async function createFlexTask(question: AIQuestion, deps: ToolDependencies) {
   //   });
 }
 
-export function createConversationsToken(identity: string) {
+function createConversationsToken(identity: string) {
   const AccessToken = Twilio.jwt.AccessToken;
 
   const token = new AccessToken(
@@ -182,10 +183,7 @@ export function createConversationsToken(identity: string) {
   return token.toJwt();
 }
 
-export async function handleConversationWebhook(
-  question: AIQuestion,
-  answer: string,
-) {
+async function handleConversationWebhook(question: AIQuestion, answer: string) {
   const uniqueName = makeContextMapName(question.callSid);
 
   let curData: AIQuestionState | undefined;

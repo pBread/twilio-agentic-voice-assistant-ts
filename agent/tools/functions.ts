@@ -175,37 +175,6 @@ export const executeRefund: ToolDefinition<ExecuteRefund> = {
 };
 
 /****************************************************
- Ask Agent
-****************************************************/
-const AskAgentParams: ToolParameters = {
-  type: "object",
-  properties: {
-    userId: { type: "string", description: "The user id from the user record" },
-  },
-  required: ["userId"],
-};
-
-interface AskAgent {
-  userId: string;
-}
-
-export const askAgent: ToolDefinition<AskAgent> = {
-  name: "askAgent",
-  description: "Ask a human agent a question.",
-  parameters: AskAgentParams,
-  type: "function",
-  fillers: [
-    "I'm reaching out to a human agent. This should only take a second.",
-  ],
-  async fn(args: AskAgent, deps) {
-    deps.log.debug("tool", "askAgent", args);
-    await sleep(1000);
-
-    return "asked an agent";
-  },
-};
-
-/****************************************************
  Send SMS Refund Confirmation
 ****************************************************/
 
