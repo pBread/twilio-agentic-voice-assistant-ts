@@ -59,6 +59,7 @@ const Levels = {
   INFO: "", // empty, so it defaults to the user's terminal style settings
   ERROR: COLORS.red,
   WARN: COLORS.yellow,
+  SUCCESS: COLORS.green,
 
   CLEAR: "\x1b[0m",
   INVERT: "\x1b[7m",
@@ -188,6 +189,7 @@ class StopwatchLogger {
   error = (ns: string, ...msg: any) => this.log("ERROR", ns, ...msg);
   info = (ns: string, ...msg: any) => this.log("INFO", ns, ...msg);
   warn = (ns: string, ...msg: any) => this.log("WARN", ns, ...msg);
+  success = (ns: string, ...msg: any) => this.log("SUCCESS", ns, ...msg);
 
   green = (...[first, ...msgs]: any) =>
     console.log(`${COLORS.green}${first}`, ...msgs, COLORS.clear);

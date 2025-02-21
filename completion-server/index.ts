@@ -25,6 +25,7 @@ import {
 import {
   endCall,
   placeCall,
+  startRecording,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
 
@@ -164,9 +165,12 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   req,
 ) => {
   const { callSid } = req.params;
-
   const log = getMakeLogger(callSid);
   log.info("/convo-relay", `websocket initializing, CallSid ${callSid}`);
+
+  startRecording(callSid).then(({ mediaUrl }) =>
+    log.success("/convo-relay", `call recording url: ${mediaUrl}`),
+  );
 
   const relay = new ConversationRelayAdapter<TransferToFlexHandoff>(ws);
   const store = new SessionStore(callSid);
