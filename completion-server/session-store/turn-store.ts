@@ -211,20 +211,21 @@ export class TurnStore {
   private handleTextRedaction = (interruptedClause: string) => {
     // LLMs generate text responses much faster than the words are spoken to the user. When an interruption occurs, there are turns stored in local state that were not and never will be communicated. These records need to be cleaned up or else the bot will think it said things it did not and the conversation will discombobulate.
 
+    const _interruptedClause = interruptedClause.trim();
     // Step 1: Find the local turn record that was interrupted. Convo Relay tells you what chunk of text, typically a sentence or clause, was interrupted. That clause is used to find the interrupted turn.
     const turnsDecending = this.list().reverse();
     const interruptedTurn = turnsDecending.find(
       (turn) =>
         turn.role === "bot" &&
         turn.type === "text" &&
-        turn.content.includes(interruptedClause),
+        turn.content.includes(_interruptedClause),
     ) as BotTextTurn | undefined;
 
     if (!interruptedTurn)
       return this.log.debug(
         "store.interrupt",
         "unable to find interrupted turn: ",
-        interruptedClause,
+        { interruptedClause, _interruptedClause },
       );
 
     // delete unspoken dtmf & text turns
@@ -239,7 +240,7 @@ export class TurnStore {
 
     // Step 3: Update the interrupted turn to reflect what was actually spoken. Note, sometimes the interruptedClause is very long. The bot may have spoken some or most of it. So, the question is, should the interrupted clause be included or excluded. Here, it is being included but it's a judgement call.
     const curContent = interruptedTurn.content as string;
-    const lastIndex = curContent.lastIndexOf(interruptedClause);
+    const lastIndex = curContent.lastIndexOf(_interruptedClause);
     if (lastIndex === -1)
       return this.log.error("turns", "unreachable error in interruptions");
 
