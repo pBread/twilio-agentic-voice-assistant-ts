@@ -206,7 +206,7 @@ export const sendSmsRefundNotification: ToolDefinition<SendSmsRefundNotification
       "Send an SMS message to the user with details about the refund in question.",
     parameters: SendSmsRefundNotificationParams,
     type: "function",
-    fillers: ["Hold on while I "],
+    fillers: ["One second while I tell my system to send you an SMS"],
     async fn(args: SendSmsRefundNotification, deps) {
       deps.log.debug("tool", "sendSmsRefundNotification", args);
 
