@@ -67,6 +67,11 @@ export function getProcedures(state: RootState, callSid: string) {
   return session?.procedures;
 }
 
+export function getSummaryState(state: RootState, callSid: string) {
+  const session = selectSessionById(state, callSid);
+  return session?.summary;
+}
+
 /****************************************************
  Actions
 ****************************************************/

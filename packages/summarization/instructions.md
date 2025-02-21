@@ -6,7 +6,7 @@ You are to summarize the conversation.
 
 # Response Format
 
-Your response should be formatted as a JSON object and follow this Typescript schema.
+Your response MUST BE formatted as a JSON object and follow this Typescript schema:
 
 ```ts
 interface SummarySchema {

@@ -98,6 +98,7 @@ export class SummarizationService {
 
       const summary: CallSummary = {
         ...prev,
+        ...result,
         topics: [...new Set([...(prev?.topics ?? []), ...result.topics])],
       };
 

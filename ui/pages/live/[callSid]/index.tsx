@@ -1,5 +1,6 @@
 import { GovernanceContainer } from "@/components/GovernanceContainer";
 import { useAppSelector } from "@/state/hooks";
+import { getSummaryState } from "@/state/sessions";
 import { selectCallTurns, selectTurnById } from "@/state/turns";
 import { Badge, Paper, Table, Title, useMantineTheme } from "@mantine/core";
 import { useRouter } from "next/router";
@@ -26,6 +27,10 @@ function Conscious() {
 
   const theme = useMantineTheme();
 
+  const summaryState = useAppSelector((state) =>
+    getSummaryState(state, callSid),
+  );
+
   return (
     <div
       style={{
@@ -43,7 +48,7 @@ function Conscious() {
         }}
       >
         <Title order={3}>Conscious Bot</Title>
-        <Title order={6}>{"title"}</Title>
+        <Title order={6}>{summaryState?.title}</Title>
       </Paper>
 
       <Paper
