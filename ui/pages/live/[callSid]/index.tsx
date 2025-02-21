@@ -2,7 +2,14 @@ import { GovernanceContainer } from "@/components/GovernanceContainer";
 import { useAppSelector } from "@/state/hooks";
 import { getSummaryState } from "@/state/sessions";
 import { selectCallTurns, selectTurnById } from "@/state/turns";
-import { Badge, Paper, Table, Title, useMantineTheme } from "@mantine/core";
+import {
+  Badge,
+  Paper,
+  Table,
+  Text,
+  Title,
+  useMantineTheme,
+} from "@mantine/core";
 import { useRouter } from "next/router";
 
 export default function LiveCallPage() {
@@ -175,9 +182,57 @@ function Subconscious() {
         <Title order={3}>Controls</Title>
       </Paper>
 
+      <SummarySection />
+
       <Paper className="paper">
         <GovernanceContainer callSid={callSid} />
       </Paper>
     </div>
+  );
+}
+
+function SummarySection() {
+  const router = useRouter();
+  const callSid = router.query.callSid as string;
+
+  const theme = useMantineTheme();
+
+  const summaryState = useAppSelector((state) =>
+    getSummaryState(state, callSid),
+  );
+
+  return (
+    <Paper
+      className="paper"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "2px",
+      }}
+    >
+      <Title order={4}>Voice Intelligence</Title>
+      <Text size="sm">
+        <b>Call Summary: </b>
+        {summaryState?.description}
+      </Text>
+
+      <Text size="sm">
+        <b>Topics: </b>
+        {summaryState?.topics.join(", ")}
+      </Text>
+
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <Text size="sm" fw="bold">
+          Customer Details:
+        </Text>
+        <div style={{ paddingLeft: "6px" }}>
+          {summaryState?.customerDetails?.map((item) => (
+            <Text size="sm" key={`sdi-${item}`}>
+              <li>{item}</li>
+            </Text>
+          ))}
+        </div>
+      </div>
+    </Paper>
   );
 }
