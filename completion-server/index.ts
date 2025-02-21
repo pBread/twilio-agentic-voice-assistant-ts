@@ -7,6 +7,7 @@ import {
   makeTransferToFlexHandoff,
   type TransferToFlexHandoff,
 } from "../packages/flex-transfer-to-agent/index.js";
+import { GovernanceService } from "../packages/governance/index.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env.js";
 import type { CallDetails, SessionContext } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";
@@ -26,7 +27,6 @@ import {
   placeCall,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
-import { GovernanceService } from "../packages/governance/index.js";
 
 const router = Router();
 
@@ -244,6 +244,8 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   });
 
   ws.on("close", () => {
+    governanceBot.stop();
+
     log.info(
       "relay",
       "conversation relay ws closed.",
