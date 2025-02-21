@@ -45,6 +45,11 @@ export class OpenAIConsciousLoop
     this.log = getMakeLogger(store.callSid);
     this.eventEmitter = new TypedEventEmitter<ConsciousLoopEvents>();
     this.logStream = createLogStreamer("completion-chunks"); // saves the raw completion chunks for each completion. note: it is overridden every session
+
+    this.store.on("tryCompletion", () => {
+      if (this.stream) return;
+      this.run();
+    });
   }
 
   private logStream: ReturnType<typeof createLogStreamer>;

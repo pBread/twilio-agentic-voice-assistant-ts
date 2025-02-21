@@ -92,6 +92,8 @@ export class SessionStore {
   }) => {
     if (params.system) this.parkingLot.set("addSystemMessage", params.system); // add system first
     if (params.human) this.parkingLot.set("addHumanMessage", params.human);
+
+    this.eventEmitter.emit("tryCompletion");
   };
 
   public insertParkingLot = () => {
@@ -134,7 +136,15 @@ export class SessionStore {
     this.eventEmitter.on(...args);
 }
 
-export type StoreEventEmitter = TypedEventEmitter<TurnEvents & ContextEvents>;
+export type StoreEventEmitter = TypedEventEmitter<
+  TurnEvents & ContextEvents & HumanInLoop
+>;
+
+// todo: this is a hack to enable human in loop.
+// need to figure out way to try to trigger completion loop without mixing LLM service
+export interface HumanInLoop {
+  tryCompletion: () => void;
+}
 
 export interface ContextEvents {
   contextUpdated: (payload: {
