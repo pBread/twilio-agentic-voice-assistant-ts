@@ -1,7 +1,6 @@
 import { useAppSelector } from "@/state/hooks";
 import { getGovernanceState } from "@/state/sessions";
-import { Paper, Title, Text, useMantineTheme } from "@mantine/core";
-import { Rating } from "@mantine/core";
+import { Rating, Text, Title } from "@mantine/core";
 
 export function GovernanceContainer({ callSid }: { callSid: string }) {
   const governance = useAppSelector((state) =>
