@@ -3,9 +3,7 @@ import { getGovernanceState } from "@/state/sessions";
 import { Paper, Title, Text, useMantineTheme } from "@mantine/core";
 import { Rating } from "@mantine/core";
 
-type CallParams = { callSid: string };
-
-export function GovernanceContainer({ callSid }: CallParams) {
+export function GovernanceContainer({ callSid }: { callSid: string }) {
   const governance = useAppSelector((state) =>
     getGovernanceState(state, callSid),
   );
@@ -14,14 +12,14 @@ export function GovernanceContainer({ callSid }: CallParams) {
     <>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title order={4}>Governance Bot</Title>
-        <Rating value={governance.rating ?? 0} readOnly />
+        <Rating value={governance?.rating ?? 0} readOnly />
       </div>
       <GovernanceDetails callSid={callSid} />
     </>
   );
 }
 
-function GovernanceDetails({ callSid }: CallParams) {
+function GovernanceDetails({ callSid }: { callSid: string }) {
   const governance = useAppSelector((state) =>
     getGovernanceState(state, callSid),
   );
@@ -35,5 +33,11 @@ function GovernanceDetails({ callSid }: CallParams) {
         <b>Guidance: </b> {governance?.guidance}
       </Text>
     </div>
+  );
+}
+
+function GovernanceProcedures({ callSid }: { callSid: string }) {
+  const governance = useAppSelector((state) =>
+    getGovernanceState(state, callSid),
   );
 }

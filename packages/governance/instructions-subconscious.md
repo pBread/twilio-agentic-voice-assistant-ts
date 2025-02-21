@@ -100,6 +100,20 @@ export type GovernanceStepStatus =
 }
 ```
 
+# Guidance
+
+## Ratings
+
+Rating 5: The bot has successfully followed every procedure.
+
+Rating 4: The bot has not missed any steps and is following the procedures well.
+
+Rating 3: The bot hasn't started procedures or has but it's unclear how well it's doing.
+
+Rating 2: The bot has missed some procedures but nothing critical.
+
+Rating 1: The bot has missed a critical procedures.
+
 # Procedures
 
 Here are the procedures the conscious bot should be following:
