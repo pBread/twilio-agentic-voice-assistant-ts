@@ -26,6 +26,7 @@ import {
   placeCall,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
+import { GovernanceService } from "../packages/governance/index.js";
 
 const router = Router();
 
@@ -171,8 +172,11 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const store = new SessionStore(callSid);
 
   const agent = new AgentResolver(relay, store);
-
   const consciousLoop = new OpenAIConsciousLoop(store, agent, relay);
+
+  const governanceBot = new GovernanceService(store, agent, {
+    frequency: 5 * 1000,
+  });
 
   // handle setup
   relay.onSetup((ev) => {
@@ -199,6 +203,9 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
       });
       log.info("llm.transcript", `"${greeting}"`);
     }
+
+    // start subconscious
+    governanceBot.start();
   });
 
   relay.onPrompt((ev) => {

@@ -126,7 +126,10 @@ export class GovernanceService {
 
   readInstructions = (): string => {
     try {
-      return readFileSync(join(__dirname, "instructions.md"), "utf-8");
+      return readFileSync(
+        join(__dirname, "instructions-subconscious.md"),
+        "utf-8",
+      );
     } catch (error) {
       this.log.error("governance", "Unable to read instructions", error);
       throw error;
