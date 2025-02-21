@@ -1,10 +1,13 @@
-import { selectSessionById, selectSessionIds } from "@/state/sessions";
 import { useAppSelector } from "@/state/hooks";
-import { useInitializeCall } from "@/state/sync";
+import {
+  getSummaryState,
+  selectSessionById,
+  selectSessionIds,
+} from "@/state/sessions";
+import { useInitializeCall, useIsCallLoaded } from "@/state/sync";
 import { Loader, Pagination, Paper, Table, Text, Title } from "@mantine/core";
 import Link from "next/link";
 import { PropsWithChildren, useState } from "react";
-import { useIsCallLoaded } from "@/state/sync";
 
 export default function Home() {
   return (
@@ -37,10 +40,10 @@ function CallTable() {
           <Table.Tr>
             <Table.Th>Title</Table.Th>
             <Table.Th>CallSid</Table.Th>
-            <Table.Th>Phones</Table.Th>
+            <Table.Th>Phones Last 4</Table.Th>
             <Table.Th>Status</Table.Th>
             <Table.Th>Created At</Table.Th>
-            <Table.Th>Feedback</Table.Th>
+            <Table.Th style={{ maxWidth: "100px" }}>Topics</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -63,32 +66,40 @@ function chunk<T>(array: T[], size: number): T[][] {
 
 function CallRow({ callSid }: { callSid: string }) {
   useInitializeCall(callSid);
-  const call = useAppSelector((state) => selectSessionById(state, callSid));
-  const [date, time] = new Date(call.dateCreated).toLocaleString().split(",");
+  const session = useAppSelector((state) => selectSessionById(state, callSid));
+  const [date, time] = new Date(session.dateCreated)
+    .toLocaleString()
+    .split(",");
 
-  const isCallLoaded = useIsCallLoaded(callSid);
+  const from = session?.call.from?.slice(-4) ?? "••••";
+  const to = session?.call.to?.slice(-4) ?? "••••";
+
+  const summary = useAppSelector((state) => getSummaryState(state, callSid));
 
   return (
     <Table.Tr>
       <Table.Td>
         <CallLoader callSid={callSid}>
           <Link href={`/live/${callSid}`}>
-            <Text size="sm">Call Title </Text>
+            <Text size="sm">{summary?.title}</Text>
           </Link>
         </CallLoader>
       </Table.Td>
       <Table.Td>
         <Link href={`/live/${callSid}`}>
-          <Text size="xs">{call.id}</Text>
+          <Text size="xs">{session.id}</Text>
         </Link>
       </Table.Td>
       <Table.Td>
         <CallLoader callSid={callSid}>
-          <Text size="sm">
-            +12223330001
-            <br />
-            +12223330002
-          </Text>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div style={{ display: "flex" }}>
+              <Text size="sm" style={{ width: "64px" }}>
+                {from}
+              </Text>
+              <Text size="sm">{to}</Text>
+            </div>
+          </div>
         </CallLoader>
       </Table.Td>
       <Table.Td>
@@ -101,9 +112,11 @@ function CallRow({ callSid }: { callSid: string }) {
           {time}
         </Text>
       </Table.Td>
-      <Table.Td>
+      <Table.Td style={{ overflow: "scroll" }}>
         <CallLoader callSid={callSid}>
-          <Text size="sm">Some Call</Text>
+          <Text size="sm" style={{ maxWidth: "125px", textWrap: "nowrap" }}>
+            {summary?.topics.map((topic) => <Text size="sm">{topic}</Text>)}
+          </Text>
         </CallLoader>
       </Table.Td>
     </Table.Tr>
