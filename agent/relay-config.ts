@@ -19,11 +19,11 @@ import type { ConversationRelayAttributes } from "twilio/lib/twiml/VoiceResponse
 //   voice: "en-US-Journey-D",
 // };
 
-// Mark-Natural Conversations UgBBYS2sOqTuMpoF3BR0
-export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
-  ttsProvider: "ElevenLabs",
-  voice: "UgBBYS2sOqTuMpoF3BR0",
-};
+// // Mark-Natural Conversations UgBBYS2sOqTuMpoF3BR0
+// export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
+//   ttsProvider: "ElevenLabs",
+//   voice: "UgBBYS2sOqTuMpoF3BR0",
+// };
 
 // // Cassidy 56AoDkrOh6qfVPDXZ7Pt
 // export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
@@ -31,7 +31,7 @@ export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
 //   voice: "56AoDkrOh6qfVPDXZ7Pt",
 // };
 
-// export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
-//   ttsProvider: "ElevenLabs",
-//   voice: "SAz9YHcvj6GT2YYXdXww",
-// };
+export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
+  ttsProvider: "ElevenLabs",
+  voice: "NOpBlnGInO9m6vDvFkFC",
+};
