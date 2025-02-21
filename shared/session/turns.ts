@@ -113,7 +113,7 @@ export interface StoreToolCall {
 export type HumanTurn = HumanDTMFTurn | HumanTextTurn;
 export type HumanTurnParams = HumanDTMFTurnParams | HumanTextTurnParams;
 
-export type HumanOrigins = "stt";
+export type HumanOrigins = "stt" | "hack";
 
 // represents DTMF tones from the bot
 export interface HumanDTMFTurn extends TurnRecordBase {
@@ -157,5 +157,5 @@ type SystemOrigins = "human";
 
 export type SystemTurnParams = Omit<
   SystemTurn,
-  "callSid" | "createdAt" | "id" | "order" | "role"
+  "callSid" | "createdAt" | "id" | "order" | "role" | "version"
 > & { id?: string };

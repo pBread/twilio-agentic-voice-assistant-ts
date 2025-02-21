@@ -3,7 +3,12 @@ import type { SyncClient } from "twilio-sync";
 import { TypedEventEmitter } from "../../lib/events.js";
 import { getMakeLogger } from "../../lib/logger.js";
 import type { SessionContext } from "../../shared/session/context.js";
-import type { TurnRecord } from "../../shared/session/turns.js";
+import type {
+  HumanTextTurn,
+  HumanTextTurnParams,
+  SystemTurnParams,
+  TurnRecord,
+} from "../../shared/session/turns.js";
 import type {
   MapItemAddedEvent,
   MapItemRemovedEvent,
@@ -73,6 +78,35 @@ export class SessionStore {
       });
     });
   }
+
+  /****************************************************
+   Parking Lot
+   holds turns that will be added before the next completion. this is used for async situations, such as handling a human agent's response
+   // todo: accept any turn type and refactor this entirely
+  ****************************************************/
+  private parkingLot: Map<string, HumanTextTurnParams | SystemTurnParams> =
+    new Map();
+  public addParkingLotItem = (params: {
+    human?: HumanTextTurnParams;
+    system?: SystemTurnParams;
+  }) => {
+    if (params.system) this.parkingLot.set("addSystemMessage", params.system); // add system first
+    if (params.human) this.parkingLot.set("addHumanMessage", params.human);
+  };
+
+  public insertParkingLot = () => {
+    const systemTurnParams = this.parkingLot.get("addSystemMessage") as
+      | SystemTurnParams
+      | undefined;
+    this.parkingLot.delete("addSystemMessage");
+    const humanTurnParams = this.parkingLot.get("addHumanMessage") as
+      | HumanTextTurn
+      | undefined;
+    this.parkingLot.delete("addHumanMessage");
+
+    if (systemTurnParams) this.turns.addSystem(systemTurnParams);
+    if (humanTurnParams) this.turns.addHumanText(humanTurnParams);
+  };
 
   /****************************************************
    Session Context

@@ -154,6 +154,34 @@ async function createFlexTask(question: AIQuestion, deps: ToolDependencies) {
 
   convserationsClient.on("messageAdded", (ev) => {
     log.debug("ask-agent", "messageAdded", ev);
+
+    const answer = ev.body;
+    if (!answer)
+      return log.warn("ask-agent", "error onMessageAdded. answer is undefined");
+
+    const isApproved = /\b(approve)\b/i.test(answer);
+    const isRejected = /\b(reject)\b/i.test(answer);
+
+    let status = "unknown";
+    if (isApproved) status = "approved";
+    if (isRejected) status = "rejected";
+    if (isApproved && isRejected) status = "ambiguous";
+
+    let systemContent =
+      "IMPORTANT UPDATE: A human agent has responded to your previous question. It is critical that your next response informs the customer.\n";
+
+    systemContent += `Your approval status is ${status}. \n`;
+
+    systemContent += `Here is the message from the human agent: ${answer}. \n\n`;
+    systemContent += `As a reminder, here is the question you asked: ${question.question}`;
+
+    deps.store.addParkingLotItem({
+      human: {
+        content: "What did the agent say?",
+        origin: "hack",
+      },
+      system: { content: systemContent, origin: "human" },
+    });
   });
 
   // await twilio.conversations.v1

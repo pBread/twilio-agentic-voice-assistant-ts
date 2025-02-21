@@ -76,6 +76,9 @@ export class OpenAIConsciousLoop
   ): Promise<undefined | Promise<any>> => {
     const completionId = uuidV4();
     this.activeCompletionId = completionId;
+
+    this.store.insertParkingLot(); // adds any parking lot items to the store before completion
+
     const messages = this.getTurns();
 
     let args: ChatCompletionCreateParamsStreaming | undefined;
