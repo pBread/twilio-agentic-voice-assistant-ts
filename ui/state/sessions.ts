@@ -62,6 +62,11 @@ export function getGovernanceState(state: RootState, callSid: string) {
   return session?.governance;
 }
 
+export function getProcedures(state: RootState, callSid: string) {
+  const session = selectSessionById(state, callSid);
+  return session?.procedures;
+}
+
 /****************************************************
  Actions
 ****************************************************/

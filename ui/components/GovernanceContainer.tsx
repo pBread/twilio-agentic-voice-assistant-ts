@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/state/hooks";
-import { getGovernanceState } from "@/state/sessions";
+import { getGovernanceState, getProcedures } from "@/state/sessions";
 import { Rating, Text, Title, useMantineTheme } from "@mantine/core";
 import startCase from "lodash.startcase";
 import { useRef, useState } from "react";
@@ -55,6 +55,8 @@ function GovernanceDetails({ callSid }: { callSid: string }) {
 }
 
 function GovernanceProcedures({ callSid }: { callSid: string }) {
+  const procedures = useAppSelector((state) => getProcedures(state, callSid));
+
   const governance = useAppSelector((state) =>
     getGovernanceState(state, callSid),
   );
@@ -70,18 +72,32 @@ function GovernanceProcedures({ callSid }: { callSid: string }) {
     ? []
     : Object.entries(governance.procedures)
         .sort(([a], [b]) => a.localeCompare(b))
-        .map(([procedureId, steps]) => ({
-          value: procedureId,
-          label: startCase(procedureId),
-          children: steps.map((step) => ({
-            value: step.id,
-            label: startCase(step.id),
-            status: step.status,
-          })),
-        }));
+        .map(([procedureId, stepStatuses]) => {
+          const procedure = procedures[procedureId];
+          const allSteps = procedure?.steps ?? stepStatuses;
+
+          return {
+            value: procedureId,
+            label: startCase(procedureId),
+            children: allSteps.map((step) => {
+              return {
+                value: step.id,
+                label: startCase(step.id),
+                status:
+                  stepStatuses.find((stepStatus) => stepStatus.id === step.id)
+                    ?.status ?? "not-started",
+              };
+            }),
+          };
+        });
 
   return (
-    <div>
+    <div
+      style={{
+        maxHeight: "300px",
+        overflow: "scroll",
+      }}
+    >
       {data.map((parent) => (
         <div key={`s82-${parent.value}`}>
           <div
