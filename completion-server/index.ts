@@ -168,10 +168,6 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const log = getMakeLogger(callSid);
   log.info("/convo-relay", `websocket initializing, CallSid ${callSid}`);
 
-  startRecording(callSid).then(({ mediaUrl }) =>
-    log.success("/convo-relay", `call recording url: ${mediaUrl}`),
-  );
-
   const relay = new ConversationRelayAdapter<TransferToFlexHandoff>(ws);
   const store = new SessionStore(callSid);
 
@@ -180,6 +176,13 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
 
   const governanceBot = new GovernanceService(store, agent, {
     frequency: 5 * 1000,
+  });
+
+  startRecording(callSid).then(({ mediaUrl }) => {
+    log.success("/convo-relay", `call recording url: ${mediaUrl}`);
+    store.setContext({
+      call: { ...(store.context.call as CallDetails), recordingUrl: mediaUrl },
+    });
   });
 
   // handle setup

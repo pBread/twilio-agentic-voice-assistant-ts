@@ -39,6 +39,8 @@ export interface CallDetails {
   localStartDate: string; // Date().toLocaleDateString()
   localStartTime: string; // Date().toLocaleTimeString()
 
+  recordingUrl?: string;
+
   status:
     | "queued"
     | "ringing"
