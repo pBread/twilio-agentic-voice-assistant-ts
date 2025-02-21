@@ -158,6 +158,17 @@ export const executeRefund: ToolDefinition<ExecuteRefund> = {
   type: "function",
   async fn(args: ExecuteRefund, deps) {
     deps.log.debug("tool", "executeRefund", args);
+    const companyName = deps.store.context.company?.name;
+
+    const to =
+      deps.store.context.user?.mobile_phone ??
+      (deps.store.context.call?.participantPhone as string);
+
+    await twilio.messages.create({
+      from: DEFAULT_TWILIO_NUMBER,
+      to,
+      body: `Your refund has been sucessfully processed. Thank you for choosing ${companyName}`,
+    });
 
     return "refund-processed";
   },
