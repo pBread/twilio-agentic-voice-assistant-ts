@@ -90,7 +90,7 @@ if (IS_TRANSFER_TO_FLEX_ENABLED) {
 
       createFlexTask(question, deps);
 
-      return "question-sent-to-agent";
+      return "waiting-for-human-response";
     },
   };
 }
@@ -211,29 +211,29 @@ function createConversationsToken(identity: string) {
   return token.toJwt();
 }
 
-async function handleConversationWebhook(question: AIQuestion, answer: string) {
-  const uniqueName = makeContextMapName(question.callSid);
+// async function handleConversationWebhook(question: AIQuestion, answer: string) {
+//   const uniqueName = makeContextMapName(question.callSid);
 
-  let curData: AIQuestionState | undefined;
+//   let curData: AIQuestionState | undefined;
 
-  try {
-    curData = await twilio.sync.v1
-      .services(TWILIO_SYNC_SVC_SID)
-      .syncMaps(uniqueName)
-      .syncMapItems("questions")
-      .fetch()
-      .then((res) => res.data);
-  } catch (error) {
-    log.debug("ai-question", "failed to get previous ai question state", error);
-  }
+//   try {
+//     curData = await twilio.sync.v1
+//       .services(TWILIO_SYNC_SVC_SID)
+//       .syncMaps(uniqueName)
+//       .syncMapItems("questions")
+//       .fetch()
+//       .then((res) => res.data);
+//   } catch (error) {
+//     log.debug("ai-question", "failed to get previous ai question state", error);
+//   }
 
-  const result = await twilio.sync.v1
-    .services(TWILIO_SYNC_SVC_SID)
-    .syncMaps(uniqueName)
-    .syncMapItems("questions")
-    .update({
-      data: { ...(curData ?? {}), [question.id]: { ...question, answer } },
-    });
+//   const result = await twilio.sync.v1
+//     .services(TWILIO_SYNC_SVC_SID)
+//     .syncMaps(uniqueName)
+//     .syncMapItems("questions")
+//     .update({
+//       data: { ...(curData ?? {}), [question.id]: { ...question, answer } },
+//     });
 
-  log.info("ai-question", "handled agent response");
-}
+//   log.info("ai-question", "handled agent response");
+// }
