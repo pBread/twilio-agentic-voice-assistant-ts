@@ -166,7 +166,7 @@ export class AgentResolver implements IAgentResolver {
 
       const bestPhrase = this.phrasePicker(phrases);
       this.sayPhrase(bestPhrase, args);
-    }, 500);
+    }, 300);
 
     const secondary = setTimeout(() => {
       const turn = this.store.turns.get(turnId) as BotToolTurn | undefined;
@@ -176,7 +176,7 @@ export class AgentResolver implements IAgentResolver {
       const phrases = this.fillerPhrases?.secondary ?? [];
       const bestPhrase = this.phrasePicker(phrases);
       this.sayPhrase(bestPhrase, args);
-    }, 4000);
+    }, 5000);
 
     return () => {
       clearTimeout(primary);
