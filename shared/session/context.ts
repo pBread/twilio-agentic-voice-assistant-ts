@@ -1,5 +1,6 @@
 import type { Procedure } from "../../agent/types.js";
-import { GovernanceState } from "../../packages/governance/types.js";
+import type { GovernanceState } from "../../packages/governance/types.js";
+import type { CallSummary } from "../../packages/summarization/types.js";
 import type { UserRecord } from "../db-entities.js";
 
 export interface SessionContext {
@@ -8,6 +9,7 @@ export interface SessionContext {
   contactCenter: ContactCenter;
   governance: GovernanceState;
   procedures: Record<string, Procedure>;
+  summary: CallSummary;
   toolConfig: Record<string, ToolConfiguration>;
   user: UserRecord;
 }
