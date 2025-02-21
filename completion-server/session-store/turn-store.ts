@@ -17,6 +17,7 @@ import type {
 } from "../../shared/session/turns.js";
 import type { StoreEventEmitter } from "./index.js";
 import { createVersionedObject } from "./versioning.js";
+import { chunkIntoSentences } from "../../lib/strings.js";
 
 export class TurnStore {
   private turnMap: Map<string, TurnRecord> = new Map(); // map order enforces turn ordering, not the order property on the turns
@@ -233,9 +234,22 @@ export class TurnStore {
 
     // Step 3: Update the interrupted turn to reflect what was actually spoken. Note, sometimes the interruptedClause is very long. The bot may have spoken some or most of it. So, the question is, should the interrupted clause be included or excluded. Here, it is being included but it's a judgement call.
     const curContent = interruptedTurn.content as string;
-    const [newContent] = curContent.split(interruptedClause);
-    interruptedTurn.content = `${newContent} ${interruptedClause}`.trim();
+    const lastIndex = curContent.lastIndexOf(interruptedClause);
+    if (lastIndex === -1)
+      return this.log.error("turns", "unreachable error in interruptions");
+
+    const splitContent = curContent.substring(0, lastIndex);
+    interruptedTurn.content = splitContent?.length
+      ? splitContent
+      : truncate(curContent);
+
     interruptedTurn.status = "interrupted";
+
+    function truncate(item: string) {
+      if (item.length <= 4) return item;
+      const truncateAt = Math.floor(item.length * 0.75);
+      return item.substring(0, truncateAt) + "...";
+    }
 
     return interruptedTurn.content;
   };
