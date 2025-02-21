@@ -58,6 +58,8 @@ else log.yellow("Flex: Transfer to Flex is disabled. Env vars missing");
 export const FLEX_WORKSPACE_SID = process.env.FLEX_WORKSPACE_SID as string; // required to ask agent a question
 export const FLEX_QUEUE_SID = process.env.FLEX_QUEUE_SID as string; // required to ask agent a question
 export const FLEX_WORKER_SID = process.env.FLEX_WORKER_SID as string; // required to ask agent a question
+export const TWILIO_CONVERSATIONS_SVC_SID = process.env
+  .TWILIO_CONVERSATIONS_SVC_SID as string;
 
 const ENABLE_ASK_FLEX_AGENT_QUESTIONS = bool(
   process.env.ENABLE_ASK_FLEX_AGENT_QUESTIONS,
@@ -67,7 +69,8 @@ export const IS_ASK_FLEX_AGENT_ENABLED =
   !!FLEX_WORKSPACE_SID &&
   !!FLEX_WORKFLOW_SID &&
   !!FLEX_QUEUE_SID &&
-  !!FLEX_WORKER_SID;
+  !!FLEX_WORKER_SID &&
+  !!TWILIO_CONVERSATIONS_SVC_SID;
 
 if (IS_ASK_FLEX_AGENT_ENABLED)
   console.log("Flex: Live agent conversation enabled");

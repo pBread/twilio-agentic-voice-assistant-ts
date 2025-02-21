@@ -12,6 +12,7 @@
     "grok": "tsx scripts/ngrok.ts"
   },
   "dependencies": {
+    "@twilio/conversations": "^2.6.1",
     "deep-diff": "^1.0.2",
     "dotenv-flow": "^4.1.0",
     "express": "^4.21.2",
