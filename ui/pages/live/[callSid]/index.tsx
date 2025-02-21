@@ -1,3 +1,4 @@
+import { GovernanceContainer } from "@/components/GovernanceContainer";
 import { useAppSelector } from "@/state/hooks";
 import { selectCallTurns, selectTurnById } from "@/state/turns";
 import { Badge, Paper, Table, Title, useMantineTheme } from "@mantine/core";
@@ -167,6 +168,10 @@ function Subconscious() {
     >
       <Paper className="paper">
         <Title order={3}>Subconscious</Title>
+      </Paper>
+
+      <Paper className="paper">
+        <GovernanceContainer callSid={callSid} />
       </Paper>
     </div>
   );

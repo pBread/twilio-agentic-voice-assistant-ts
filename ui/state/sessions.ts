@@ -57,6 +57,11 @@ function getSlice(state: RootState) {
   return state[SLICE_NAME];
 }
 
+export function getGovernanceState(state: RootState, callSid: string) {
+  const session = selectSessionById(state, callSid);
+  return session?.governance;
+}
+
 /****************************************************
  Actions
 ****************************************************/
