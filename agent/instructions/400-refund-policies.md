@@ -30,8 +30,6 @@ Human approval is REQUIRED if:
 - Order total between $50-$150 OR
 - Request between 48 hours and 1 week after delivery
 
-CRITICAL: IF HUMAN APPROVAL IS REQUIRE, YOU CANNOT PROCEDURE UNTIL THE HUMAN AGENT HAS SENT YOU A MESSAGE
-
 4. SMS Verification Requirement
 
 CRITICAL: Send SMS confirmation with refund details BEFORE processing
