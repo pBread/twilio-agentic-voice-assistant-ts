@@ -172,7 +172,7 @@ function Subconscious() {
       }}
     >
       <Paper className="paper">
-        <Title order={3}>Subconscious</Title>
+        <Title order={3}>Controls</Title>
       </Paper>
 
       <Paper className="paper">

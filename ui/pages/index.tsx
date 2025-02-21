@@ -71,8 +71,8 @@ function CallRow({ callSid }: { callSid: string }) {
     .toLocaleString()
     .split(",");
 
-  const from = session?.call.from?.slice(-4) ?? "••••";
-  const to = session?.call.to?.slice(-4) ?? "••••";
+  const from = session?.call?.from?.slice(-4) ?? "••••";
+  const to = session?.call?.to?.slice(-4) ?? "••••";
 
   const summary = useAppSelector((state) => getSummaryState(state, callSid));
 
