@@ -251,19 +251,50 @@ export class TurnStore {
     const splitContent = prevContent.substring(0, indexOfInterruption);
 
     // interrupted clause was not sufficient to find the location
-    if (indexOfInterruption === -1)
+    if (indexOfInterruption === -1) {
+      this.log.debug(
+        "store",
+        "interruption indexOfInterruption === -1",
+        interruptedClause,
+      );
       interruptedTurn.content = clipString(prevContent, 0.5);
+    }
     // the entire statement was interrupted
-    else if (!splitContent?.length)
+    else if (!splitContent?.length) {
+      this.log.debug("store", "!splitContent?.length", {
+        interruptedClause,
+        prevContent,
+        splitContent,
+      });
       interruptedTurn.content = clipString(prevContent, 0.5);
+    }
     // interruption string too short to be reliable
-    else if (_interruptedClause.length <= 3)
+    else if (_interruptedClause.length <= 3) {
+      this.log.debug("store", "_interruptedClause.length <= 3", {
+        interruptedClause,
+        prevContent,
+        splitContent,
+      });
       interruptedTurn.content = clipString(prevContent, 0.5);
+    }
     // usually a zero length interruptedClause but adding a check just in case
-    else if (prevContent === splitContent)
+    else if (prevContent === splitContent) {
+      this.log.debug("store", "prevContent === splitContent", {
+        interruptedClause,
+        prevContent,
+        splitContent,
+      });
       interruptedTurn.content = clipString(prevContent, 0.5);
+    }
     // the split was successful
-    else interruptedTurn.content = splitContent;
+    else {
+      this.log.debug("store", "split was successful", {
+        interruptedClause,
+        prevContent,
+        splitContent,
+      });
+      interruptedTurn.content = splitContent;
+    }
 
     interruptedTurn.status = "interrupted";
 
