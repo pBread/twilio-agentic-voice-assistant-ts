@@ -15,13 +15,11 @@ import {
   TWILIO_API_KEY,
   TWILIO_API_SECRET,
   TWILIO_CONVERSATIONS_SVC_SID,
-  TWILIO_SYNC_SVC_SID,
 } from "../../shared/env.js";
 
 import { Client as ConversationsClient } from "@twilio/conversations";
 import log from "../../lib/logger.js";
-import { makeContextMapName } from "../../shared/sync/ids.js";
-import { AIQuestion, AIQuestionState } from "./types.js";
+import { AIQuestion } from "./types.js";
 
 const twilio = Twilio(TWILIO_API_KEY, TWILIO_API_SECRET, {
   accountSid: TWILIO_ACCOUNT_SID,
