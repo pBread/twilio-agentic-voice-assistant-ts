@@ -17,7 +17,6 @@ import type {
 } from "../../shared/session/turns.js";
 import type { StoreEventEmitter } from "./index.js";
 import { createVersionedObject } from "./versioning.js";
-import { chunkIntoSentences } from "../../lib/strings.js";
 
 export class TurnStore {
   private turnMap: Map<string, TurnRecord> = new Map(); // map order enforces turn ordering, not the order property on the turns
