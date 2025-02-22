@@ -31,3 +31,8 @@ export function chunkIntoSentences(text: string): string[] {
 
   return sentences;
 }
+
+const endPunctuationRegex = /[.!?\n•:;]/;
+export function hasEndPunctuation(text: string) {
+  return endPunctuationRegex.test(text);
+}
