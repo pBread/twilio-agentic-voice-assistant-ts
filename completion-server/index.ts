@@ -1,7 +1,11 @@
 import { Router, type RequestHandler } from "express";
 import type { WebsocketRequestHandler } from "express-ws";
 import { getAgentConfig } from "../agent/index.js";
-import { deleteLogger, getMakeLogger } from "../lib/logger.js";
+import {
+  createLogStreamer,
+  deleteLogger,
+  getMakeLogger,
+} from "../lib/logger.js";
 import { prettyXML } from "../lib/xml.js";
 import {
   makeTransferToFlexHandoff,
@@ -29,6 +33,7 @@ import {
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
 import { SummarizationService } from "../packages/summarization/index.js";
+import { hasEndPunctuation } from "../lib/strings.js";
 
 const router = Router();
 
@@ -230,7 +235,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   });
 
   relay.onInterrupt((ev) => {
-    log.info(`relay.interrupt`, `human interrupted bot`);
+    log.info(`relay.interrupt`, `human interrupted bot`, ev);
 
     consciousLoop.abort();
     store.turns.redactInterruption(ev.utteranceUntilInterrupt);
@@ -246,7 +251,8 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   });
 
   consciousLoop.on("text-chunk", (text, last, fullText) => {
-    relay.sendTextToken(text, last); // send each token as it is received
+    const markAsLast = last || hasEndPunctuation(text);
+    relay.sendTextToken(text, markAsLast); // send each token as it is received
 
     if (last && fullText) log.info("llm.transcript", `"${fullText}"`);
   });
