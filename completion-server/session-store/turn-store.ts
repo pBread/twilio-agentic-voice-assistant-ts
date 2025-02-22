@@ -214,19 +214,26 @@ export class TurnStore {
     const _interruptedClause = interruptedClause.trim();
     // Step 1: Find the local turn record that was interrupted. Convo Relay tells you what chunk of text, typically a sentence or clause, was interrupted. That clause is used to find the interrupted turn.
     const turnsDecending = this.list().reverse();
-    const interruptedTurn = turnsDecending.find(
+    let interruptedTurn = turnsDecending.find(
       (turn) =>
         turn.role === "bot" &&
         turn.type === "text" &&
         turn.content.includes(_interruptedClause),
     ) as BotTextTurn | undefined;
 
-    if (!interruptedTurn)
-      return this.log.debug(
+    if (!interruptedTurn) {
+      interruptedTurn = turnsDecending.find(
+        (turn) => turn.role === "bot" && turn.type === "text",
+      ) as BotTextTurn;
+
+      interruptedTurn.content = clipString(interruptedTurn.content, 0.75);
+
+      this.log.debug(
         "store.interrupt",
         "unable to find interrupted turn: ",
-        { interruptedClause, _interruptedClause },
+        interruptedClause,
       );
+    }
 
     // delete unspoken dtmf & text turns
     turnsDecending
@@ -239,23 +246,26 @@ export class TurnStore {
       .forEach((turn) => this.delete(turn.id));
 
     // Step 3: Update the interrupted turn to reflect what was actually spoken. Note, sometimes the interruptedClause is very long. The bot may have spoken some or most of it. So, the question is, should the interrupted clause be included or excluded. Here, it is being included but it's a judgement call.
-    const curContent = interruptedTurn.content as string;
-    const lastIndex = curContent.lastIndexOf(_interruptedClause);
-    if (lastIndex === -1)
-      return this.log.error("turns", "unreachable error in interruptions");
+    const prevContent = interruptedTurn.content as string;
+    const indexOfInterruption = prevContent.lastIndexOf(_interruptedClause); // find where to split the expected content
+    const splitContent = prevContent.substring(0, indexOfInterruption);
 
-    const splitContent = curContent.substring(0, lastIndex);
-    interruptedTurn.content = splitContent?.length
-      ? splitContent
-      : truncate(curContent);
+    // interrupted clause was not sufficient to find the location
+    if (indexOfInterruption === -1)
+      interruptedTurn.content = clipString(prevContent, 0.5);
+    // the entire statement was interrupted
+    else if (!splitContent?.length)
+      interruptedTurn.content = clipString(prevContent, 0.5);
+    // interruption string too short to be reliable
+    else if (_interruptedClause.length <= 3)
+      interruptedTurn.content = clipString(prevContent, 0.5);
+    // usually a zero length interruptedClause but adding a check just in case
+    else if (prevContent === splitContent)
+      interruptedTurn.content = clipString(prevContent, 0.5);
+    // the split was successful
+    else interruptedTurn.content = splitContent;
 
     interruptedTurn.status = "interrupted";
-
-    function truncate(item: string) {
-      if (item.length <= 4) return item;
-      const truncateAt = Math.floor(item.length * 0.75);
-      return item.substring(0, truncateAt) + "...";
-    }
 
     return interruptedTurn.content;
   };
@@ -311,4 +321,19 @@ export class TurnStore {
     tool.result = result;
     return toolTurn;
   };
+}
+
+/** splits a string by a percent without braking word */
+function clipString(item: string, pct: number) {
+  if (item.length <= 4) return item;
+
+  const middle = Math.floor(item.length * pct);
+
+  // find the end of the word that contains the middle character
+  let truncateAt = middle;
+  while (truncateAt < item.length && item[truncateAt] !== " ") truncateAt++;
+
+  // if we hit the end and it's one long word, use the full string
+  if (truncateAt === item.length && item.indexOf(" ") === -1) return item;
+  return item.substring(0, truncateAt) + "...";
 }
