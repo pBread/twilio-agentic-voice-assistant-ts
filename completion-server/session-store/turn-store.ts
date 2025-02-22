@@ -248,53 +248,31 @@ export class TurnStore {
     // Step 3: Update the interrupted turn to reflect what was actually spoken. Note, sometimes the interruptedClause is very long. The bot may have spoken some or most of it. So, the question is, should the interrupted clause be included or excluded. Here, it is being included but it's a judgement call.
     const prevContent = interruptedTurn.content as string;
     const indexOfInterruption = prevContent.lastIndexOf(_interruptedClause); // find where to split the expected content
-    const splitContent = prevContent.substring(0, indexOfInterruption);
+    const contentSplitWithInterrupt = prevContent.substring(
+      0,
+      indexOfInterruption + _interruptedClause.length,
+    ); // substring with interruption
+
+    const contentSplitWithOutInterrupt = prevContent.substring(
+      0,
+      indexOfInterruption,
+    ); // substring without interruption
 
     // interrupted clause was not sufficient to find the location
-    if (indexOfInterruption === -1) {
-      this.log.debug(
-        "store",
-        "interruption indexOfInterruption === -1",
-        interruptedClause,
-      );
+    if (indexOfInterruption === -1)
       interruptedTurn.content = clipString(prevContent, 0.5);
-    }
     // the entire statement was interrupted
-    else if (!splitContent?.length) {
-      this.log.debug("store", "!splitContent?.length", {
-        interruptedClause,
-        prevContent,
-        splitContent,
-      });
-      interruptedTurn.content = clipString(prevContent, 0.5);
-    }
+    else if (!contentSplitWithInterrupt?.length)
+      interruptedTurn.content = clipString(_interruptedClause, 0.5);
     // interruption string too short to be reliable
-    else if (_interruptedClause.length <= 3) {
-      this.log.debug("store", "_interruptedClause.length <= 3", {
-        interruptedClause,
-        prevContent,
-        splitContent,
-      });
+    else if (_interruptedClause.length <= 3)
       interruptedTurn.content = clipString(prevContent, 0.5);
-    }
     // usually a zero length interruptedClause but adding a check just in case
-    else if (prevContent === splitContent) {
-      this.log.debug("store", "prevContent === splitContent", {
-        interruptedClause,
-        prevContent,
-        splitContent,
-      });
-      interruptedTurn.content = clipString(prevContent, 0.5);
-    }
+    else if (prevContent === contentSplitWithInterrupt)
+      interruptedTurn.content =
+        contentSplitWithOutInterrupt + clipString(_interruptedClause, 0.5);
     // the split was successful
-    else {
-      this.log.debug("store", "split was successful", {
-        interruptedClause,
-        prevContent,
-        splitContent,
-      });
-      interruptedTurn.content = splitContent;
-    }
+    else interruptedTurn.content = contentSplitWithInterrupt;
 
     interruptedTurn.status = "interrupted";
 
