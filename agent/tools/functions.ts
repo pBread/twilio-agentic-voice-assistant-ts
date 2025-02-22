@@ -208,8 +208,6 @@ export const sendSmsRefundNotification: ToolDefinition<SendSmsRefundNotification
     type: "function",
     fillers: ["One second while I tell my system to send you an SMS"],
     async fn(args: SendSmsRefundNotification, deps) {
-      deps.log.debug("tool", "sendSmsRefundNotification", args);
-
       const to =
         deps.store.context.user?.mobile_phone ??
         (deps.store.context.call?.participantPhone as string);
@@ -244,7 +242,6 @@ export const sendSmsRefundNotification: ToolDefinition<SendSmsRefundNotification
       }
 
       await twilio.messages.create({ from: DEFAULT_TWILIO_NUMBER, to, body });
-
       return "SMS sent successfully";
     },
   };
