@@ -19,6 +19,8 @@ const instructionsTemplate = readFileSync(
   "utf-8",
 );
 
+const topics_list = readFileSync(join(__dirname, "topics_list.csv"), "utf-8");
+
 interface SummarizationServiceConfig {
   frequency: number;
 }
@@ -45,6 +47,7 @@ export class SummarizationService {
     const transcript = this.getTranscript();
     const instructions = interpolateTemplate(instructionsTemplate, {
       ...this.store.context,
+      topics_list,
       transcript,
     });
 

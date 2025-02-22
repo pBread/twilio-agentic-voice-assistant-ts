@@ -1,6 +1,6 @@
 export interface CallSummary {
-  title: string; // 1 sentence description
-  description: string; // 1 paragraph description
-  customerDetails: string[]; // any information the customer divulges about themself
-  topics: string[]; // see istructions for a list of topics
+  title: string; // 1 sentence title of the call
+  description: string; // 2-3 paragraph description
+  customerDetails: string[]; // at most, 1 sentence for each item
+  topics: string[]; // at most 2 topic ids at a time
 }
