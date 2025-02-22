@@ -181,7 +181,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   });
 
   const summaryBot = new SummarizationService(store, agent, {
-    frequency: 6 * 1000,
+    frequency: 10 * 1000,
   });
 
   startRecording(callSid).then(({ mediaUrl }) => {
