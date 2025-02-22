@@ -177,11 +177,11 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const consciousLoop = new OpenAIConsciousLoop(store, agent, relay);
 
   const governanceBot = new GovernanceService(store, agent, {
-    frequency: 5 * 1000,
+    frequency: 10 * 1000,
   });
 
   const summaryBot = new SummarizationService(store, agent, {
-    frequency: 10 * 1000,
+    frequency: 15 * 1000,
   });
 
   startRecording(callSid).then(({ mediaUrl }) => {
@@ -231,7 +231,11 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   });
 
   relay.onInterrupt((ev) => {
-    log.info(`relay.interrupt`, `human interrupted bot`, ev);
+    log.info(
+      `relay.interrupt`,
+      `human interrupted bot`,
+      ev.utteranceUntilInterrupt,
+    );
 
     consciousLoop.abort();
     store.turns.redactInterruption(ev.utteranceUntilInterrupt);
