@@ -14,10 +14,10 @@ import type { ConversationRelayAttributes } from "twilio/lib/twiml/VoiceResponse
 // google: en-US-Journey-D, en-US-Journey-F, en-US-Journey-O, en-IN-Journey-D, en-IN-Journey-F, en-GB-Journey-D, en-GB-Journey-F, de-DE-Journey-D, de-DE-Journey-F
 // Amazon: Amy-Generative, Matthew-Generative, Ruth-Generative
 
-// export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
-//   ttsProvider: "google",
-//   voice: "en-US-Journey-D",
-// };
+export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
+  ttsProvider: "google",
+  voice: "en-US-Journey-D",
+};
 
 // // Mark-Natural Conversations UgBBYS2sOqTuMpoF3BR0
 // export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
@@ -31,7 +31,43 @@ import type { ConversationRelayAttributes } from "twilio/lib/twiml/VoiceResponse
 //   voice: "56AoDkrOh6qfVPDXZ7Pt",
 // };
 
-export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
-  ttsProvider: "ElevenLabs",
-  voice: "NOpBlnGInO9m6vDvFkFC",
-};
+// // Grampa Spuds
+// export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
+//   ttsProvider: "ElevenLabs",
+//   voice: "NOpBlnGInO9m6vDvFkFC",
+// };
+
+// // Russel – Dramatic British (B)
+// export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
+//   ttsProvider: "ElevenLabs",
+//   voice: "NYC9WEgkq1u4jiqBseQ9",
+// };
+
+// // Ana – soft British female voice (B)
+// export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
+//   ttsProvider: "ElevenLabs",
+//   voice: "rCmVtv8cYU60uhlsOo1M",
+// };
+
+// // Finn – fast paced, male voice (C)
+// export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
+//   ttsProvider: "ElevenLabs",
+//   voice: "vBKc2FfBKJfcZNyEt1n6",
+// };
+
+// // John Doe – Deep voice, scary story teller (B)
+// export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
+//   ttsProvider: "ElevenLabs",
+//   voice: "EiNlNiXeDU1pqqOPrYMO",
+// };
+
+// // James - Husky & Engaging EkK5I93UQWFDigLMpZcX
+// export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
+//   ttsProvider: "ElevenLabs",
+//   voice: "EkK5I93UQWFDigLMpZcX",
+// };
+
+// export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
+//   ttsProvider: "ElevenLabs",
+//   voice: "GzE4TcXfh9rYCU9gVgPp",
+// };
