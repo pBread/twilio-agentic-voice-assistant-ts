@@ -1,17 +1,15 @@
 import { Router, type RequestHandler } from "express";
 import type { WebsocketRequestHandler } from "express-ws";
 import { getAgentConfig } from "../agent/index.js";
-import {
-  createLogStreamer,
-  deleteLogger,
-  getMakeLogger,
-} from "../lib/logger.js";
+import { deleteLogger, getMakeLogger } from "../lib/logger.js";
+import { hasEndPunctuation } from "../lib/strings.js";
 import { prettyXML } from "../lib/xml.js";
 import {
   makeTransferToFlexHandoff,
   type TransferToFlexHandoff,
-} from "../packages/flex-transfer-to-agent/index.js";
-import { GovernanceService } from "../packages/governance/index.js";
+} from "../modules/flex-transfer-to-agent/index.js";
+import { GovernanceService } from "../modules/governance/index.js";
+import { SummarizationService } from "../modules/summarization/index.js";
 import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env.js";
 import type { CallDetails, SessionContext } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";
@@ -32,8 +30,6 @@ import {
   startRecording,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
-import { SummarizationService } from "../packages/summarization/index.js";
-import { hasEndPunctuation } from "../lib/strings.js";
 
 const router = Router();
 
