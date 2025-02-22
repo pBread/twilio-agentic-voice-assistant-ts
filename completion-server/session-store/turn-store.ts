@@ -258,19 +258,27 @@ export class TurnStore {
       indexOfInterruption,
     ); // substring without interruption
 
+    // interruption string too short to be reliable
+    if (_interruptedClause.length <= 3)
+      interruptedTurn.content = clipString(prevContent, 0.5);
     // interrupted clause was not sufficient to find the location
-    if (indexOfInterruption === -1)
+    else if (indexOfInterruption === -1)
       interruptedTurn.content = clipString(prevContent, 0.5);
     // the entire statement was interrupted
     else if (!contentSplitWithInterrupt?.length)
       interruptedTurn.content = clipString(_interruptedClause, 0.5);
-    // interruption string too short to be reliable
-    else if (_interruptedClause.length <= 3)
-      interruptedTurn.content = clipString(prevContent, 0.5);
     // usually a zero length interruptedClause but adding a check just in case
-    else if (prevContent === contentSplitWithInterrupt)
-      interruptedTurn.content =
-        contentSplitWithOutInterrupt + clipString(_interruptedClause, 0.5);
+    else if (prevContent === contentSplitWithOutInterrupt)
+      interruptedTurn.content = clipString(contentSplitWithOutInterrupt, 0.5);
+    else if (prevContent === contentSplitWithInterrupt) {
+      // the interruption was properly found
+      if (contentSplitWithInterrupt !== contentSplitWithOutInterrupt)
+        interruptedTurn.content =
+          contentSplitWithOutInterrupt + clipString(_interruptedClause, 0.5);
+      // unknown edge case
+      else
+        interruptedTurn.content = clipString(contentSplitWithOutInterrupt, 0.5);
+    }
     // the split was successful
     else interruptedTurn.content = contentSplitWithInterrupt;
 
