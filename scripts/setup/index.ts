@@ -1,9 +1,8 @@
 import { checkSetupTwilioApiKey } from "./api-key.js";
 import { gatherDeveloperDetails } from "./developer-info.js";
-import { closeRL, EnvManager, sLog } from "./helpers.js";
+import { closeRL, EnvManager } from "./helpers.js";
 import { checkBuyPhoneNumber, setupTwilioPhoneNumber } from "./phone.js";
 import { checkSetupSyncService, setupSyncService } from "./sync.js";
-import Twilio from "twilio";
 
 (async () => {
   const env = new EnvManager(".env");

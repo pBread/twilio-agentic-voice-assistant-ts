@@ -163,6 +163,9 @@ function makeEnv(envVars: dotenv.DotenvFlowParseResult): EnvVars {
 
     DEFAULT_TWILIO_NUMBER: envVars.DEFAULT_TWILIO_NUMBER,
 
+    TWILIO_VOICE_INTELLIGENCE_SVC_SID:
+      envVars.TWILIO_VOICE_INTELLIGENCE_SVC_SID,
+
     FLEX_WORKFLOW_SID: envVars.FLEX_WORKFLOW_SID,
     ENABLE_TRANSFER_TO_FLEX: bool(envVars.ENABLE_TRANSFER_TO_FLEX),
 
@@ -202,6 +205,8 @@ interface EnvVars {
   TWILIO_SYNC_SVC_SID: string | undefined;
 
   DEFAULT_TWILIO_NUMBER: string | undefined;
+
+  TWILIO_VOICE_INTELLIGENCE_SVC_SID: string | undefined;
 
   FLEX_WORKFLOW_SID: string | undefined;
   ENABLE_TRANSFER_TO_FLEX: boolean | undefined;
