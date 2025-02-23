@@ -1,12 +1,13 @@
-import { db } from "../../integration-server/mock-database.js";
-import type { ToolDefinition, ToolParameters } from "../types.js";
 import Twilio from "twilio";
+import { v4 as uuidV4 } from "uuid";
+import { db } from "../../integration-server/mock-database.js";
 import {
   DEFAULT_TWILIO_NUMBER,
   TWILIO_ACCOUNT_SID,
   TWILIO_API_KEY,
   TWILIO_API_SECRET,
 } from "../../shared/env.js";
+import type { ToolDefinition, ToolParameters } from "../types.js";
 
 const twilio = Twilio(TWILIO_API_KEY, TWILIO_API_SECRET, {
   accountSid: TWILIO_ACCOUNT_SID,
@@ -148,6 +149,9 @@ const ExecuteRefundParams: ToolParameters = {
 };
 
 interface ExecuteRefund {
+  orderId: string;
+  orderLineIds: string;
+  reason: string;
   userId: string;
 }
 
@@ -157,17 +161,13 @@ export const executeRefund: ToolDefinition<ExecuteRefund> = {
   parameters: ExecuteRefundParams,
   type: "function",
   async fn(args: ExecuteRefund, deps) {
-    deps.log.debug("tool", "executeRefund", args);
-    const companyName = deps.store.context.company?.name;
-
-    const to =
-      deps.store.context.user?.mobile_phone ??
-      (deps.store.context.call?.participantPhone as string);
-
-    await twilio.messages.create({
-      from: DEFAULT_TWILIO_NUMBER,
-      to,
-      body: `Your refund has been sucessfully processed. Thank you for choosing ${companyName}`,
+    deps.store.context.auxiliaryMessages?.push({
+      body: `Your refund for order ${args.orderId} has been successfully processed.`,
+      channel: "email",
+      createdAt: new Date().toISOString(),
+      from: deps.store.context.company?.email as string,
+      to: deps.store.context.user?.email ?? "demo@example.com",
+      id: uuidV4(),
     });
 
     return "refund-processed";
@@ -241,7 +241,23 @@ export const sendSmsRefundNotification: ToolDefinition<SendSmsRefundNotification
         body += `${amount} - ${line.product_name}\n`;
       }
 
-      await twilio.messages.create({ from: DEFAULT_TWILIO_NUMBER, to, body });
+      if (DEFAULT_TWILIO_NUMBER)
+        await twilio.messages.create({ from: DEFAULT_TWILIO_NUMBER, to, body });
+      else
+        deps.log.warn(
+          "tools",
+          "sendSmsRefundNotification did not send a real SMS because no phone number was defined.",
+        );
+
+      deps.store.context.auxiliaryMessages?.push({
+        body,
+        channel: "sms",
+        createdAt: new Date().toISOString(),
+        from: DEFAULT_TWILIO_NUMBER ?? "+18885550001",
+        to,
+        id: uuidV4(),
+      });
+
       return "SMS sent successfully";
     },
   };

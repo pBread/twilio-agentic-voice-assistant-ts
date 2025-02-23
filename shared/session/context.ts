@@ -5,6 +5,7 @@ import type { CallSummary } from "../../modules/summarization/types.js";
 import type { UserRecord } from "../db-entities.js";
 
 export interface SessionContext {
+  auxiliaryMessages: AuxiliaryMessage[]; // messages sent to the user outside of the conversation
   call: CallDetails;
   company: CompanyDetails;
   contactCenter: ContactCenter;
@@ -53,6 +54,15 @@ export interface CallDetails {
     | "no-answer";
 }
 
+export interface AuxiliaryMessage {
+  createdAt: string;
+  id: string;
+  channel: "sms" | "email";
+  body: string;
+  from: string;
+  to: string;
+}
+
 export interface ContactCenter {
   waitTime: number; // minutes
 }
@@ -60,4 +70,5 @@ export interface ContactCenter {
 export interface CompanyDetails {
   name: string;
   description: string;
+  email: string;
 }
