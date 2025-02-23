@@ -4,9 +4,9 @@ export interface AIQuestion {
   createdAt: string;
   id: string;
   callSid: string;
-  question: string;
-  explanation: string;
-  recommendation?: string;
-  answer: string;
   status: "new" | "approved" | "rejected" | "special";
+  question: string; // the AI agent's question
+  explanation: string; // an examplation of the situation
+  recommendation?: string; // the AI agent's recommended resolution
+  answer: string; // the human's response
 }

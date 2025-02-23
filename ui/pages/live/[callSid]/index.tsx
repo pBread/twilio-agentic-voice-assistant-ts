@@ -1,6 +1,6 @@
 import { GovernanceContainer } from "@/components/GovernanceContainer";
 import { useAppSelector } from "@/state/hooks";
-import { getSummaryState } from "@/state/sessions";
+import { getQuestionState, getSummaryState } from "@/state/sessions";
 import { selectCallTurns, selectTurnById } from "@/state/turns";
 import {
   Badge,
@@ -74,9 +74,18 @@ function Conscious() {
           <TurnsTable callSid={callSid} />
         </div>
       </Paper>
+
+      <Paper className="paper">
+        <Title order={4}>Human Consultation</Title>
+        <HumanConsultation />
+      </Paper>
     </div>
   );
 }
+
+/****************************************************
+ Turns Table
+****************************************************/
 
 function TurnsTable({ callSid }: { callSid: string }) {
   const turns = useAppSelector((state) => selectCallTurns(state, callSid));
@@ -165,6 +174,81 @@ function HumanRow({ turnId }: TurnRow) {
   );
 }
 
+const columnStyles = {
+  mainColumn: {
+    width: "22%",
+  },
+  statusColumn: {
+    width: "40px",
+    minWidth: "40px",
+    maxWidth: "40px",
+  },
+};
+
+/****************************************************
+ Human Consultation
+****************************************************/
+
+function HumanConsultation() {
+  const router = useRouter();
+  const callSid = router.query.callSid as string;
+
+  const questionState = useAppSelector((state) =>
+    getQuestionState(state, callSid),
+  );
+
+  const questions = questionState ? Object.values(questionState) : [];
+
+  return (
+    <Table stickyHeader>
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th style={{ width: "22%" }}>Question</Table.Th>
+          <Table.Th style={{ width: "22%" }}>Explanation</Table.Th>
+          <Table.Th style={{ width: "22%" }}>Recommendation</Table.Th>
+          <Table.Th style={{ width: "22%" }}>Answer</Table.Th>
+          <Table.Th style={{ width: "40px" }}>Status</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>
+        {questions.map((question) => (
+          <QuestionRow
+            key={`k3c-${question.id}`}
+            callSid={callSid}
+            questionId={question.id}
+          />
+        ))}
+      </Table.Tbody>
+    </Table>
+  );
+}
+
+function QuestionRow({
+  callSid,
+  questionId,
+}: {
+  callSid: string;
+  questionId: string;
+}) {
+  const questionState = useAppSelector((state) =>
+    getQuestionState(state, callSid),
+  );
+  if (!questionState) return;
+
+  const question = questionState[questionId];
+  if (!question) return;
+
+  return (
+    <>
+      <Table.Td style={{ width: "22%" }}> {question.question}</Table.Td>
+      <Table.Td style={{ width: "22%" }}>{question.explanation}</Table.Td>
+      <Table.Td style={{ width: "22%" }}>{question.recommendation}</Table.Td>
+      <Table.Td style={{ width: "22%" }}> {question.answer}</Table.Td>
+      <Table.Td style={columnStyles.statusColumn}> {question.status}</Table.Td>
+    </>
+  );
+}
+
 /****************************************************
  Subconscious
 ****************************************************/
@@ -199,8 +283,6 @@ function Subconscious() {
 function SummarySection() {
   const router = useRouter();
   const callSid = router.query.callSid as string;
-
-  const theme = useMantineTheme();
 
   const summaryState = useAppSelector((state) =>
     getSummaryState(state, callSid),
