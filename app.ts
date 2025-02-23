@@ -10,7 +10,6 @@ import {
 import { intergrationServerRoutes } from "./integration-server/index.js";
 import { parseE164 } from "./lib/e164.js";
 import log from "./lib/logger.js";
-import { crmRoutes } from "./integration-server/crm/index.js";
 
 const { DEFAULT_TWILIO_NUMBER, DEVELOPERS_PHONE_NUMBER, HOSTNAME, PORT } = env;
 
@@ -23,7 +22,6 @@ app.ws(CONVERSATION_RELAY_WS_ROUTE, conversationRelayWebsocketHandler);
 
 // integration server
 app.use(intergrationServerRoutes);
-app.use(crmRoutes);
 
 /****************************************************
  Start Server
