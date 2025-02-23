@@ -1,10 +1,8 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { EnvManager, sLog } from "../helpers.js";
-import path from "path";
+import { EnvManager } from "../helpers.js";
+import { checkSetupTwilioApiKey } from "./api-key.js";
 
-// the instructions templates are injected with context at runtime by the agent resolver
-const __dirname = dirname(fileURLToPath(import.meta.url)); // this directory
-const rootEnv = path.join(__dirname, "../../.env");
+(async () => {
+  const env = new EnvManager(".env");
 
-const env = new EnvManager(rootEnv);
+  await checkSetupTwilioApiKey(env);
+})();

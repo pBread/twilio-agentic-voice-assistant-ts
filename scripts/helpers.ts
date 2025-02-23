@@ -1,4 +1,9 @@
 import * as dotenv from "dotenv-flow";
+import * as fsp from "fs/promises";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url)); // this directory
 
 /****************************************************
  Logger
@@ -26,12 +31,86 @@ function pad(str: string) {
 ****************************************************/
 export class EnvManager {
   vars: EnvVars;
-  constructor(private envPath: string, envVars: Partial<EnvVars> = {}) {
-    this.vars = { ...makeEnv(dotenv.parse(envPath)), ...envVars };
-    sLog.info(`EnvManager constructor ${envPath}`, this.vars);
+  filePath: string;
+  id: string;
+  constructor(private relPath: string, envVars: Partial<EnvVars> = {}) {
+    this.id = Math.floor(Math.random() * 10 ** 8)
+      .toString()
+      .padStart(8, "0");
+
+    this.filePath = path.join(__dirname, `../${relPath}`);
+    this.vars = { ...makeEnv(dotenv.parse(this.filePath)), ...envVars };
+    sLog.info(`EnvManager constructor ${relPath}`, this.vars);
   }
 
-  save = () => {};
+  getDiff = () => {
+    const original = makeEnv(dotenv.parse(this.filePath));
+    let changes: Record<
+      string,
+      { key: string; old: string | undefined | boolean; new: string }
+    > = {};
+    Object.entries(this.vars).forEach(([key, value]) => {
+      const old = original[key as keyof EnvVars];
+      if (old !== value) changes[key] = { old, new: value, key };
+    });
+
+    return changes;
+  };
+
+  save = async (): Promise<void> => {
+    try {
+      // Read existing content
+      let content = await fsp.readFile(this.filePath, "utf-8");
+
+      const updatedKeys = Object.keys(this.getDiff());
+      if (!updatedKeys.length)
+        return sLog.info(`no changes to ${this.relPath}`);
+
+      sLog.info(
+        `saving ${this.relPath}\t ${
+          updatedKeys.length
+        } var changed: ${updatedKeys.join(", ")}`,
+      );
+
+      // Ensure content ends with newline
+      if (content && !content.endsWith("\n")) content += "\n";
+
+      // Update each variable in the file
+      for (const [key, value] of Object.entries(this.vars)) {
+        if (value === undefined) continue;
+
+        const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const regex = new RegExp(`^${escapedKey}=.*$`, "m");
+
+        // Format the value properly
+        const stringValue =
+          typeof value === "boolean" ? value.toString() : value;
+        const formattedValue = stringValue.includes(" ")
+          ? `"${stringValue}"`
+          : stringValue;
+
+        if (regex.test(content)) {
+          // Replace existing entry
+          content = content.replace(regex, `${key}=${formattedValue}`);
+        } else {
+          // Add new entry
+          content =
+            content.trimEnd() + "\n" + `${key}=${formattedValue}` + "\n";
+        }
+      }
+
+      // Write back to file
+      await fsp.writeFile(this.filePath, content);
+      sLog.success(
+        `saved ${this.relPath}\t ${
+          updatedKeys.length
+        } var changed: ${updatedKeys.join(", ")}`,
+      );
+    } catch (error) {
+      sLog.error(`Failed to save environment file: ${this.relPath}`, error);
+      throw error;
+    }
+  };
 }
 
 function makeEnv(envVars: dotenv.DotenvFlowParseResult): EnvVars {
@@ -103,4 +182,13 @@ interface EnvVars {
   DEVELOPERS_PHONE_NUMBER: string | undefined;
   DEVELOPERS_FIRST_NAME: string | undefined;
   DEVELOPERS_LAST_NAME: string | undefined;
+}
+
+/****************************************************
+ Helpers
+****************************************************/
+export function makeFriendlyName(env: EnvManager) {
+  let name = env.vars.DEVELOPERS_FIRST_NAME ?? "demo";
+  if (env.vars.DEVELOPERS_LAST_NAME) name += env.vars.DEVELOPERS_LAST_NAME[0];
+  return `${name}-voice-bot-${env.id}`.toLowerCase();
 }
