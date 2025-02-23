@@ -7,7 +7,8 @@
     "clear:sessions": "tsx scripts/sessions/clear.ts",
     "clear": "yarn clear:sessions",
     "dev": "nodemon --exec tsx app.ts --delay 1500ms --ignore /ui",
-    "grok": "tsx scripts/ngrok.ts"
+    "grok": "tsx scripts/ngrok.ts",
+    "setup": "tsx scripts/setup/index.ts"
   },
   "dependencies": {
     "@twilio/conversations": "^2.6.1",
