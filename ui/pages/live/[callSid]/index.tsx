@@ -1,6 +1,10 @@
 import { GovernanceContainer } from "@/components/GovernanceContainer";
 import { useAppSelector } from "@/state/hooks";
-import { getQuestionState, getSummaryState } from "@/state/sessions";
+import {
+  getAuxMessageState,
+  getQuestionState,
+  getSummaryState,
+} from "@/state/sessions";
 import { selectCallTurns, selectTurnById } from "@/state/turns";
 import {
   Badge,
@@ -10,6 +14,7 @@ import {
   Title,
   useMantineTheme,
 } from "@mantine/core";
+import { AuxiliaryMessage } from "@shared/session/context";
 import { useRouter } from "next/router";
 
 export default function LiveCallPage() {
@@ -78,6 +83,12 @@ function Conscious() {
       <Paper className="paper">
         <Title order={4}>Human Consultation</Title>
         <HumanConsultation />
+      </Paper>
+
+      <Paper className="paper">
+        <Title order={4}>Auxiliary Messages</Title>
+
+        <AuxiliaryMessageTable />
       </Paper>
     </div>
   );
@@ -245,6 +256,61 @@ function QuestionRow({
       <Table.Td style={{ width: "22%" }}>{question.recommendation}</Table.Td>
       <Table.Td style={{ width: "22%" }}> {question.answer}</Table.Td>
       <Table.Td style={columnStyles.statusColumn}> {question.status}</Table.Td>
+    </>
+  );
+}
+
+/****************************************************
+ Auxiliary Messages
+****************************************************/
+function AuxiliaryMessageTable() {
+  const router = useRouter();
+  const callSid = router.query.callSid as string;
+
+  const auxMessageState = useAppSelector((state) =>
+    getAuxMessageState(state, callSid),
+  );
+
+  const messages = auxMessageState ? Object.values(auxMessageState) : [];
+
+  return (
+    <Table stickyHeader>
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th style={{}}>Channel</Table.Th>
+          <Table.Th style={{}}>From</Table.Th>
+          <Table.Th style={{}}>To</Table.Th>
+          <Table.Th style={{}}>Body</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>
+        {messages.map((msg) => (
+          <AuxMessageRow
+            key={`id3-${msg.id}`}
+            callSid={callSid}
+            msgId={msg.id}
+          />
+        ))}
+      </Table.Tbody>
+    </Table>
+  );
+}
+
+function AuxMessageRow({ callSid, msgId }: { callSid: string; msgId: string }) {
+  const auxMessageState = useAppSelector((state) =>
+    getAuxMessageState(state, callSid),
+  );
+  if (!auxMessageState) return;
+
+  const msg = auxMessageState[msgId];
+  if (!msg) return;
+
+  return (
+    <>
+      <Table.Td style={{}}> {msg.channel}</Table.Td>
+      <Table.Td style={{}}> {msg.from}</Table.Td>
+      <Table.Td style={{}}> {msg.to}</Table.Td>
+      <Table.Td style={{}}> {msg.body}</Table.Td>
     </>
   );
 }

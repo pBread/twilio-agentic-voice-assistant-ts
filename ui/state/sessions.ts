@@ -77,6 +77,11 @@ export function getQuestionState(state: RootState, callSid: string) {
   return session?.questions;
 }
 
+export function getAuxMessageState(state: RootState, callSid: string) {
+  const session = selectSessionById(state, callSid);
+  return session?.auxiliaryMessages;
+}
+
 /****************************************************
  Actions
 ****************************************************/
