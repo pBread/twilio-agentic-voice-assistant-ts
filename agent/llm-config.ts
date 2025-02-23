@@ -1,1 +1,3 @@
-export const llmConfig = { model: "gpt-3.5-turbo" };
+import type { OpenAIConfig } from "../shared/openai.js";
+
+export const llmConfig: OpenAIConfig = { model: "gpt-4o" };
