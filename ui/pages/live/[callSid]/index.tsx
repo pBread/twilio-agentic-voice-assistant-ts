@@ -225,19 +225,6 @@ function SummarySection() {
         <b>Topics: </b>
         {summaryState?.topics.join(", ")}
       </Text>
-
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <Text size="sm" fw="bold">
-          Customer Details:
-        </Text>
-        <div style={{ paddingLeft: "6px" }}>
-          {summaryState?.customerDetails?.map((item) => (
-            <Text size="sm" key={`sdi-${item}`}>
-              <li>{item}</li>
-            </Text>
-          ))}
-        </div>
-      </div>
     </Paper>
   );
 }

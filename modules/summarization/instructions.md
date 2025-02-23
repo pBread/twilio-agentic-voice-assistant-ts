@@ -10,7 +10,6 @@ Your response MUST BE formatted as a JSON object and follow this Typescript sche
 interface CallSummary {
   title: string; // 1 sentence title of the call
   description: string; // 2-3 paragraph description
-  customerDetails: string[]; // at most, 1 sentence for each item
   topics: string[]; // at most 2 topic ids at a time
 }
 ```
@@ -42,21 +41,6 @@ Create a 2-3 paragraph description that would allow contact center managers to q
 - Recommendations for future interactions
 - Notable customer feedback or insights
 
-## Customer Details
-
-Analyze the transcripts to identify and extract valuable customer information that helps build a comprehensive customer profile. This information should encompass both explicit statements and reasonable inferences about the customer's life, preferences, and circumstances.
-
-These could include things such as, but not limited to:
-
-- Family Details: marital status, number of children & ages, pets
-- Living Situation: housing type (apartment, home, etc), location characteristics (urban, suburb, etc)
-- Professional Details: occupation, industry, remote vs office work
-- Lifestyle Indicators: hobbies, entertainment preferences, diet, shopping preferences
-- Brand Relationships: preferred brands, negative experiences, price sensitivity
-- Pain Points and Needs: expressed frustrations, time constraints, budget considerations, unmet needs or desires, service preferences
-
-IMPORTANT: Do not record anything that might be considered personally identifiable information (PII), including, but not limited to: phone, email, social security, address
-
 ## Topics
 
 Here is a CSV file of the topics you should be looking for. Only respond with the ids of the topics.
@@ -69,4 +53,6 @@ Here is a CSV file of the topics you should be looking for. Only respond with th
 
 Here is the transcript of the call:
 
+```
 {{transcript}}
+```
