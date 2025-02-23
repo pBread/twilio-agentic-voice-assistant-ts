@@ -50,7 +50,7 @@ router.post("/incoming-call", async (req, res) => {
       call,
       contactCenter: { waitTime: 5 + Math.floor(Math.random() * 5) },
     };
-    const welcomeGreeting = agent.getGreeting(context);
+    const welcomeGreeting = agent.getGreeting({ ...agent.context, ...context });
 
     const twiml = makeConversationRelayTwiML({
       ...agent.relayConfig,
@@ -178,7 +178,6 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const governanceBot = new GovernanceService(store, agent, {
     frequency: 10 * 1000,
   });
-
   const summaryBot = new SummarizationService(store, agent, {
     frequency: 15 * 1000,
   });
