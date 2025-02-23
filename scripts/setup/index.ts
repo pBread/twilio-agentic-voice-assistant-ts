@@ -1,6 +1,6 @@
 import { checkSetupTwilioApiKey } from "./api-key.js";
 import { gatherDeveloperDetails } from "./developer-info.js";
-import { checkGetTaskrouterSids } from "./flex.js";
+import { checkGetTaskrouterSids, setupFlexWorker } from "./flex.js";
 import { closeRL, EnvManager, selectOption } from "./helpers.js";
 import { checkBuyPhoneNumber, setupTwilioPhoneNumber } from "./phone.js";
 import { checkSetupSyncService, setupSyncService } from "./sync.js";

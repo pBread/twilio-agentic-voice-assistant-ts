@@ -91,4 +91,50 @@ export async function checkGetTaskrouterSids(env: EnvManager) {
   }
 }
 
-export async function setupFlexWorker(env: EnvManager) {}
+export async function setupFlexWorker(env: EnvManager) {
+  const allDefined =
+    env.vars.FLEX_WORKFLOW_SID &&
+    env.vars.FLEX_WORKSPACE_SID &&
+    env.vars.FLEX_QUEUE_SID;
+
+  if (!allDefined) return;
+
+  if (!env.vars.FLEX_WORKSPACE_SID)
+    return sLog.info(
+      "unable to select flex worker because FLEX_WORKSPACE_SID is undefined",
+    );
+
+  try {
+    sLog.info("checking flex workers environment");
+    const twlo = Twilio(env.vars.TWILIO_API_KEY, env.vars.TWILIO_API_SECRET, {
+      accountSid: env.vars.TWILIO_ACCOUNT_SID,
+    });
+
+    const workers = await twlo.taskrouter.v1
+      .workspaces(env.vars.FLEX_WORKSPACE_SID)
+      .workers.list();
+
+    if (!workers.length)
+      return sLog.warn(
+        "unable to setup flex worker because there are no workers. log into your flex console from the twilio console and a worker will be created automatically",
+      );
+
+    const result = await selectOption(
+      "Are any of these workers you?",
+      workers
+        .map((worker) => ({
+          label: worker.friendlyName,
+          value: worker.sid,
+        }))
+        .concat({ label: "none of these are me", value: "" }),
+    );
+
+    if (result?.length) {
+      env.vars.FLEX_WORKER_SID = result;
+      await env.save();
+    }
+  } catch (error) {
+    sLog.error("error selecting worker. error: ", error);
+    throw error;
+  }
+}
