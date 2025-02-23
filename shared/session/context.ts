@@ -1,5 +1,5 @@
 import type { Procedure } from "../../agent/types.js";
-import type { AIQuestionState } from "../../modules/flex-human-consultation/types.js";
+import type { AIQuestionState } from "../../modules/human-consultation/types.js";
 import type { GovernanceState } from "../../modules/governance/types.js";
 import type { CallSummary } from "../../modules/summarization/types.js";
 import type { UserRecord } from "../db-entities.js";

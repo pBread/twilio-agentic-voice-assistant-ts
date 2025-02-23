@@ -1,5 +1,5 @@
 import log from "../../lib/logger.js";
-import { askAgent } from "../../modules/flex-human-consultation/tools.js";
+import { askAgent } from "../../modules/human-consultation/tools.js";
 import * as flexTools from "../../modules/flex-transfer-to-agent/tools.js";
 import type { ToolDefinition, ToolExecutor, ToolSpec } from "../types.js";
 import * as fnTools from "./functions.js";
@@ -26,7 +26,11 @@ if (duplicates.length) {
   const duplicateList = duplicates
     .map(
       ([toolName, exports], idx) =>
-        `(${idx + 1}) Tool "${toolName}" is defined multiple times with exports: ${exports.join(", ")}`,
+        `(${
+          idx + 1
+        }) Tool "${toolName}" is defined multiple times with exports: ${exports.join(
+          ", ",
+        )}`,
     )
     .join("\n");
 
