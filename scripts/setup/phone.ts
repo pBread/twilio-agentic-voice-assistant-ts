@@ -5,7 +5,7 @@ export async function checkBuyPhoneNumber(env: EnvManager) {
   sLog.info("checking default twilio phone");
 
   if (env.vars.DEFAULT_TWILIO_NUMBER) {
-    sLog.info(`default twilio phone exists: ${env.vars.DEFAULT_TWILIO_NUMBER}`);
+    sLog.info(`DEFAULT_TWILIO_NUMBER is defined`);
     return;
   }
 
@@ -67,15 +67,20 @@ export async function setupTwilioPhoneNumber(env: EnvManager) {
       pn.voiceUrl === voiceUrl;
 
     if (!isAlreadySetup) {
+      sLog.info(
+        `default twilio phone number (${pn.phoneNumber}) is not configured to receive incoming calls. updating the configuration`,
+      );
       await twlo.incomingPhoneNumbers(pn.sid).update({
         statusCallback,
         statusCallbackMethod,
         voiceMethod,
         voiceUrl,
       });
+
+      sLog.success(`updated twilio phone (${pn.phoneNumber}) webhooks`);
     }
 
-    sLog.success(
+    sLog.info(
       `DEFAULT_TWILIO_NUMBER (${env.vars.DEFAULT_TWILIO_NUMBER}) is configured to receive incoming calls.`,
     );
   } catch (error) {

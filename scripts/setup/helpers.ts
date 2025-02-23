@@ -75,8 +75,7 @@ export class EnvManager {
       let content = await fsp.readFile(this.filePath, "utf-8");
 
       const updatedKeys = Object.keys(this.getDiff());
-      if (!updatedKeys.length)
-        return sLog.info(`no changes to ${this.relPath}`);
+      if (!updatedKeys.length) return;
 
       sLog.info(
         `saving ${this.relPath}\t ${

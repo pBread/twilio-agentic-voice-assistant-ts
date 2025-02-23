@@ -2,7 +2,7 @@ import { checkSetupTwilioApiKey } from "./api-key.js";
 import { gatherDeveloperDetails } from "./developer-info.js";
 import { closeRL, EnvManager, sLog } from "./helpers.js";
 import { checkBuyPhoneNumber, setupTwilioPhoneNumber } from "./phone.js";
-import { checkSetupSyncService } from "./sync.js";
+import { checkSetupSyncService, setupSyncService } from "./sync.js";
 import Twilio from "twilio";
 
 (async () => {
@@ -13,6 +13,7 @@ import Twilio from "twilio";
   env.assertApiKeys();
 
   await checkSetupSyncService(env);
+  await setupSyncService(env);
 
   env.assertHostName();
 
