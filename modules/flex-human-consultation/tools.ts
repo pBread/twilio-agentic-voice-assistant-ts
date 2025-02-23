@@ -159,15 +159,15 @@ async function createFlexTask(question: AIQuestion, deps: ToolDependencies) {
     const isApproved = /\b(approve)\b/i.test(answer);
     const isRejected = /\b(reject)\b/i.test(answer);
 
-    let status = "unknown";
+    let status: AIQuestion["status"] = "special";
     if (isApproved) status = "approved";
     if (isRejected) status = "rejected";
-    if (isApproved && isRejected) status = "ambiguous";
+    if (isApproved && isRejected) status = "special";
 
     let systemContent =
       "IMPORTANT UPDATE: A human agent has responded to your previous question. It is critical that your next response informs the customer.\n";
 
-    systemContent += `Your approval status is ${status}. \n`;
+    systemContent += `The approval status is: "${status}". \n`;
 
     systemContent += `Here is the message from the human agent: ${answer}. \n\n`;
     systemContent += `As a reminder, here is the question you asked: ${question.question}`;
@@ -175,6 +175,13 @@ async function createFlexTask(question: AIQuestion, deps: ToolDependencies) {
     deps.store.addParkingLotItem({
       human: { content: "What did the agent say?", origin: "hack" },
       system: { content: systemContent, origin: "human" },
+    });
+
+    deps.store.setContext({
+      questions: {
+        ...(deps.store.context.questions ?? {}),
+        [question.id]: { ...question, answer, status },
+      },
     });
   });
 }
