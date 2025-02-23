@@ -3,6 +3,10 @@ import { gatherDeveloperDetails } from "./developer-info.js";
 import { closeRL, EnvManager } from "./helpers.js";
 import { checkBuyPhoneNumber, setupTwilioPhoneNumber } from "./phone.js";
 import { checkSetupSyncService, setupSyncService } from "./sync.js";
+import {
+  checkVoiceIntelligence,
+  checkVoiceIntelligenceOperators,
+} from "./voice-intelligence.js";
 
 (async () => {
   const env = new EnvManager(".env");
@@ -20,6 +24,9 @@ import { checkSetupSyncService, setupSyncService } from "./sync.js";
 
   await checkBuyPhoneNumber(env);
   await setupTwilioPhoneNumber(env);
+
+  await checkVoiceIntelligence(env);
+  await checkVoiceIntelligenceOperators(env);
 
   closeRL();
 })();
