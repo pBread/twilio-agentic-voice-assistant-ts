@@ -16,6 +16,33 @@ export const askQuestion = (query: string): Promise<string> =>
     rl.question(query + "\n", (answer: string) => resolve(answer)),
   );
 
+type Option = {
+  value: string;
+  label: string;
+};
+
+export const askOptions = async (
+  query: string,
+  options: Option[],
+): Promise<string> => {
+  console.log(`\n${query}`);
+
+  // Display numbered options
+  options.forEach((opt, index) => {
+    console.log(`${index + 1}. ${opt.label}`);
+  });
+
+  while (true) {
+    const answer = await askQuestion("Enter the number of your choice: ");
+    const choice = parseInt(answer) - 1;
+
+    if (choice >= 0 && choice < options.length) {
+      return options[choice].value;
+    }
+    console.log("Invalid choice. Please try again.");
+  }
+};
+
 export const closeRL = () => rl.close();
 
 /****************************************************
