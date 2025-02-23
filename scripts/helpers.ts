@@ -40,7 +40,6 @@ export class EnvManager {
 
     this.filePath = path.join(__dirname, `../${relPath}`);
     this.vars = { ...makeEnv(dotenv.parse(this.filePath)), ...envVars };
-    sLog.info(`EnvManager constructor ${relPath}`, this.vars);
   }
 
   getDiff = () => {
@@ -110,6 +109,18 @@ export class EnvManager {
       sLog.error(`Failed to save environment file: ${this.relPath}`, error);
       throw error;
     }
+  };
+
+  assertAccountSid = () => {
+    if (!this.vars.TWILIO_ACCOUNT_SID)
+      throw Error("Missing required env var: TWILIO_ACCOUNT_SID");
+  };
+
+  assertApiKeys = () => {
+    if (!this.vars.TWILIO_API_KEY || !this.vars.TWILIO_API_SECRET)
+      throw Error(
+        "Missing required env var: TWILIO_API_KEY, TWILIO_API_SECRET",
+      );
   };
 }
 
