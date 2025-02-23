@@ -53,7 +53,7 @@ export const getUserByEmailOrPhone: ToolDefinition<GetProfile> = {
       return false;
     });
 
-    if (user) deps.store.setContext({ user });
+    if (user) deps.store.setContext({ user }); // set the user in the session context after successfully fetching
     return user;
   },
 };
@@ -158,7 +158,7 @@ interface ExecuteRefund {
 
 export const executeRefund: ToolDefinition<ExecuteRefund> = {
   name: "executeRefund",
-  description: "Execute a refund for a given order. Be sure ",
+  description: "Execute a refund for a given order",
   parameters: ExecuteRefundParams,
   type: "function",
   async fn(args: ExecuteRefund, deps) {
