@@ -179,6 +179,7 @@ function makeEnv(envVars: dotenv.DotenvFlowParseResult): EnvVars {
     DEVELOPERS_PHONE_NUMBER: envVars.DEVELOPERS_PHONE_NUMBER,
     DEVELOPERS_FIRST_NAME: envVars.DEVELOPERS_FIRST_NAME,
     DEVELOPERS_LAST_NAME: envVars.DEVELOPERS_LAST_NAME,
+    DEVELOPERS_EMAIL: envVars.DEVELOPERS_EMAIL,
   };
 }
 
@@ -213,6 +214,7 @@ interface EnvVars {
 
   TWILIO_CONVERSATIONS_SVC_SID: string | undefined;
 
+  DEVELOPERS_EMAIL: string | undefined;
   DEVELOPERS_PHONE_NUMBER: string | undefined;
   DEVELOPERS_FIRST_NAME: string | undefined;
   DEVELOPERS_LAST_NAME: string | undefined;
