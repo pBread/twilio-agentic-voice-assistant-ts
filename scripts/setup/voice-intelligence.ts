@@ -1,5 +1,21 @@
 import Twilio from "twilio";
-import { EnvManager, makeFriendlyName, sLog } from "./helpers.js";
+import { fileURLToPath } from "url";
+import { closeRL, EnvManager, makeFriendlyName, sLog } from "./helpers.js";
+
+const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
+
+(async () => {
+  if (!isMainModule) return;
+  const env = new EnvManager(".env");
+  env.assertAccountSid();
+  env.assertApiKeys();
+  env.assertHostName();
+
+  await checkVoiceIntelligence(env);
+  await checkVoiceIntelligenceOperators(env);
+
+  closeRL();
+})();
 
 export async function checkVoiceIntelligence(env: EnvManager) {
   if (env.vars.TWILIO_VOICE_INTELLIGENCE_SVC_SID)

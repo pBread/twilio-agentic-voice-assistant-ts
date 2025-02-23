@@ -1,4 +1,15 @@
-import { askQuestion, EnvManager } from "./helpers.js";
+import { fileURLToPath } from "url";
+import { askQuestion, closeRL, EnvManager } from "./helpers.js";
+
+const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
+
+(async () => {
+  if (!isMainModule) return;
+  const env = new EnvManager(".env");
+  await gatherDeveloperDetails(env);
+
+  closeRL();
+})();
 
 export async function gatherDeveloperDetails(env: EnvManager) {
   if (!env.vars.DEVELOPERS_FIRST_NAME) {

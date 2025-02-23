@@ -1,5 +1,21 @@
 import Twilio from "twilio";
-import { EnvManager, sLog } from "./helpers.js";
+import { fileURLToPath } from "url";
+import { closeRL, EnvManager, sLog } from "./helpers.js";
+
+const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
+
+(async () => {
+  if (!isMainModule) return;
+  const env = new EnvManager(".env");
+  env.assertAccountSid();
+  env.assertApiKeys();
+  env.assertHostName();
+
+  await checkBuyPhoneNumber(env);
+  await setupTwilioPhoneNumber(env);
+
+  closeRL();
+})();
 
 export async function checkBuyPhoneNumber(env: EnvManager) {
   sLog.info("checking default twilio phone");

@@ -1,6 +1,19 @@
-import { EnvManager, sLog } from "./helpers.js";
 import Twilio from "twilio";
-import { selectOption } from "./helpers.js";
+import { fileURLToPath } from "url";
+import { closeRL, EnvManager, selectOption, sLog } from "./helpers.js";
+
+const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
+
+(async () => {
+  if (!isMainModule) return;
+  const env = new EnvManager(".env");
+  env.assertAccountSid();
+  env.assertApiKeys();
+  await checkGetTaskrouterSids(env);
+  await setupFlexWorker(env);
+
+  closeRL();
+})();
 
 export async function checkGetTaskrouterSids(env: EnvManager) {
   const allDefined =

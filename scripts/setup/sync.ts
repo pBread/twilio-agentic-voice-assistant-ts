@@ -1,5 +1,21 @@
 import Twilio from "twilio";
-import { EnvManager, makeFriendlyName, sLog } from "./helpers.js";
+import { fileURLToPath } from "url";
+import { closeRL, EnvManager, makeFriendlyName, sLog } from "./helpers.js";
+
+const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
+
+(async () => {
+  if (!isMainModule) return;
+  const env = new EnvManager(".env");
+  env.assertAccountSid();
+  env.assertApiKeys();
+  env.assertHostName();
+
+  await checkSetupSyncService(env);
+  await setupSyncService(env);
+
+  closeRL();
+})();
 
 export async function checkSetupSyncService(env: EnvManager) {
   sLog.info("checking twilio sync service");

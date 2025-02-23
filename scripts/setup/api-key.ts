@@ -1,5 +1,19 @@
-import { EnvManager, sLog, makeFriendlyName } from "./helpers.js";
 import Twilio from "twilio";
+import { fileURLToPath } from "url";
+import { closeRL, EnvManager, makeFriendlyName, sLog } from "./helpers.js";
+
+const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
+
+(async () => {
+  if (!isMainModule) return;
+
+  const env = new EnvManager(".env");
+  env.assertAccountSid();
+  await checkSetupTwilioApiKey(env);
+  env.assertApiKeys();
+
+  closeRL();
+})();
 
 export async function checkSetupTwilioApiKey(env: EnvManager) {
   sLog.info("checking twilio api key and secret");
