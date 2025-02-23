@@ -7,8 +7,6 @@
     "clear:sessions": "tsx scripts/sessions/clear.ts",
     "clear": "yarn clear:sessions",
     "dev": "nodemon --exec tsx app.ts --delay 1500ms --ignore /ui",
-    "format:check": "prettier --check \"**/*.{ts,tsx}\"",
-    "format": "prettier --write \"**/*.{ts,tsx}\"",
     "grok": "tsx scripts/ngrok.ts"
   },
   "dependencies": {
@@ -32,11 +30,9 @@
     "@types/lodash.result": "^4.5.9",
     "@types/node": "^22.13.1",
     "@types/p-queue": "^3.2.1",
-    "@types/pg": "^8.11.11",
     "@types/twilio": "^3.19.3",
     "@types/ws": "^8.5.14",
     "nodemon": "^3.1.9",
-    "prettier": "3.5.1",
     "tsx": "^3.12.10",
     "typescript": "^5.7.3"
   }
