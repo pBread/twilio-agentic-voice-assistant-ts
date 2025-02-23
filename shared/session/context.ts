@@ -5,7 +5,7 @@ import type { CallSummary } from "../../modules/summarization/types.js";
 import type { UserRecord } from "../db-entities.js";
 
 export interface SessionContext {
-  auxiliaryMessages: AuxiliaryMessage[]; // messages sent to the user outside of the conversation
+  auxiliaryMessages: Record<string, AuxiliaryMessage>; // messages sent to the user outside of the conversation
   call: CallDetails;
   company: CompanyDetails;
   contactCenter: ContactCenter;

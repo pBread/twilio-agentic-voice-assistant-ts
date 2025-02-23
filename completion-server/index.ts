@@ -30,6 +30,7 @@ import {
   startRecording,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
+import { v4 } from "uuid";
 
 const router = Router();
 
@@ -48,7 +49,7 @@ router.post("/incoming-call", async (req, res) => {
 
     const context: Partial<SessionContext> = {
       ...agent.context,
-      auxiliaryMessages: [],
+      auxiliaryMessages: {},
       call,
       contactCenter: { waitTime: 5 + Math.floor(Math.random() * 5) },
     };
@@ -140,7 +141,7 @@ router.post("/outbound/answer", async (req, res) => {
 
     const context: Partial<SessionContext> = {
       ...agent.context,
-      auxiliaryMessages: [],
+      auxiliaryMessages: {},
       call,
       contactCenter: { waitTime: 5 + Math.floor(Math.random() * 5) },
     };

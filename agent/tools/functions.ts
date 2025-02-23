@@ -8,6 +8,7 @@ import {
   TWILIO_API_SECRET,
 } from "../../shared/env.js";
 import type { ToolDefinition, ToolParameters } from "../types.js";
+import { AuxiliaryMessage } from "../../shared/session/context.js";
 
 const twilio = Twilio(TWILIO_API_KEY, TWILIO_API_SECRET, {
   accountSid: TWILIO_ACCOUNT_SID,
@@ -161,14 +162,19 @@ export const executeRefund: ToolDefinition<ExecuteRefund> = {
   parameters: ExecuteRefundParams,
   type: "function",
   async fn(args: ExecuteRefund, deps) {
-    deps.store.context.auxiliaryMessages?.push({
+    const msg: AuxiliaryMessage = {
       body: `Your refund for order ${args.orderId} has been successfully processed.`,
       channel: "email",
       createdAt: new Date().toISOString(),
       from: deps.store.context.company?.email as string,
       to: deps.store.context.user?.email ?? "demo@example.com",
       id: uuidV4(),
-    });
+    };
+
+    deps.store.context.auxiliaryMessages = {
+      ...(deps.store.context.auxiliaryMessages ?? {}),
+      [msg.id]: msg,
+    };
 
     return "refund-processed";
   },
@@ -249,14 +255,19 @@ export const sendSmsRefundNotification: ToolDefinition<SendSmsRefundNotification
           "sendSmsRefundNotification did not send a real SMS because no phone number was defined.",
         );
 
-      deps.store.context.auxiliaryMessages?.push({
+      const msg: AuxiliaryMessage = {
         body,
         channel: "sms",
         createdAt: new Date().toISOString(),
         from: DEFAULT_TWILIO_NUMBER ?? "+18885550001",
         to,
         id: uuidV4(),
-      });
+      };
+
+      deps.store.context.auxiliaryMessages = {
+        ...(deps.store.context.auxiliaryMessages ?? {}),
+        [msg.id]: msg,
+      };
 
       return "SMS sent successfully";
     },
