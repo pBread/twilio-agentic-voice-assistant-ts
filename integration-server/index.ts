@@ -1,15 +1,14 @@
 import { Router } from "express";
 import { getMakeLogger } from "../lib/logger.js";
-import { integServerRoute } from "../shared/endpoints.js";
 
 const router = Router();
 
 // receives events from sync
-router.post(`${integServerRoute}/sync-webhook`, async (req, res) => {
+router.post(`/voice-intelligence`, async (req, res) => {
   const payload = req.body;
   const log = getMakeLogger(payload.CallSid);
 
-  // log.info("int/sync-webhook", payload.EventType);
+  log.debug("int/voice-intelligence", JSON.stringify(payload, null, 2));
 
   res.status(200).send({ status: "success" });
 });
