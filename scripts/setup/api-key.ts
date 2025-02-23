@@ -1,4 +1,4 @@
-import { EnvManager, sLog, makeFriendlyName } from "../helpers.js";
+import { EnvManager, sLog, makeFriendlyName } from "./helpers.js";
 import Twilio from "twilio";
 
 export async function checkSetupTwilioApiKey(env: EnvManager) {

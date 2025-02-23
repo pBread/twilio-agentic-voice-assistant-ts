@@ -1,9 +1,22 @@
 import * as dotenv from "dotenv-flow";
 import * as fsp from "fs/promises";
 import path, { dirname } from "path";
+import readline from "readline";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url)); // this directory
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+export const askQuestion = (query: string): Promise<string> =>
+  new Promise((resolve) =>
+    rl.question(query + "\n", (answer: string) => resolve(answer)),
+  );
+
+export const closeRL = () => rl.close();
 
 /****************************************************
  Logger
@@ -38,7 +51,7 @@ export class EnvManager {
       .toString()
       .padStart(8, "0");
 
-    this.filePath = path.join(__dirname, `../${relPath}`);
+    this.filePath = path.join(__dirname, `../../${relPath}`);
     this.vars = { ...makeEnv(dotenv.parse(this.filePath)), ...envVars };
   }
 
@@ -121,6 +134,16 @@ export class EnvManager {
       throw Error(
         "Missing required env var: TWILIO_API_KEY, TWILIO_API_SECRET",
       );
+  };
+
+  assertHostName = () => {
+    if (!this.vars.HOSTNAME) throw Error("HOSTNAME is required");
+    if (this.vars.HOSTNAME.includes("://"))
+      throw Error("HOSTNAME should not include protocol (https://)");
+    if (this.vars.HOSTNAME.includes("/"))
+      throw Error("HOSTNAME should not include path");
+    if (!/^[a-zA-Z0-9][a-zA-Z0-9-._]+[a-zA-Z0-9]$/.test(this.vars.HOSTNAME))
+      throw Error("Invalid hostname format");
   };
 }
 

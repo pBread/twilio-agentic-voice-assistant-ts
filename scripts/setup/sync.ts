@@ -1,5 +1,5 @@
 import Twilio from "twilio";
-import { EnvManager, makeFriendlyName, sLog } from "../helpers.js";
+import { EnvManager, makeFriendlyName, sLog } from "./helpers.js";
 
 export async function checkSetupSyncService(env: EnvManager) {
   sLog.info("checking twilio sync service");
