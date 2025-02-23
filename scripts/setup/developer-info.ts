@@ -3,15 +3,20 @@ import { askQuestion, closeRL, EnvManager } from "./helpers.js";
 
 const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
 
-(async () => {
-  if (!isMainModule) return;
-  const env = new EnvManager(".env");
+if (isMainModule) {
+  (async () => {
+    const env = new EnvManager(".env");
+    await infoSetupScript(env);
+
+    closeRL();
+  })();
+}
+
+export async function infoSetupScript(env: EnvManager) {
   await gatherDeveloperDetails(env);
+}
 
-  closeRL();
-})();
-
-export async function gatherDeveloperDetails(env: EnvManager) {
+async function gatherDeveloperDetails(env: EnvManager) {
   if (!env.vars.DEVELOPERS_FIRST_NAME) {
     let firstName = await askQuestion(
       "(optional) What is the first name of your demo persona?",

@@ -4,20 +4,24 @@ import { closeRL, EnvManager, makeFriendlyName, sLog } from "./helpers.js";
 
 const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
 
-(async () => {
-  if (!isMainModule) return;
-  const env = new EnvManager(".env");
+if (isMainModule) {
+  (async () => {
+    const env = new EnvManager(".env");
+    await syncSetupScripts(env);
+    closeRL();
+  })();
+}
+
+export async function syncSetupScripts(env: EnvManager) {
   env.assertAccountSid();
   env.assertApiKeys();
   env.assertHostName();
 
   await checkSetupSyncService(env);
   await setupSyncService(env);
+}
 
-  closeRL();
-})();
-
-export async function checkSetupSyncService(env: EnvManager) {
+async function checkSetupSyncService(env: EnvManager) {
   sLog.info("checking twilio sync service");
 
   if (env.vars.TWILIO_SYNC_SVC_SID) {
@@ -51,7 +55,7 @@ async function createSyncService(env: EnvManager) {
   }
 }
 
-export async function setupSyncService(env: EnvManager) {
+async function setupSyncService(env: EnvManager) {
   try {
     const twlo = Twilio(env.vars.TWILIO_API_KEY, env.vars.TWILIO_API_SECRET, {
       accountSid: env.vars.TWILIO_ACCOUNT_SID,

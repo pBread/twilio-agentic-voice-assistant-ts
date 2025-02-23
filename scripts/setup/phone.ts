@@ -4,20 +4,24 @@ import { closeRL, EnvManager, sLog } from "./helpers.js";
 
 const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
 
-(async () => {
-  if (!isMainModule) return;
-  const env = new EnvManager(".env");
+if (isMainModule) {
+  (async () => {
+    const env = new EnvManager(".env");
+    await phoneSetupScripts(env);
+    closeRL();
+  })();
+}
+
+export async function phoneSetupScripts(env: EnvManager) {
   env.assertAccountSid();
   env.assertApiKeys();
   env.assertHostName();
 
   await checkBuyPhoneNumber(env);
   await setupTwilioPhoneNumber(env);
+}
 
-  closeRL();
-})();
-
-export async function checkBuyPhoneNumber(env: EnvManager) {
+async function checkBuyPhoneNumber(env: EnvManager) {
   sLog.info("checking default twilio phone");
 
   if (env.vars.DEFAULT_TWILIO_NUMBER) {
@@ -53,7 +57,7 @@ export async function checkBuyPhoneNumber(env: EnvManager) {
   }
 }
 
-export async function setupTwilioPhoneNumber(env: EnvManager) {
+async function setupTwilioPhoneNumber(env: EnvManager) {
   try {
     sLog.info(
       `checking configuration of DEFAULT_TWILIO_NUMBER (${env.vars.DEFAULT_TWILIO_NUMBER})`,

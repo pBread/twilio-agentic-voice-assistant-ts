@@ -4,20 +4,25 @@ import { closeRL, EnvManager, makeFriendlyName, sLog } from "./helpers.js";
 
 const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
 
-(async () => {
-  if (!isMainModule) return;
-  const env = new EnvManager(".env");
+if (isMainModule) {
+  (async () => {
+    if (!isMainModule) return;
+    const env = new EnvManager(".env");
+    await voiceIntelligenceSetupScripts(env);
+
+    closeRL();
+  })();
+}
+export async function voiceIntelligenceSetupScripts(env: EnvManager) {
   env.assertAccountSid();
   env.assertApiKeys();
   env.assertHostName();
 
   await checkVoiceIntelligence(env);
   await checkVoiceIntelligenceOperators(env);
+}
 
-  closeRL();
-})();
-
-export async function checkVoiceIntelligence(env: EnvManager) {
+async function checkVoiceIntelligence(env: EnvManager) {
   if (env.vars.TWILIO_VOICE_INTELLIGENCE_SVC_SID)
     return sLog.info(`voice intelligence sid defined`);
 
@@ -51,7 +56,7 @@ export async function checkVoiceIntelligence(env: EnvManager) {
   }
 }
 
-export async function checkVoiceIntelligenceOperators(env: EnvManager) {
+async function checkVoiceIntelligenceOperators(env: EnvManager) {
   sLog.info("checking voice intelligence operators");
   try {
     if (!env.vars.TWILIO_VOICE_INTELLIGENCE_SVC_SID)

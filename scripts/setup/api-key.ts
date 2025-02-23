@@ -4,18 +4,21 @@ import { closeRL, EnvManager, makeFriendlyName, sLog } from "./helpers.js";
 
 const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
 
-(async () => {
-  if (!isMainModule) return;
+if (isMainModule) {
+  (async () => {
+    const env = new EnvManager(".env");
+    await apiKeySetupScripts(env);
+    closeRL();
+  })();
+}
 
-  const env = new EnvManager(".env");
+export async function apiKeySetupScripts(env: EnvManager) {
   env.assertAccountSid();
   await checkSetupTwilioApiKey(env);
   env.assertApiKeys();
+}
 
-  closeRL();
-})();
-
-export async function checkSetupTwilioApiKey(env: EnvManager) {
+async function checkSetupTwilioApiKey(env: EnvManager) {
   sLog.info("checking twilio api key and secret");
 
   if (env.vars.TWILIO_API_KEY && !env.vars.TWILIO_API_SECRET)
