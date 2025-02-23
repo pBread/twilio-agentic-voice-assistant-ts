@@ -142,7 +142,6 @@ async function createFlexTask(question: AIQuestion, deps: ToolDependencies) {
   convserationsClient.on("connectionStateChanged", (ev) => {
     log.info("ask-agent", "conversations client connectionStateChanged", ev);
   });
-
   convserationsClient.on("tokenAboutToExpire", () =>
     convserationsClient.updateToken(createConversationsToken(identity)),
   );
