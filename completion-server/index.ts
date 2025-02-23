@@ -30,7 +30,6 @@ import {
   startRecording,
   type TwilioCallWebhookPayload,
 } from "./twilio/voice.js";
-import { v4 } from "uuid";
 
 const router = Router();
 
@@ -48,8 +47,6 @@ router.post("/incoming-call", async (req, res) => {
     await warmUpSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
 
     const context: Partial<SessionContext> = {
-      ...agent.context,
-      auxiliaryMessages: {},
       call,
       contactCenter: { waitTime: 5 + Math.floor(Math.random() * 5) },
     };
@@ -140,7 +137,6 @@ router.post("/outbound/answer", async (req, res) => {
     await warmUpSyncSession(call.callSid); // ensure the sync session is setup before connecting to Conversation Relay
 
     const context: Partial<SessionContext> = {
-      ...agent.context,
       auxiliaryMessages: {},
       call,
       contactCenter: { waitTime: 5 + Math.floor(Math.random() * 5) },
@@ -195,7 +191,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   });
 
   // handle setup
-  relay.onSetup((ev) => {
+  relay.onSetup(async (ev) => {
     const params = ev.customParameters ?? {};
 
     // context is fetched in the API routes that generate the the ConversationRelay TwiML and then included as a <Parameter/>. This ensures that any data fetching, such as the user's profile, is completed before the websocket is initialized and the AI agent is engaged.
@@ -203,6 +199,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     const context = "context" in params ? JSON.parse(params.context) : {};
     store.setContext({
       ...context,
+      ...(await getAgentConfig()).context,
       call: { ...context.call, conversationRelaySessionId: ev.sessionId },
     });
 
