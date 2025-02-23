@@ -173,22 +173,10 @@ async function createFlexTask(question: AIQuestion, deps: ToolDependencies) {
     systemContent += `As a reminder, here is the question you asked: ${question.question}`;
 
     deps.store.addParkingLotItem({
-      human: {
-        content: "What did the agent say?",
-        origin: "hack",
-      },
+      human: { content: "What did the agent say?", origin: "hack" },
       system: { content: systemContent, origin: "human" },
     });
   });
-
-  // await twilio.conversations.v1
-  //   .conversations(attr.conversationSid)
-  //   .webhooks.create({
-  //     "configuration.filters": ["onMessageAdded"],
-  //     "configuration.method": "POST",
-  //     "configuration.url": `https://${HOSTNAME}/api/ai-question/${question.id}`,
-  //     target: "webhook",
-  //   });
 }
 
 function createConversationsToken(identity: string) {
@@ -207,30 +195,3 @@ function createConversationsToken(identity: string) {
 
   return token.toJwt();
 }
-
-// async function handleConversationWebhook(question: AIQuestion, answer: string) {
-//   const uniqueName = makeContextMapName(question.callSid);
-
-//   let curData: AIQuestionState | undefined;
-
-//   try {
-//     curData = await twilio.sync.v1
-//       .services(TWILIO_SYNC_SVC_SID)
-//       .syncMaps(uniqueName)
-//       .syncMapItems("questions")
-//       .fetch()
-//       .then((res) => res.data);
-//   } catch (error) {
-//     log.debug("ai-question", "failed to get previous ai question state", error);
-//   }
-
-//   const result = await twilio.sync.v1
-//     .services(TWILIO_SYNC_SVC_SID)
-//     .syncMaps(uniqueName)
-//     .syncMapItems("questions")
-//     .update({
-//       data: { ...(curData ?? {}), [question.id]: { ...question, answer } },
-//     });
-
-//   log.info("ai-question", "handled agent response");
-// }
