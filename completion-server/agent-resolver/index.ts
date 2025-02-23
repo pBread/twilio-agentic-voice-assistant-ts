@@ -144,39 +144,46 @@ export class AgentResolver implements IAgentResolver {
   };
 
   private phrasePicker: ReturnType<typeof createRoundRobinPicker>;
+
+  private fillerTimeout1: NodeJS.Timeout | undefined;
+  private fillerTimeout2: NodeJS.Timeout | undefined;
   private makeFillerPhraseTimer = (
     turnId: string,
     tool: ToolSpec,
     args: object = {},
   ) => {
-    const primary = setTimeout(() => {
-      const turn = this.store.turns.get(turnId) as BotToolTurn | undefined;
-      if (turn?.status === "interrupted") return;
-      if (tool.fillers === null) return; // null means no fillers for this tool
+    if (!this.fillerTimeout1)
+      this.fillerTimeout1 = setTimeout(() => {
+        const turn = this.store.turns.get(turnId) as BotToolTurn | undefined;
+        if (turn?.status === "interrupted") return;
+        if (tool.fillers === null) return; // null means no fillers for this tool
 
-      const phrases = tool?.fillers?.length // use the tools filler phrases if they are defined
-        ? tool.fillers
-        : this.fillerPhrases?.primary?.length
-          ? this.fillerPhrases.primary
-          : [];
+        const phrases = tool?.fillers?.length // use the tools filler phrases if they are defined
+          ? tool.fillers
+          : this.fillerPhrases?.primary?.length
+            ? this.fillerPhrases.primary
+            : [];
 
-      const bestPhrase = this.phrasePicker(phrases);
-      this.sayPhrase(bestPhrase, args);
-    }, 300);
+        const bestPhrase = this.phrasePicker(phrases);
+        this.sayPhrase(bestPhrase, args);
+      }, 300);
 
-    const secondary = setTimeout(() => {
-      const turn = this.store.turns.get(turnId) as BotToolTurn | undefined;
-      if (turn?.status === "interrupted") return;
-      if (tool.fillers === null) return; // null means no fillers for this tool
+    if (!this.fillerTimeout2)
+      this.fillerTimeout2 = setTimeout(() => {
+        const turn = this.store.turns.get(turnId) as BotToolTurn | undefined;
+        if (turn?.status === "interrupted") return;
+        if (tool.fillers === null) return; // null means no fillers for this tool
 
-      const phrases = this.fillerPhrases?.secondary ?? [];
-      const bestPhrase = this.phrasePicker(phrases);
-      this.sayPhrase(bestPhrase, args);
-    }, 5000);
+        const phrases = this.fillerPhrases?.secondary ?? [];
+        const bestPhrase = this.phrasePicker(phrases);
+        this.sayPhrase(bestPhrase, args);
+      }, 5000);
 
     return () => {
-      clearTimeout(primary);
-      clearTimeout(secondary);
+      clearTimeout(this.fillerTimeout1);
+      this.fillerTimeout1 = undefined;
+      clearTimeout(this.fillerTimeout2);
+      this.fillerTimeout2 = undefined;
     };
   };
 
