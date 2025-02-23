@@ -171,10 +171,12 @@ export const executeRefund: ToolDefinition<ExecuteRefund> = {
       id: uuidV4(),
     };
 
-    deps.store.context.auxiliaryMessages = {
-      ...(deps.store.context.auxiliaryMessages ?? {}),
-      [msg.id]: msg,
-    };
+    deps.store.setContext({
+      auxiliaryMessages: {
+        ...(deps.store.context.auxiliaryMessages ?? {}),
+        [msg.id]: msg,
+      },
+    });
 
     return "refund-processed";
   },
@@ -212,7 +214,6 @@ export const sendSmsRefundNotification: ToolDefinition<SendSmsRefundNotification
       "Send an SMS message to the user with details about the refund in question.",
     parameters: SendSmsRefundNotificationParams,
     type: "function",
-    fillers: ["One second while I tell my system to send you an SMS"],
     async fn(args: SendSmsRefundNotification, deps) {
       const to =
         deps.store.context.user?.mobile_phone ??
@@ -264,10 +265,12 @@ export const sendSmsRefundNotification: ToolDefinition<SendSmsRefundNotification
         id: uuidV4(),
       };
 
-      deps.store.context.auxiliaryMessages = {
-        ...(deps.store.context.auxiliaryMessages ?? {}),
-        [msg.id]: msg,
-      };
+      deps.store.setContext({
+        auxiliaryMessages: {
+          ...(deps.store.context.auxiliaryMessages ?? {}),
+          [msg.id]: msg,
+        },
+      });
 
       return "SMS sent successfully";
     },

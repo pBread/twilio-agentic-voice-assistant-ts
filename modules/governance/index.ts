@@ -51,7 +51,7 @@ export class GovernanceService {
     let completion: ChatCompletion;
     try {
       completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [{ role: "user", content: instructions }],
         response_format: { type: "json_object" },
         stream: false,
