@@ -1,6 +1,10 @@
 import { getToolExecutor } from "../../agent/tools/index.js";
-import { executeRequestTool } from "../../agent/tools/request.js";
-import type { LLMConfig, ToolResponse, ToolSpec } from "../../agent/types.js";
+import type {
+  LLMConfig,
+  ToolDependencies,
+  ToolResponse,
+  ToolSpec,
+} from "../../agent/types.js";
 import { getMakeLogger } from "../../lib/logger.js";
 import { createRoundRobinPicker } from "../../lib/round-robin-picker.js";
 import { chunkIntoSentences } from "../../lib/strings.js";
@@ -110,17 +114,6 @@ export class AgentResolver implements IAgentResolver {
     tool: ToolSpec,
     args: any,
   ): Promise<ToolResponse> => {
-    if (tool.type === "request") {
-      try {
-        return {
-          status: "complete",
-          result: await executeRequestTool(tool, args),
-        };
-      } catch (error) {
-        return { status: "error", error: `${error}` };
-      }
-    }
-
     if (tool.type === "function") {
       const exec = getToolExecutor(tool.name);
       if (!exec) {
@@ -130,20 +123,23 @@ export class AgentResolver implements IAgentResolver {
       }
 
       try {
+        const deps: ToolDependencies = {
+          agent: this,
+          log: this.log,
+          relay: this.relay,
+          store: this.store,
+        };
+
         return {
           status: "complete",
-          result: await exec(args, {
-            agent: this,
-            log: this.log,
-            relay: this.relay,
-            store: this.store,
-          }),
+          result: await exec(args, deps),
         };
       } catch (error) {
         return { status: "error", error: `${error}` };
       }
     }
 
+    this.log.warn("resolver", "unknown tool type: ", tool);
     return { status: "error", error: "Unknown tool type" };
   };
 

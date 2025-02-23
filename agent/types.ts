@@ -38,11 +38,11 @@ type StrictLevel =
  Tool Definitions
 ****************************************************/
 // this is what is exported from the tools
-export type ToolDefinition<T extends object = object> =
-  | (FunctionToolSpec & { fn: ToolExecutor<T> })
-  | RequestToolSpec;
+export type ToolDefinition<T extends object = object> = FunctionToolSpec & {
+  fn: ToolExecutor<T>;
+};
 
-export type ToolSpec = FunctionToolSpec | RequestToolSpec; // this is what is ingested by the completion server
+export type ToolSpec = FunctionToolSpec; // this is what is ingested by the completion server
 export type ToolParameters = ObjectPropertySchema;
 
 interface BaseTool {
@@ -60,12 +60,6 @@ export type ToolExecutor<T extends object = object> = (
   args: T,
   deps: ToolDependencies,
 ) => Promise<any> | any;
-
-// a tool that will make an API request
-export interface RequestToolSpec extends BaseTool {
-  type: "request";
-  endpoint: { url: string; method: "POST"; contentType: "json" };
-}
 
 export interface ToolDependencies {
   agent: IAgentResolver;
