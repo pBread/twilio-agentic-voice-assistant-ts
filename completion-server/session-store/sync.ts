@@ -21,6 +21,8 @@ import {
   makeTurnMapName,
 } from "../../shared/sync/ids.js";
 
+// todo: throw errors if the sync data format is not valid. right now, the call simply fails and there's no indication why
+
 /****************************************************
  Sync Client
 ****************************************************/
