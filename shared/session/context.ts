@@ -28,6 +28,15 @@ export interface ToolConfiguration {
   restricted?: boolean;
 }
 
+export interface AuxiliaryMessage {
+  createdAt: string;
+  id: string;
+  channel: "sms" | "email";
+  body: string;
+  from: string;
+  to: string;
+}
+
 export interface CallDetails {
   callSid: string;
   conversationRelaySessionId?: string; // the Conversation Relay session
@@ -52,15 +61,6 @@ export interface CallDetails {
     | "busy"
     | "failed"
     | "no-answer";
-}
-
-export interface AuxiliaryMessage {
-  createdAt: string;
-  id: string;
-  channel: "sms" | "email";
-  body: string;
-  from: string;
-  to: string;
 }
 
 export interface ContactCenter {
