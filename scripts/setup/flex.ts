@@ -4,6 +4,22 @@ import { closeRL, EnvManager, selectOption, sLog } from "./helpers.js";
 
 const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
 
+if (isMainModule) {
+  (async () => {
+    const env = new EnvManager(".env");
+    flexSetupScript(env);
+    closeRL();
+  })();
+}
+
+export async function flexSetupScript(env: EnvManager) {
+  env.assertAccountSid();
+  env.assertApiKeys();
+  await checkGetTaskrouterSids(env);
+  await setupFlexWorker(env);
+  await setupFlexConversationService(env);
+}
+
 (async () => {
   if (!isMainModule) return;
   const env = new EnvManager(".env");
@@ -11,8 +27,7 @@ const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
   env.assertApiKeys();
   await checkGetTaskrouterSids(env);
   await setupFlexWorker(env);
-
-  closeRL();
+  await setupFlexConversationService(env);
 })();
 
 export async function checkGetTaskrouterSids(env: EnvManager) {
@@ -150,4 +165,30 @@ export async function setupFlexWorker(env: EnvManager) {
     sLog.error("error selecting worker. error: ", error);
     throw error;
   }
+}
+
+export async function setupFlexConversationService(env: EnvManager) {
+  if (env.vars.TWILIO_CONVERSATIONS_SVC_SID)
+    return sLog.info("conversation sid is defined");
+
+  try {
+    const twlo = Twilio(env.vars.TWILIO_API_KEY, env.vars.TWILIO_API_SECRET, {
+      accountSid: env.vars.TWILIO_ACCOUNT_SID,
+    });
+
+    const conversationServices = await twlo.conversations.v1.services.list();
+
+    if (!conversationServices.length)
+      return sLog.info("no conversation services found");
+
+    if (conversationServices.length > 1)
+      return sLog.warn(
+        "unable to determine which conversation service to use. you must manually configure the TWILIO_CONVERSATIONS_SVC_SID",
+      );
+
+    const [svc] = conversationServices;
+
+    env.vars.TWILIO_CONVERSATIONS_SVC_SID = svc.sid;
+    await env.save();
+  } catch (error) {}
 }

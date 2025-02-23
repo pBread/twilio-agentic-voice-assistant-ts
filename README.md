@@ -46,6 +46,10 @@ TWILIO_AUTH_TOKEN= # The Twilio auth token is only required to run setup script 
 OPENAI_API_KEY=
 ```
 
+### Step 4: Setting Up Flex
+
+The Flex setup script will
+
 #### Required For Flex Transfer
 
 ```bash
@@ -62,10 +66,23 @@ FLEX_WORKER_SID=WKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_CONVERSATIONS_SVC_SID=ISxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-### Step 4: Run Setup Script
+### Step 4: Run Setup Script(s)
+
+You can either run the main setup script and it everything will be setup for you.
 
 ```bash
 npm run setup
+```
+
+Or, you can run the setup script for each individually. Note, you must have the `TWILIO_API_KEY` and `TWILIO_API_SECRET` variables defined to run most of these.
+
+```bash
+npm run setup:apikey
+npm run setup:sync
+npm run setup:info
+npm run setup:phone
+npm run setup:vi
+npm run setup:flex
 ```
 
 ## How the App Works
