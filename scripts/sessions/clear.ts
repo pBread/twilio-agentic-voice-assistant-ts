@@ -1,7 +1,6 @@
 import "dotenv-flow/config";
 import twilio from "twilio";
 import log from "../../lib/logger.js";
-import { isContextMapName, isTurnMapName } from "../../shared/sync/ids.js";
 
 const {
   TWILIO_ACCOUNT_SID,
