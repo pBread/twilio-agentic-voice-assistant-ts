@@ -1,7 +1,25 @@
 import { EnvManager, sLog } from "./helpers.js";
 import Twilio from "twilio";
+import { selectOption } from "./helpers.js";
 
 export async function checkGetTaskrouterSids(env: EnvManager) {
+  const allDefined =
+    env.vars.FLEX_WORKFLOW_SID &&
+    env.vars.FLEX_WORKSPACE_SID &&
+    env.vars.FLEX_QUEUE_SID;
+
+  if (allDefined) return sLog.info("flex env vars are defined");
+
+  const someDefined =
+    env.vars.FLEX_WORKFLOW_SID ||
+    env.vars.FLEX_WORKSPACE_SID ||
+    env.vars.FLEX_QUEUE_SID;
+
+  if (someDefined)
+    return sLog.warn(
+      "some flex env vars are defined, others are not. cannot setup flex automatically",
+    );
+
   try {
     sLog.info("checking taskrouter environment");
     const twlo = Twilio(env.vars.TWILIO_API_KEY, env.vars.TWILIO_API_SECRET, {
@@ -62,9 +80,15 @@ export async function checkGetTaskrouterSids(env: EnvManager) {
 
     const [queue] = queues;
 
-    return { workflowSid: wf.sid, workspaceSid: ws.sid, queueSid: queue.sid };
+    env.vars.FLEX_WORKFLOW_SID = wf.sid;
+    env.vars.FLEX_WORKSPACE_SID = ws.sid;
+    env.vars.FLEX_QUEUE_SID = queue.sid;
+
+    await env.save();
   } catch (error) {
     sLog.error("error trying to fetch taskrouter sids. error: ", error);
     return false;
   }
 }
+
+export async function setupFlexWorker(env: EnvManager) {}

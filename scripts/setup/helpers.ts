@@ -16,33 +16,70 @@ export const askQuestion = (query: string): Promise<string> =>
     rl.question(query + "\n", (answer: string) => resolve(answer)),
   );
 
-type Option = {
-  value: string;
-  label: string;
-};
-
-export const askOptions = async (
+export const selectOption = async (
   query: string,
-  options: Option[],
+  options: { value: string; label: string }[],
 ): Promise<string> => {
-  console.log(`\n${query}`);
+  let selectedIndex = 0;
 
-  // Display numbered options
-  options.forEach((opt, index) => {
-    console.log(`${index + 1}. ${opt.label}`);
-  });
+  process.stdin.setRawMode(true);
+  process.stdin.resume();
+  process.stdin.setEncoding("utf8");
 
-  while (true) {
-    const answer = await askQuestion("Enter the number of your choice: ");
-    const choice = parseInt(answer) - 1;
+  // Helper to move cursor up n lines
+  const moveUp = (n: number) => process.stdout.write(`\x1B[${n}A`);
+  // Clear line and move cursor to start
+  const clearLine = () => process.stdout.write("\x1B[2K\x1B[0G");
 
-    if (choice >= 0 && choice < options.length) {
-      return options[choice].value;
+  const renderMenu = () => {
+    // First time we render, just output normally
+    if (!renderMenu.hasRendered) {
+      console.log(`\n${query}\n`);
+      options.forEach((opt, index) => {
+        const prefix = index === selectedIndex ? "> " : "  ";
+        console.log(`${prefix}${opt.label}`);
+      });
+      renderMenu.hasRendered = true;
+    } else {
+      // Move cursor up to the first option
+      moveUp(options.length);
+      // Redraw each option
+      options.forEach((opt, index) => {
+        clearLine();
+        const prefix = index === selectedIndex ? "> " : "  ";
+        console.log(`${prefix}${opt.label}`);
+      });
     }
-    console.log("Invalid choice. Please try again.");
-  }
-};
+  };
+  renderMenu.hasRendered = false;
 
+  return new Promise((resolve) => {
+    const handleKeypress = (key: string) => {
+      if (key === "\u001B[A" && selectedIndex > 0) {
+        // Up arrow
+        selectedIndex--;
+        renderMenu();
+      } else if (key === "\u001B[B" && selectedIndex < options.length - 1) {
+        // Down arrow
+        selectedIndex++;
+        renderMenu();
+      } else if (key === "\r") {
+        // Enter key
+        process.stdin.removeListener("data", handleKeypress);
+        process.stdin.setRawMode(false);
+        process.stdin.pause();
+        console.log(); // Add a newline
+        resolve(options[selectedIndex].value);
+      } else if (key === "\u0003") {
+        // Ctrl+C
+        process.exit();
+      }
+    };
+
+    process.stdin.on("data", handleKeypress);
+    renderMenu(); // Initial render
+  });
+};
 export const closeRL = () => rl.close();
 
 /****************************************************
