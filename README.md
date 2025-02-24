@@ -8,7 +8,7 @@
 
 This repo demonstrates how to facilitate realtime communication between an AI assistant and a contact center agent. This is possible with many contact center applications. This one happens to use [Twilio Flex](https://www.twilio.com/en-us/flex).
 
-You will need to create (recommended) or use a Twilio Flex Account. Here's how: [Create a new Flex account](https://www.twilio.com/console/projects/create?g=/console/flex/setup).
+You will need to create (recommended) or use an existing Twilio Flex Account. You can create a trial account here: [Create a new Flex account](https://www.twilio.com/console/projects/create?g=/console/flex/setup).
 
 #### OpenAI Account and API Key
 
