@@ -97,6 +97,9 @@ export const sLog = {
 
   warn: (...args: any[]) =>
     console.warn("\x1b[33m" + pad("[WARNING]"), ...args, "\x1b[0m"),
+
+  title: (title: string) =>
+    console.log(`\x1b[1;7m${title.padEnd(50, " ")}\x1b[0m`),
 };
 
 function pad(str: string) {

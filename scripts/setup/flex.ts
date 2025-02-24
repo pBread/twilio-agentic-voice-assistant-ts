@@ -13,6 +13,7 @@ if (isMainModule) {
 }
 
 export async function flexSetupScript(env: EnvManager) {
+  sLog.title("Flex Setup Script");
   env.assertAccountSid();
   env.assertApiKeys();
   await checkGetTaskrouterSids(env);

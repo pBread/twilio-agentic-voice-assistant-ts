@@ -13,7 +13,10 @@ if (isMainModule) {
     closeRL();
   })();
 }
+
 export async function voiceIntelligenceSetupScripts(env: EnvManager) {
+  sLog.title("Voice Intelligence Setup Script");
+
   env.assertAccountSid();
   env.assertApiKeys();
   env.assertHostName();

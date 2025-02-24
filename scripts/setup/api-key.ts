@@ -13,6 +13,7 @@ if (isMainModule) {
 }
 
 export async function apiKeySetupScripts(env: EnvManager) {
+  sLog.title("API Key Setup Script");
   env.assertAccountSid();
   await checkSetupTwilioApiKey(env);
   env.assertApiKeys();

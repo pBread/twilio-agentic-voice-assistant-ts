@@ -13,6 +13,7 @@ if (isMainModule) {
 }
 
 export async function syncSetupScripts(env: EnvManager) {
+  sLog.title("Sync Setup Script");
   env.assertAccountSid();
   env.assertApiKeys();
   env.assertHostName();

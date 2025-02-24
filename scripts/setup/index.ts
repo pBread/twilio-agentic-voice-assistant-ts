@@ -4,6 +4,7 @@ import { flexSetupScript } from "./flex.js";
 import { closeRL, EnvManager } from "./helpers.js";
 import { phoneSetupScripts } from "./phone.js";
 import { syncSetupScripts } from "./sync.js";
+import { setupUI } from "./ui.js";
 import { voiceIntelligenceSetupScripts } from "./voice-intelligence.js";
 
 (async () => {
@@ -19,6 +20,8 @@ import { voiceIntelligenceSetupScripts } from "./voice-intelligence.js";
   await phoneSetupScripts(env);
   await voiceIntelligenceSetupScripts(env);
   await flexSetupScript(env);
+
+  await setupUI();
 
   closeRL();
 })();

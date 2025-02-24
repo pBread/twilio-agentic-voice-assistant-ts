@@ -13,6 +13,7 @@ if (isMainModule) {
 }
 
 export async function phoneSetupScripts(env: EnvManager) {
+  sLog.title("Phone Setup Script");
   env.assertAccountSid();
   env.assertApiKeys();
   env.assertHostName();

@@ -1,5 +1,5 @@
 import { fileURLToPath } from "url";
-import { askQuestion, closeRL, EnvManager } from "./helpers.js";
+import { askQuestion, closeRL, EnvManager, sLog } from "./helpers.js";
 
 const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
 
@@ -13,6 +13,8 @@ if (isMainModule) {
 }
 
 export async function infoSetupScript(env: EnvManager) {
+  sLog.title("Info Setup Script");
+
   await gatherDeveloperDetails(env);
 }
 
