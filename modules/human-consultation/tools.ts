@@ -150,8 +150,7 @@ async function createFlexTask(question: AIQuestion, deps: ToolDependencies) {
   );
 
   convserationsClient.on("messageAdded", (ev) => {
-    log.debug("ask-agent", "messageAdded", ev);
-
+    log.info("ask-agent", "incoming conversations message: ", ev.body);
     const answer = ev.body;
     if (!answer)
       return log.warn("ask-agent", "error onMessageAdded. answer is undefined");

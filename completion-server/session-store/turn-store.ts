@@ -226,12 +226,6 @@ export class TurnStore {
       ) as BotTextTurn;
 
       interruptedTurn.content = clipString(interruptedTurn.content, 0.75);
-
-      this.log.debug(
-        "store.interrupt",
-        "unable to find interrupted turn: ",
-        interruptedClause,
-      );
     }
 
     // delete unspoken dtmf & text turns
