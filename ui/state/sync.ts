@@ -222,8 +222,6 @@ async function fetchToken() {
   }
 }
 
-const tracker: { [key: string]: number } = {};
-
 /****************************************************
  New Call Listener
 ****************************************************/
@@ -270,8 +268,6 @@ export function useInitializeCall(callSid?: string) {
     if (!callSid) return;
     if (!syncClient) return;
     if (callStatuses) return;
-
-    tracker[callSid] = (tracker[callSid] ?? 0) + 1;
 
     dispatch(
       setCallFetchStatus({ callSid, context: "started", turns: "started" }),
