@@ -45,6 +45,6 @@ Call Status Webhook       https://${HOSTNAME}/call-status
 Outbound Call Route       https://${HOSTNAME}/outbound
                           https://${HOSTNAME}/outbound?to=${examplePhone}
 
-Default Phone Number      ${defaultPhone}
+Demo Phone Number         ${defaultPhone}
 `);
 });
