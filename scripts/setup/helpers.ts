@@ -239,14 +239,10 @@ function makeEnv(envVars: dotenv.DotenvFlowParseResult): EnvVars {
       envVars.TWILIO_VOICE_INTELLIGENCE_SVC_SID,
 
     FLEX_WORKFLOW_SID: envVars.FLEX_WORKFLOW_SID,
-    ENABLE_TRANSFER_TO_FLEX: bool(envVars.ENABLE_TRANSFER_TO_FLEX),
 
     FLEX_WORKSPACE_SID: envVars.FLEX_WORKSPACE_SID,
     FLEX_QUEUE_SID: envVars.FLEX_QUEUE_SID,
     FLEX_WORKER_SID: envVars.FLEX_WORKER_SID,
-    ENABLE_ASK_FLEX_AGENT_QUESTIONS: bool(
-      envVars.ENABLE_ASK_FLEX_AGENT_QUESTIONS,
-    ),
 
     TWILIO_CONVERSATIONS_SVC_SID: envVars.TWILIO_CONVERSATIONS_SVC_SID,
 
@@ -281,12 +277,10 @@ interface EnvVars {
   TWILIO_VOICE_INTELLIGENCE_SVC_SID: string | undefined;
 
   FLEX_WORKFLOW_SID: string | undefined;
-  ENABLE_TRANSFER_TO_FLEX: boolean | undefined;
 
   FLEX_WORKSPACE_SID: string | undefined;
   FLEX_QUEUE_SID: string | undefined;
   FLEX_WORKER_SID: string | undefined;
-  ENABLE_ASK_FLEX_AGENT_QUESTIONS: boolean | undefined;
 
   TWILIO_CONVERSATIONS_SVC_SID: string | undefined;
 
