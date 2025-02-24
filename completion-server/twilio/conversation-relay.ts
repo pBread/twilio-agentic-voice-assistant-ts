@@ -79,7 +79,10 @@ export class ConversationRelayAdapter<
    * @param {1} [opts.loop=1] - Number of times to loop the media.
    * @param {false} [opts.preemptible=false] - Whether the media can be interrupted.
    */
-  playMedia = (source: string, opts: { loop?: 1; preemptible?: false } = {}) =>
+  playMedia = (
+    source: string,
+    opts: { loop?: number; preemptible?: false } = {},
+  ) =>
     this.dispatch({
       loop: 1,
       preemptible: false,
@@ -188,7 +191,7 @@ type EndSession = {
 
 type PlayMedia = {
   type: "play";
-  loop?: 1; // Default is 1
+  loop: number;
   preemptible?: false; // Default is false
   source: string;
 };
