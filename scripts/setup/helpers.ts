@@ -139,6 +139,8 @@ export class EnvManager {
     return changes;
   };
 
+  isChanged = () => Object.keys(this.getDiff());
+
   save = async (): Promise<void> => {
     try {
       // Read existing content

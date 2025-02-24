@@ -24,7 +24,7 @@ export async function setupUI() {
     TWILIO_SYNC_SVC_SID: rootEnv.vars.TWILIO_SYNC_SVC_SID,
   });
 
-  if (!uiEnv.getDiff()?.length) sLog.info("UI env variables already set");
+  if (uiEnv.isChanged()) sLog.info("UI env variables already set");
 
   await uiEnv.save();
 }
