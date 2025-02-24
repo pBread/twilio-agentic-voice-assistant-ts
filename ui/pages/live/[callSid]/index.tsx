@@ -14,7 +14,6 @@ import {
   Title,
   useMantineTheme,
 } from "@mantine/core";
-import { AuxiliaryMessage } from "@shared/session/context";
 import { useRouter } from "next/router";
 
 export default function LiveCallPage() {
@@ -185,17 +184,6 @@ function HumanRow({ turnId }: TurnRow) {
   );
 }
 
-const columnStyles = {
-  mainColumn: {
-    width: "22%",
-  },
-  statusColumn: {
-    width: "40px",
-    minWidth: "40px",
-    maxWidth: "40px",
-  },
-};
-
 /****************************************************
  Human Consultation
 ****************************************************/
@@ -250,13 +238,13 @@ function QuestionRow({
   if (!question) return;
 
   return (
-    <>
+    <Table.Tr>
       <Table.Td style={{ width: "22%" }}> {question.question}</Table.Td>
       <Table.Td style={{ width: "22%" }}>{question.explanation}</Table.Td>
       <Table.Td style={{ width: "22%" }}>{question.recommendation}</Table.Td>
       <Table.Td style={{ width: "22%" }}> {question.answer}</Table.Td>
-      <Table.Td style={columnStyles.statusColumn}> {question.status}</Table.Td>
-    </>
+      <Table.Td style={{ width: "40px" }}> {question.status}</Table.Td>
+    </Table.Tr>
   );
 }
 
@@ -306,12 +294,12 @@ function AuxMessageRow({ callSid, msgId }: { callSid: string; msgId: string }) {
   if (!msg) return;
 
   return (
-    <>
+    <Table.Tr>
       <Table.Td style={{}}> {msg.channel}</Table.Td>
       <Table.Td style={{}}> {msg.from}</Table.Td>
       <Table.Td style={{}}> {msg.to}</Table.Td>
       <Table.Td style={{}}> {msg.body}</Table.Td>
-    </>
+    </Table.Tr>
   );
 }
 
@@ -334,7 +322,7 @@ function Subconscious() {
       }}
     >
       <Paper className="paper">
-        <Title order={3}>Controls</Title>
+        <Title order={3}>Subconscious</Title>
       </Paper>
 
       <SummarySection />
@@ -363,7 +351,7 @@ function SummarySection() {
         gap: "2px",
       }}
     >
-      <Title order={4}>Voice Intelligence</Title>
+      <Title order={4}>Voice Operators</Title>
       <Text size="sm">
         <b>Call Summary: </b>
         {summaryState?.description}
