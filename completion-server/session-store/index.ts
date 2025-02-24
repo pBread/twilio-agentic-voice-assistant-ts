@@ -20,17 +20,14 @@ import { TurnStore } from "./turn-store.js";
 export type * from "./turn-store.js";
 
 export class SessionStore {
-  public context: Partial<SessionContext>;
-  public turns: TurnStore;
+  public context: Partial<SessionContext>; // discrete variables used to dynamically configure the LLM
+  public turns: TurnStore; // conversation history
 
   private syncClient: SyncClient;
-  private syncQueue: SyncQueueService;
+  private syncQueue: SyncQueueService; // publishes updates to context and turns to sync
   private log: ReturnType<typeof getMakeLogger>;
 
-  constructor(
-    public callSid: string,
-    context?: Partial<SessionContext>,
-  ) {
+  constructor(public callSid: string, context?: Partial<SessionContext>) {
     this.log = getMakeLogger(callSid);
     this.eventEmitter = new TypedEventEmitter<TurnEvents>();
 
@@ -79,11 +76,8 @@ export class SessionStore {
     });
   }
 
-  /****************************************************
-   Parking Lot
-   holds turns that will be added before the next completion. this is used for async situations, such as handling a human agent's response
-   // todo: accept any turn type and refactor this entirely
-  ****************************************************/
+  // the parkingLot holds turns that will be added before the next completion. this is used for async situations, such as handling a human agent's response
+  // the parkingLot is needed because if turns are added to the store while a human is speaking or a bot is in the middle of a completion run, the bot may think that the issue was already addressed. this ensures these async messages are top of mind for the LLM on the next completion
   private parkingLot: Map<string, HumanTextTurnParams | SystemTurnParams> =
     new Map();
   public addParkingLotItem = (params: {
@@ -96,6 +90,7 @@ export class SessionStore {
     this.eventEmitter.emit("tryCompletion");
   };
 
+  // adds the parking lot messages to turn history, generally before a completion
   public insertParkingLot = () => {
     const systemTurnParams = this.parkingLot.get("addSystemMessage") as
       | SystemTurnParams
@@ -140,9 +135,8 @@ export type StoreEventEmitter = TypedEventEmitter<
   TurnEvents & ContextEvents & HumanInLoop
 >;
 
-// todo: this is a hack to enable human in loop.
-// need to figure out way to try to trigger completion loop without mixing LLM service
 export interface HumanInLoop {
+  // tryCompletion will trigger the consciousLLM to attempt a completion. this is a bit hacky but it is done to avoid mixing the concerns of the LLM service with the store
   tryCompletion: () => void;
 }
 
