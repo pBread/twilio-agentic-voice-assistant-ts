@@ -155,8 +155,8 @@ async function createFlexTask(question: AIQuestion, deps: ToolDependencies) {
     if (!answer)
       return log.warn("ask-agent", "error onMessageAdded. answer is undefined");
 
-    const isApproved = /\b(approve)\b/i.test(answer);
-    const isRejected = /\b(reject)\b/i.test(answer);
+    const isApproved = /approve/i.test(answer);
+    const isRejected = /reject/i.test(answer);
 
     let status: AIQuestion["status"] = "special";
     if (isApproved) status = "approved";
