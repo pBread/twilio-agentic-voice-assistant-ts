@@ -3,6 +3,7 @@ import { getGovernanceState, getProcedures } from "@/state/sessions";
 import { Rating, Text, Title, useMantineTheme } from "@mantine/core";
 import startCase from "lodash.startcase";
 import { useRef, useState } from "react";
+import { TruncatedText } from "./TruncateText";
 
 export function GovernanceContainer({ callSid }: { callSid: string }) {
   const governance = useAppSelector((state) =>
@@ -45,10 +46,13 @@ function GovernanceDetails({ callSid }: { callSid: string }) {
   return (
     <div>
       <Text size="sm">
-        <b>Summary: </b> {governance?.summary}
+        <b>Summary: </b>
+        <TruncatedText text={governance?.summary} maxLength={250} />
       </Text>
       <Text size="sm">
-        <b>Guidance: </b> {governance?.guidance}
+        <b>Guidance: </b>
+
+        <TruncatedText text={governance?.guidance} maxLength={250} />
       </Text>
     </div>
   );

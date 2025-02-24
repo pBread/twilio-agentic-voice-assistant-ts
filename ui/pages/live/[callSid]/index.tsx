@@ -1,4 +1,5 @@
 import { GovernanceContainer } from "@/components/GovernanceContainer";
+import { TruncatedText } from "@/components/TruncateText";
 import { useAppSelector } from "@/state/hooks";
 import {
   getAuxMessageState,
@@ -343,18 +344,6 @@ function SummarySection() {
     getSummaryState(state, callSid),
   );
 
-  // Handle the text truncation logic
-  const description = summaryState?.description || "";
-  const shouldTruncate = description.length > 500;
-  const displayedDescription =
-    shouldTruncate && !showFullDescription
-      ? description.substring(0, 500) + "..."
-      : description;
-
-  const toggleDescription = () => {
-    setShowFullDescription(!showFullDescription);
-  };
-
   return (
     <Paper
       className="paper"
@@ -367,17 +356,7 @@ function SummarySection() {
       <Title order={4}>Voice Operators</Title>
       <Text size="sm">
         <b>Call Summary: </b>
-        {displayedDescription}
-        {shouldTruncate && (
-          <Text
-            c="blue"
-            span
-            onClick={toggleDescription}
-            style={{ cursor: "pointer", marginLeft: "4px" }}
-          >
-            {showFullDescription ? "show less" : "show more"}
-          </Text>
-        )}
+        <TruncatedText text={summaryState?.description} maxLength={250} />
       </Text>
 
       <Text size="sm">
