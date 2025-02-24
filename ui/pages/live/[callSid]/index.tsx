@@ -240,8 +240,12 @@ function QuestionRow({
   return (
     <Table.Tr>
       <Table.Td style={{ width: "22%" }}> {question.question}</Table.Td>
-      <Table.Td style={{ width: "22%" }}>{question.explanation}</Table.Td>
-      <Table.Td style={{ width: "22%" }}>{question.recommendation}</Table.Td>
+      <Table.Td style={{ width: "22%" }}>
+        <TruncatedText text={question?.explanation} maxLength={250} />
+      </Table.Td>
+      <Table.Td style={{ width: "22%" }}>
+        <TruncatedText text={question?.recommendation ?? ""} maxLength={250} />
+      </Table.Td>
       <Table.Td style={{ width: "22%" }}> {question.answer}</Table.Td>
       <Table.Td style={{ width: "40px" }}> {question.status}</Table.Td>
     </Table.Tr>
