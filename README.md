@@ -34,7 +34,7 @@ cp .env.example .env
 cp ui/.env.example ui/.env
 ```
 
-### Step 3: Populate Required Env Variables
+### Step 2: Populate Required Env Variables
 
 ```bash
 # Your ngrok or server hostname, e.g. 123.ngrok.app
@@ -45,7 +45,7 @@ TWILIO_AUTH_TOKEN= # The Twilio auth token is only required to run setup script 
 OPENAI_API_KEY=
 ```
 
-### Step 4: Run Setup Script
+### Step 3: Run Setup Script
 
 This application comes with a setup script that automatically configures your Twilio account. The script is intelligent - it only creates resources when needed, checking for undefined environment variables before taking action. You can set specific variables manually and let the script handle the rest.
 
@@ -64,7 +64,7 @@ npm run setup:vi
 npm run setup:flex
 ```
 
-### Step 5: Start
+### Step 4: Start
 
 Open 2-3 terminal windows:
 
@@ -91,7 +91,7 @@ Note: The script uses the `HOSTNAME` env var as the ngrok private domain.
 npm run ui
 ```
 
-### Step 6: Try It
+### Step 5: Try It
 
 - The UI is running on http://localhost:3002/
 - [Open your Flex agent view](https://www.twilio.com/console/flex/service-login) to respond to the bot when it has questions.
