@@ -1,6 +1,6 @@
 import { useAppSelector } from "@/state/hooks";
 import { getGovernanceState, getProcedures } from "@/state/sessions";
-import { Rating, Text, Title, useMantineTheme } from "@mantine/core";
+import { Text, Title, useMantineTheme } from "@mantine/core";
 import startCase from "lodash.startcase";
 import { useRef, useState } from "react";
 
