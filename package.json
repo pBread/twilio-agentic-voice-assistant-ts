@@ -1,6 +1,6 @@
 {
   "author": "https://github.com/pBread",
-  "name": "twilio-conversation-relay-ts",
+  "name": "twilio-agentic-voice-bot-ts",
   "type": "module",
   "version": "1.0.0",
   "scripts": {
