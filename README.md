@@ -24,7 +24,9 @@ You will need a Twilio Flex Account to demonstrate these features: [Create a new
 ### Step 3: Populate Required Env Variables
 
 ```bash
-HOSTNAME= # Your ngrok or server hostname, e.g. 123.ngrok.app¸
+# Your ngrok or server hostname, e.g. 123.ngrok.app
+# nGrok provides free static domains: https://ngrok.com/blog-post/free-static-domains-ngrok-users
+HOSTNAME=
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN= # The Twilio auth token is only required to run setup script and it's only used to generate TWILIO_API_KEY & TWILIO_API_SECRET. If you provide the key/secret, then the auth token is is not required.
 OPENAI_API_KEY=
@@ -51,7 +53,10 @@ npm run setup:flex
 
 ### Step 5: Start
 
-You will need two terminal windows for the server: one to run the server, the other to run an nGrok tunnel.
+Open 2-3 terminal windows:
+
+- 2 required: one for the server, one for the nGrok tunnel
+- 1 optional (but recommended): for the UI
 
 #### Terminal 1: Server
 
@@ -61,11 +66,11 @@ npm run dev
 
 #### Terminal 2: nGrok
 
-This script will use the `HOSTNAME` env variable as the domain.
-
 ```bash
 npm run grok
 ```
+
+Note: The script uses the `HOSTNAME` env var as the ngrok private domain.
 
 #### Terminal 3: UI
 
