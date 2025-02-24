@@ -80,14 +80,13 @@ function Conscious() {
       </Paper>
 
       <Paper className="paper">
-        <Title order={4}>Human Consultation</Title>
-        <HumanConsultation />
-      </Paper>
-
-      <Paper className="paper">
         <Title order={4}>Auxiliary Messages</Title>
 
         <AuxiliaryMessageTable />
+      </Paper>
+      <Paper className="paper">
+        <Title order={4}>Human Consultation</Title>
+        <HumanConsultation />
       </Paper>
     </div>
   );
