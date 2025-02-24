@@ -1,39 +1,13 @@
 /**
  * @function createVersionedObject
- * @description Creates a versioned object that tracks changes to itself and all nested objects.
- * When any property of the object or its nested objects is modified, the version
- * number is incremented and an update event is emitted.
+ * @description Creates a special tracking wrapper around an object that monitors
+ * all changes made to it and its nested properties. Every time any part of the object
+ * is modified, it automatically increments a version number and triggers an update
+ * notification. This is particularly useful for managing state updates efficiently,
+ * especially during streaming operations where many rapid changes might occur.
  *
- * This pattern is used to avoid excessive garbage collection that could occur given the numerous
- * updates that occur during completion streaming.
- *
- * IMPORTANT: Versioning is tracked via a JavaScript's Proxy class, which DOES NOT allow tracking
- * changes to the original reference. An unsuspecting developer may accidently bypass the
- * versioning and the data synchronization features of this app, if they do the following:
- *
- * ** BAD EXAMPLE **
- * const toolCall = { function: { name: "fnName", arguments: "" }, id: "tool-id-0",index: 0, type: "function" };
- * session.turns.addBotTool({ tool_calls: [toolCall] });
- * toolCall.function.arguments += "{ 'hello': 'world' } " // this will not be reflected in the turn store
- * *****************
- *
- * However, in my opinion, no one should expect that pattern to work anyway when creating records in a store.
- * If you made this mistake, now you know to never assume an original object can be mutated after passing it
- * to some class – even if you wrote it yourself.
- *
- * These examples will all work, however.
- *
- * ** GOOD EXAMPLE **
- * const toolCall = { function: { name: "fnName", arguments: "" }, id: "tool-id-0",index: 0, type: "function" };
- * const turn = session.turns.addBotTool({ tool_calls: [toolCall] });
- * turn.tool_calls[0].function.arguments += "{ 'hello': 'world' } "; // this will be reflected
- * ******************
- *
- * ** GOOD EXAMPLE **
- * const turn = session.turns.addBotTool({ tool_calls: [{ function: { name: "fnName", arguments: "" }, id: "tool-id-0",index: 0, type: "function" }] });
- * const toolCall = turn.tool_calls[0]
- * toolCall.function.arguments += "{ 'hello': 'world' } "; // this will be reflected
- * ******************
+ * This pattern is used to avoid excessive garbage collection that could occur given
+ * the numerous updates that occur during completion streaming.
  *
  * @template T - The type of object to be versioned (must include a version number property)
  * @param baseObject - The object to be versioned
