@@ -28,7 +28,7 @@ export function GovernanceContainer({ callSid }: { callSid: string }) {
     >
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title order={4}>Governance Bot</Title>
-        <Rating value={governance?.rating ?? 0} readOnly color={color} />
+        {/* <Rating value={governance?.rating ?? 0} readOnly color={color} /> */}
       </div>
       <GovernanceDetails callSid={callSid} />
 
