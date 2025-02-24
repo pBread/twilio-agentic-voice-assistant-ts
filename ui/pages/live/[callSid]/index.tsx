@@ -16,7 +16,6 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { useRouter } from "next/router";
-import { useState } from "react";
 
 export default function LiveCallPage() {
   const theme = useMantineTheme();
@@ -338,7 +337,6 @@ function Subconscious() {
 function SummarySection() {
   const router = useRouter();
   const callSid = router.query.callSid as string;
-  const [showFullDescription, setShowFullDescription] = useState(false);
 
   const summaryState = useAppSelector((state) =>
     getSummaryState(state, callSid),
