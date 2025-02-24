@@ -1,4 +1,4 @@
-# Twilio Agentic Voice Bot - TS
+# Twilio Agentic Voice Bot
 
 ## Setup
 
@@ -32,7 +32,7 @@ OPENAI_API_KEY=
 
 ### Step 4: Run Setup Script
 
-Run the main setup script
+This application comes with a setup script that automatically configures your Twilio account. The script is intelligent - it only creates resources when needed, checking for undefined environment variables before taking action. You can set specific variables manually and let the script handle the rest.
 
 ```bash
 npm run setup
@@ -49,7 +49,31 @@ npm run setup:vi
 npm run setup:flex
 ```
 
-This application comes with a setup script that will configure your Twilio account completely. It is designed to only create things when the corresponding environment variables are undefined. In other words, you can define the variables that you want to and leave the rest to the script.
+### Step 5: Start
+
+You will need two terminal windows for the server: one to run the server, the other to run an nGrok tunnel.
+
+#### Terminal 1: Server
+
+```bash
+npm run dev
+```
+
+#### Terminal 2: nGrok
+
+This script will use the `HOSTNAME` env variable as the domain.
+
+```bash
+npm run grok
+```
+
+#### Terminal 3: UI
+
+```bash
+npm run ui
+```
+
+### What the Setup Script Does
 
 Here's what the script does:
 
@@ -62,47 +86,6 @@ Here's what the script does:
 - Configure the [voice webhooks](https://www.twilio.com/docs/usage/webhooks/voice-webhooks) for the `DEFAULT_TWILIO_NUMBER` to allow incoming calls
 - Create a Voice Intelligence service, if `TWILIO_VOICE_INTELLIGENCE_SVC_SID` is undefined
 - Configure Voice Intelligence with operators
-
-#### Required Env Variables
-
-### Step 4: Setting Up Flex
-
-The Flex setup script will
-
-#### Required For Flex Transfer
-
-```bash
-FLEX_WORKFLOW_SID=WWxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-```
-
-#### Required for Flex Agent Consultation
-
-```bash
-FLEX_WORKSPACE_SID=WSxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-FLEX_WORKFLOW_SID=WWxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-FLEX_QUEUE_SID=WQxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-FLEX_WORKER_SID=WKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-TWILIO_CONVERSATIONS_SVC_SID=ISxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-```
-
-### Step 4: Run Setup Script(s)
-
-You can either run the main setup script and it everything will be setup for you.
-
-```bash
-npm run setup
-```
-
-Or, you can run the setup script for each individually. Note, you must have the `TWILIO_API_KEY` and `TWILIO_API_SECRET` variables defined to run most of these.
-
-```bash
-npm run setup:apikey
-npm run setup:sync
-npm run setup:info
-npm run setup:phone
-npm run setup:vi
-npm run setup:flex
-```
 
 ## How the App Works
 
