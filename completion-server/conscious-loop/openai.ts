@@ -44,18 +44,16 @@ export class OpenAIConsciousLoop
   ) {
     this.log = getMakeLogger(store.callSid);
     this.eventEmitter = new TypedEventEmitter<ConsciousLoopEvents>();
-    this.logStream = createLogStreamer("completion-chunks"); // saves the raw completion chunks for each completion. note: it is overridden every session
 
+    // the conscious loop can be trigger by certain store events
     this.store.on("tryCompletion", () => {
       if (this.stream) return;
       this.run();
     });
   }
 
-  private logStream: ReturnType<typeof createLogStreamer>;
-
   private stream?: Stream<ChatCompletionChunk>;
-  private activeCompletionId: string | undefined;
+  private activeCompletionId: string | undefined; // keeps track of
 
   run = async (): Promise<undefined | Promise<any>> => {
     this.checkStream();
@@ -105,8 +103,6 @@ export class OpenAIConsciousLoop
     for await (const chunk of this.stream) {
       const choice = chunk.choices[0];
       const delta = choice.delta;
-
-      this.logStream.write(chunk);
 
       const content =
         delta.content || (delta.content === null ? "" : delta.content); // bugfix-text: does delta.content being null cause the first iteration to misfire?
@@ -206,10 +202,7 @@ export class OpenAIConsciousLoop
     if (finish_reason === "length")
       this.log.warn("llm", `Unusual finish reason ${finish_reason}`);
 
-    /****************************************************
-     Clean Up Completion
-    ****************************************************/
-    this.logStream.write("\n");
+    // clean up completion
     this.stream = undefined;
   };
 
@@ -255,8 +248,6 @@ export class OpenAIConsciousLoop
           this.emit("tool.error", botTool, tool, result);
       }
     }
-
-    this.logStream.write("\n");
   };
 
   private handleRetry = async (attempt: number) =>
@@ -279,6 +270,9 @@ export class OpenAIConsciousLoop
       }, 1000);
     });
 
+  /**
+   * Aborts and cleans up the existing completion loop
+   */
   abort = () => {
     if (this.stream && !this.stream?.controller.signal.aborted)
       this.stream?.controller.abort();
