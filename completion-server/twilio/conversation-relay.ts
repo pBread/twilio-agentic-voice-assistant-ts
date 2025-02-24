@@ -80,7 +80,13 @@ export class ConversationRelayAdapter<
    * @param {false} [opts.preemptible=false] - Whether the media can be interrupted.
    */
   playMedia = (source: string, opts: { loop?: 1; preemptible?: false } = {}) =>
-    this.dispatch({ ...opts, type: "play", source });
+    this.dispatch({
+      loop: 1,
+      preemptible: false,
+      ...opts,
+      type: "play",
+      source,
+    });
 
   /**
    * Sends DTMF tones to the caller.
