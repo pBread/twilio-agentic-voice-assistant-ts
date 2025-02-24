@@ -15,6 +15,7 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
 export default function LiveCallPage() {
   const theme = useMantineTheme();
@@ -336,10 +337,23 @@ function Subconscious() {
 function SummarySection() {
   const router = useRouter();
   const callSid = router.query.callSid as string;
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   const summaryState = useAppSelector((state) =>
     getSummaryState(state, callSid),
   );
+
+  // Handle the text truncation logic
+  const description = summaryState?.description || "";
+  const shouldTruncate = description.length > 500;
+  const displayedDescription =
+    shouldTruncate && !showFullDescription
+      ? description.substring(0, 500) + "..."
+      : description;
+
+  const toggleDescription = () => {
+    setShowFullDescription(!showFullDescription);
+  };
 
   return (
     <Paper
@@ -353,7 +367,17 @@ function SummarySection() {
       <Title order={4}>Voice Operators</Title>
       <Text size="sm">
         <b>Call Summary: </b>
-        {summaryState?.description}
+        {displayedDescription}
+        {shouldTruncate && (
+          <Text
+            c="blue"
+            span
+            onClick={toggleDescription}
+            style={{ cursor: "pointer", marginLeft: "4px" }}
+          >
+            {showFullDescription ? "show less" : "show more"}
+          </Text>
+        )}
       </Text>
 
       <Text size="sm">
