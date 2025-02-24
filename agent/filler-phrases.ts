@@ -7,6 +7,7 @@ const primary = [
   "Just a second, {{context.user.name}}.",
   "Hold on while I access my systems.",
   "Bear with me for a moment.",
+  "Hang on a second",
 ];
 
 // these are spoken when a request is taking a very long time to complete
