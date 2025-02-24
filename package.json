@@ -16,7 +16,7 @@
     "setup:ui": "tsx scripts/setup/ui.ts",
     "setup:vi": "tsx scripts/setup/voice-intelligence.ts",
     "setup": "tsx scripts/setup/index.ts",
-    "ui": "cd ui && npm run dev"
+    "ui": "open http://localhost:3002/; cd ui && npm run dev;"
   },
   "dependencies": {
     "@twilio/conversations": "^2.6.1",

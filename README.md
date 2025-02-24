@@ -78,6 +78,13 @@ Note: The script uses the `HOSTNAME` env var as the ngrok private domain.
 npm run ui
 ```
 
+### Step 6: Try It
+
+- The UI is running on http://localhost:3002/
+- [Open your Flex agent view](https://www.twilio.com/console/flex/service-login) to respond to the bot when it has questions.
+  - Don't forget to set your status to "Available"
+    <img src="/docs/flex-set-availability.png">
+
 ### What the Setup Script Does
 
 Here's what the script does:
