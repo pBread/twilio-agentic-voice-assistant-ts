@@ -176,7 +176,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const consciousLoop = new OpenAIConsciousLoop(store, agent, relay);
 
   const governanceBot = new GovernanceService(store, agent, {
-    frequency: 10 * 1000,
+    frequency: 5 * 1000,
   });
   const summaryBot = new SummarizationService(store, agent, {
     frequency: 15 * 1000,
