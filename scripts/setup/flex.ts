@@ -17,8 +17,8 @@ export async function flexSetupScript(env: EnvManager) {
   env.assertAccountSid();
   env.assertApiKeys();
   await checkGetTaskrouterSids(env);
-  await setupFlexWorker(env);
   await setupFlexConversationService(env);
+  await setupFlexWorker(env);
 }
 
 (async () => {

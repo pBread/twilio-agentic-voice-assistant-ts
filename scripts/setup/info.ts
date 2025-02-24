@@ -51,5 +51,7 @@ async function gatherDeveloperDetails(env: EnvManager) {
     if (email.length > 0) env.vars.DEVELOPERS_EMAIL = email;
   }
 
+  if (!env.getDiff()?.length) sLog.info("no changes made to info");
+
   await env.save();
 }

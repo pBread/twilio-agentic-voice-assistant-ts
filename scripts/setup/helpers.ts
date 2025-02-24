@@ -85,6 +85,7 @@ export const closeRL = () => rl.close();
 /****************************************************
  Logger
 ****************************************************/
+let tIdx = 0;
 export const sLog = {
   info: (...args: any[]) =>
     console.log("\x1b[0m" + pad("[INFO]"), ...args, "\x1b[0m"),
@@ -99,7 +100,9 @@ export const sLog = {
     console.warn("\x1b[33m" + pad("[WARNING]"), ...args, "\x1b[0m"),
 
   title: (title: string) =>
-    console.log(`\x1b[1;7m${title.padEnd(50, " ")}\x1b[0m`),
+    console.log(
+      `\x1b[1;7m${tIdx++ > 0 ? "\n" : 0}${title.padEnd(50, " ")}\x1b[0m`,
+    ),
 };
 
 function pad(str: string) {

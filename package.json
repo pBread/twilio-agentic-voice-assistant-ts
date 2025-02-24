@@ -10,7 +10,7 @@
     "grok": "tsx scripts/ngrok.ts",
     "setup:apikey": "tsx scripts/setup/api-key.ts",
     "setup:flex": "tsx scripts/setup/flex.ts",
-    "setup:info": "tsx scripts/setup/developer-info.ts",
+    "setup:info": "tsx scripts/setup/info.ts",
     "setup:phone": "tsx scripts/setup/phone.ts",
     "setup:sync": "tsx scripts/setup/sync.ts",
     "setup:ui": "tsx scripts/setup/ui.ts",
