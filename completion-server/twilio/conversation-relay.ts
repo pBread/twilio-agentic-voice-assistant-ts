@@ -81,12 +81,11 @@ export class ConversationRelayAdapter<
    */
   playMedia = (
     source: string,
-    opts: { loop?: number; preemptible?: false } = {},
+    opts: { loop?: number; preemptible?: boolean } = {},
   ) =>
     this.dispatch({
-      loop: 1,
-      preemptible: false,
-      ...opts,
+      loop: opts.loop ?? 1,
+      preemptible: opts.preemptible ?? false,
       type: "play",
       source,
     });
@@ -192,7 +191,7 @@ type EndSession = {
 type PlayMedia = {
   type: "play";
   loop: number;
-  preemptible?: false; // Default is false
+  preemptible?: boolean; // Default is false
   source: string;
 };
 

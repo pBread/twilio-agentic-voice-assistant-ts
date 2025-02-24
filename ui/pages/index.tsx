@@ -74,6 +74,8 @@ function CallRow({ callSid }: { callSid: string }) {
   const from = session?.call?.from?.slice(-4) ?? "••••";
   const to = session?.call?.to?.slice(-4) ?? "••••";
 
+  const direction = session?.call?.direction ?? "inbound";
+
   const summary = useAppSelector((state) => getSummaryState(state, callSid));
 
   return (
@@ -81,7 +83,7 @@ function CallRow({ callSid }: { callSid: string }) {
       <Table.Td>
         <CallLoader callSid={callSid}>
           <Link href={`/live/${callSid}`}>
-            <Text size="sm">{summary?.title}</Text>
+            <Text size="sm">{summary?.title ?? `${direction} call`}</Text>
           </Link>
         </CallLoader>
       </Table.Td>
@@ -115,7 +117,9 @@ function CallRow({ callSid }: { callSid: string }) {
       <Table.Td style={{ overflow: "scroll" }}>
         <CallLoader callSid={callSid}>
           <Text size="sm" style={{ maxWidth: "125px", textWrap: "nowrap" }}>
-            {summary?.topics.map((topic) => <Text size="sm">{topic}</Text>)}
+            {summary?.topics.map((topic) => (
+              <Text size="sm">{topic}</Text>
+            ))}
           </Text>
         </CallLoader>
       </Table.Td>
