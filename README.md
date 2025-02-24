@@ -82,8 +82,11 @@ npm run ui
 
 - The UI is running on http://localhost:3002/
 - [Open your Flex agent view](https://www.twilio.com/console/flex/service-login) to respond to the bot when it has questions.
+
   - Don't forget to set your status to "Available"
     <img src="/docs/flex-set-availability.png">
+
+- Then call the `DEFAULT_TWILIO_NUMBER` in your variables
 
 ### What the Setup Script Does
 
