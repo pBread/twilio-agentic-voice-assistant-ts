@@ -13,6 +13,7 @@
     "setup:info": "tsx scripts/setup/developer-info.ts",
     "setup:phone": "tsx scripts/setup/phone.ts",
     "setup:sync": "tsx scripts/setup/sync.ts",
+    "setup:ui": "tsx scripts/setup/ui.ts",
     "setup:vi": "tsx scripts/setup/voice-intelligence.ts",
     "setup": "tsx scripts/setup/index.ts"
   },

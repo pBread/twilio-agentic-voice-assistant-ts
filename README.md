@@ -21,7 +21,33 @@ The Voice Bot is empowered to transfer calls to a live human agent and reach out
 
 You will need a Twilio Flex Account to demonstrate these features: [Create a new Flex account](https://www.twilio.com/console/projects/create?g=/console/flex/setup).
 
-### Step 3: Populate Env Variables
+### Step 3: Populate Required Env Variables
+
+```bash
+HOSTNAME= # Your ngrok or server hostname, e.g. 123.ngrok.app¸
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN= # The Twilio auth token is only required to run setup script and it's only used to generate TWILIO_API_KEY & TWILIO_API_SECRET. If you provide the key/secret, then the auth token is is not required.
+OPENAI_API_KEY=
+```
+
+### Step 4: Run Setup Script
+
+Run the main setup script
+
+```bash
+npm run setup
+```
+
+Or, you can run the setup script for each individually. Note, you must have the `TWILIO_API_KEY` and `TWILIO_API_SECRET` variables defined to run most of these.
+
+```bash
+npm run setup:apikey
+npm run setup:sync
+npm run setup:info
+npm run setup:phone
+npm run setup:vi
+npm run setup:flex
+```
 
 This application comes with a setup script that will configure your Twilio account completely. It is designed to only create things when the corresponding environment variables are undefined. In other words, you can define the variables that you want to and leave the rest to the script.
 
@@ -38,13 +64,6 @@ Here's what the script does:
 - Configure Voice Intelligence with operators
 
 #### Required Env Variables
-
-```bash
-HOSTNAME= # Your ngrok or server hostname, e.g. 123.ngrok.app¸
-TWILIO_ACCOUNT_SID=
-TWILIO_AUTH_TOKEN= # The Twilio auth token is only required to run setup script and it's only used to generate TWILIO_API_KEY & TWILIO_API_SECRET. If you provide the key/secret, then the auth token is is not required.
-OPENAI_API_KEY=
-```
 
 ### Step 4: Setting Up Flex
 
