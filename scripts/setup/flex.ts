@@ -133,6 +133,8 @@ export async function setupFlexWorker(env: EnvManager) {
       "unable to select flex worker because FLEX_WORKSPACE_SID is undefined",
     );
 
+  if (env.vars.FLEX_WORKER_SID) return sLog.info("FLEX_WORKER_SID is defined");
+
   try {
     sLog.info("checking flex workers environment");
     const twlo = Twilio(env.vars.TWILIO_API_KEY, env.vars.TWILIO_API_SECRET, {
@@ -149,7 +151,7 @@ export async function setupFlexWorker(env: EnvManager) {
       );
 
     const result = await selectOption(
-      "Are any of these workers you?",
+      "AI questions are routed to a specific user for demo purposes. Here are the Flex Workers for this account. Select the worker you want all AI questions routed to.",
       workers
         .map((worker) => ({
           label: worker.friendlyName,

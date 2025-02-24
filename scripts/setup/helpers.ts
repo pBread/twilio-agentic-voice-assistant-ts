@@ -101,7 +101,7 @@ export const sLog = {
 
   title: (title: string) =>
     console.log(
-      `\x1b[1;7m${tIdx++ > 0 ? "\n" : 0}${title.padEnd(50, " ")}\x1b[0m`,
+      `\x1b[1;7m${tIdx++ > 0 ? "\n" : ""}${title.padEnd(50, " ")}\x1b[0m`,
     ),
 };
 
