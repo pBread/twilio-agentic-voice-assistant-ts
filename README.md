@@ -2,7 +2,26 @@
 
 ## Setup
 
-### Step 1:
+### Step 0: Prerequisites
+
+#### Obtain Twilio Flex Account
+
+This repo demonstrates how to facilitate realtime communication between an AI assistant and a contact center agent. This is possible with many contact center applications. This one happens to use [Twilio Flex](https://www.twilio.com/en-us/flex).
+
+You will need to create (recommended) or use a Twilio Flex Account. Here's how: [Create a new Flex account](https://www.twilio.com/console/projects/create?g=/console/flex/setup).
+
+#### OpenAI Account and API Key
+
+This project uses OpenAI's GPT models to power the AI assistant's conversations. You can get an API key here: [OpenAI API Keys](https://platform.openai.com/api-keys)
+
+#### Ngrok Domain
+
+To run this project locally, you need a publicly accessible URL for Twilio's webhooks. We use ngrok for this purpose. While you can use a dynamic ngrok URL, we recommend using their free static domains to avoid constantly updating webhook URLs.
+
+1. Get your free static domain: https://ngrok.com/blog-post/free-static-domains-ngrok-users
+2. Make note of your domain (e.g., your-domain.ngrok-free.app) for the `HOSTNAME` environment variable
+
+### Step 1: Initial Setup
 
 ```bash
 # install deps
@@ -14,12 +33,6 @@ cd ..
 cp .env.example .env
 cp ui/.env.example ui/.env
 ```
-
-### Step 2 Obtain A Twilio Flex Account
-
-The Voice Bot is empowered to transfer calls to a live human agent and reach out to a human agent with questions. This repository uses [Twilio Flex](https://www.twilio.com/en-us/flex), but other contact centers or no contact center at all are also supported by Twilio.
-
-You will need a Twilio Flex Account to demonstrate these features: [Create a new Flex account](https://www.twilio.com/console/projects/create?g=/console/flex/setup).
 
 ### Step 3: Populate Required Env Variables
 
