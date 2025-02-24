@@ -1,6 +1,6 @@
 import { useAppSelector } from "@/state/hooks";
 import { getGovernanceState, getProcedures } from "@/state/sessions";
-import { Text, Title, useMantineTheme } from "@mantine/core";
+import { Rating, Text, Title, useMantineTheme } from "@mantine/core";
 import startCase from "lodash.startcase";
 import { useRef, useState } from "react";
 
@@ -28,7 +28,7 @@ export function GovernanceContainer({ callSid }: { callSid: string }) {
     >
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title order={4}>Governance Bot</Title>
-        {/* <Rating value={governance?.rating ?? 0} readOnly color={color} /> */}
+        <Rating value={governance?.rating ?? 0} readOnly color={color} />
       </div>
       <GovernanceDetails callSid={callSid} />
 
