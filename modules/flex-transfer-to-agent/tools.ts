@@ -40,7 +40,6 @@ if (IS_TRANSFER_TO_FLEX_ENABLED) {
     description: "Transfers the call to a Flex agent",
     parameters: TransferToFlexAgentParams,
     type: "function",
-    fillers: null, // let the bot naturally create their own filler
     // function executor
     async fn(args: TransferToFlexAgent, deps) {
       const relay =
