@@ -11,6 +11,7 @@
     "@mantine/core": "^7.17.0",
     "@mantine/hooks": "^7.17.0",
     "@reduxjs/toolkit": "^2.5.1",
+    "@tabler/icons-react": "^3.30.0",
     "lodash.startcase": "^4.4.0",
     "next": "15.1.7",
     "react": "^19.0.0",
