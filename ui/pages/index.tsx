@@ -78,6 +78,8 @@ function CallRow({ callSid }: { callSid: string }) {
 
   const summary = useAppSelector((state) => getSummaryState(state, callSid));
 
+  const callStatus = session?.call?.status;
+
   return (
     <Table.Tr>
       <Table.Td>
@@ -105,7 +107,7 @@ function CallRow({ callSid }: { callSid: string }) {
         </CallLoader>
       </Table.Td>
       <Table.Td>
-        <Text size="sm">N/A</Text>
+        <Text size="sm">{callStatus ?? "unknown"}</Text>
       </Table.Td>
       <Table.Td>
         <Text size="sm">
