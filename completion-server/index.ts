@@ -56,10 +56,10 @@ router.post("/incoming-call", async (req, res) => {
       ...agent.relayConfig,
       callSid: call.callSid,
       context,
-      welcomeGreeting,
-      parameters: { agent, welcomeGreeting },
       dtmfDetection: true,
       interruptByDtmf: true,
+      parameters: { agent, welcomeGreeting },
+      welcomeGreeting,
     });
     log.info("/incoming-call", "twiml\n", prettyXML(twiml));
     res.status(200).type("text/xml").end(twiml);
