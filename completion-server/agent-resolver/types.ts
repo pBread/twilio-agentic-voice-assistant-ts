@@ -17,6 +17,8 @@ export interface IAgentResolver {
     toolName: string,
     args: any,
   ): Promise<ToolResponse>;
+
+  queueFillerPhrase(turnId: string, toolName: string, args?: object): void;
 }
 
 export interface AgentResolverConfig {

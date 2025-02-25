@@ -149,6 +149,9 @@ export class OpenAIConsciousLoop
           tool_calls: delta.tool_calls as StoreToolCall[],
         }; // isFirstToolDelta
         botTool = this.store.turns.addBotTool(params);
+
+        const toolName = delta?.tool_calls?.[0]?.function?.name;
+        if (toolName) this.agent.queueFillerPhrase(botTool.id, toolName);
       }
 
       // handles the first chunk of subsequent tools

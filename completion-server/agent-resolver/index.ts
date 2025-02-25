@@ -79,16 +79,12 @@ export class AgentResolver implements IAgentResolver {
     this.toolMap.set(name, tool);
   };
 
-  executeTool = async (
-    turnId: string,
-    toolName: string,
-    args?: object,
-  ): Promise<ToolResponse> => {
+  getToolSpec = (toolName: string) => {
     const tool = this.toolMap.get(toolName);
     if (!tool) {
       const error = `Attempted to execute a tool (${toolName}) that does not exist.`;
       this.log.warn("agent", error);
-      return { status: "error", error };
+      return error;
     }
 
     // Tools can be restricted from the bot's manifest. The bot may believe the tool exists if it previously executed it or if the system instructions reference a tool not in the tool-manifest.
@@ -99,14 +95,25 @@ export class AgentResolver implements IAgentResolver {
     if (!isToolAvailable) {
       const error = `Attempted to execute a tool (${toolName}) that is not authorized.`;
       this.log.warn("agent", error);
-      return { status: "error", error };
+      return error;
     }
+
+    return tool;
+  };
+
+  executeTool = async (
+    turnId: string,
+    toolName: string,
+    args?: object,
+  ): Promise<ToolResponse> => {
+    const tool = this.getToolSpec(toolName);
+    if (typeof tool == "string") return { status: "error", error: tool }; // tool not found
 
     const cancelFillerPhrase = this.makeFillerPhraseTimer(turnId, tool, args);
 
     const resultPromise = await this.executeToolHandler(tool, args);
 
-    cancelFillerPhrase();
+    this.clearFillerPhraseTimers();
     return resultPromise;
   };
 
@@ -147,6 +154,17 @@ export class AgentResolver implements IAgentResolver {
 
   private fillerTimeout1: NodeJS.Timeout | undefined;
   private fillerTimeout2: NodeJS.Timeout | undefined;
+  public queueFillerPhrase = (
+    turnId: string,
+    toolName: string,
+    args?: object,
+  ) => {
+    const tool = this.getToolSpec(toolName);
+    if (typeof tool === "string") return; // tool not found
+
+    this.makeFillerPhraseTimer(turnId, tool, args);
+  };
+
   private makeFillerPhraseTimer = (
     turnId: string,
     tool: ToolSpec,
@@ -158,11 +176,24 @@ export class AgentResolver implements IAgentResolver {
         if (turn?.status === "interrupted") return;
         if (tool.fillers === null) return; // null means no fillers for this tool
 
+        // check when the last filler turn was spoken.
+        const [lastFillerTurn] = this.store.turns
+          .list()
+          .reverse()
+          .filter((turn) => turn.origin === "filler");
+
+        if (lastFillerTurn) {
+          const createdAt = new Date(lastFillerTurn.createdAt);
+          const msSinceLast = new Date().getTime() - createdAt.getTime();
+
+          if (msSinceLast < 5 * 1000) return; // avoid repetition by not speaking fillers within the last few seconds
+        }
+
         const phrases = tool?.fillers?.length // use the tools filler phrases if they are defined
           ? tool.fillers
           : this.fillerPhrases?.primary?.length
-            ? this.fillerPhrases.primary
-            : [];
+          ? this.fillerPhrases.primary
+          : [];
 
         const bestPhrase = this.phrasePicker(phrases);
         this.sayPhrase(bestPhrase, args);
@@ -178,13 +209,13 @@ export class AgentResolver implements IAgentResolver {
         const bestPhrase = this.phrasePicker(phrases);
         this.sayPhrase(bestPhrase, args);
       }, 5000);
+  };
 
-    return () => {
-      clearTimeout(this.fillerTimeout1);
-      this.fillerTimeout1 = undefined;
-      clearTimeout(this.fillerTimeout2);
-      this.fillerTimeout2 = undefined;
-    };
+  clearFillerPhraseTimers = () => {
+    clearTimeout(this.fillerTimeout1);
+    this.fillerTimeout1 = undefined;
+    clearTimeout(this.fillerTimeout2);
+    this.fillerTimeout2 = undefined;
   };
 
   private sayPhrase = (template?: string, args: object = {}) => {
