@@ -18,17 +18,7 @@ Locate exact order record using order number, confirmation ID, or purchase histo
 Confirm order belongs to verified customer
 Critical step - cannot be skipped
 
-3. Eligibility Assessment
-
-Automatic approval conditions:
-
-- Order total < $50
-- Request within 48 hours of delivery
-
-Human approval is REQUIRED if:
-
-- Order total greater than $50
-- Request between 48 hours and 1 week after delivery
+3. Human Approval is Required for orders greater than $50 of value
 
 4. SMS Verification Requirement
 
