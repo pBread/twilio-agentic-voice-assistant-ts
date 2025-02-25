@@ -86,7 +86,7 @@ function Conscious() {
         <AuxiliaryMessageTable />
       </Paper>
       <Paper className="paper">
-        <Title order={4}>Human Consultation</Title>
+        <Title order={4}>Human in the Loop</Title>
         <HumanConsultation />
       </Paper>
     </div>
