@@ -44,5 +44,8 @@
     "nodemon": "^3.1.9",
     "tsx": "^3.12.10",
     "typescript": "^5.7.3"
+  },
+  "overrides": {
+    "esbuild": "^0.25.0"
   }
 }
