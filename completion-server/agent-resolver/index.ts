@@ -150,10 +150,12 @@ export class AgentResolver implements IAgentResolver {
     return { status: "error", error: "Unknown tool type" };
   };
 
+  /****************************************************
+   Filler Phrases
+  ****************************************************/
   private phrasePicker: ReturnType<typeof createRoundRobinPicker>;
-
   private fillerTimeout1: NodeJS.Timeout | undefined;
-  private fillerTimeout2: NodeJS.Timeout | undefined;
+  private fillerTimeout2: NodeJS.Timeout | undefined; // 2nd phrase for when tools take a very long time
   public queueFillerPhrase = (
     turnId: string,
     toolName: string,
