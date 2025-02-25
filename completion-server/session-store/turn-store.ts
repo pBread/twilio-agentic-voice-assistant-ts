@@ -291,17 +291,17 @@ export class TurnStore {
 
     // interrupted clause was not sufficient to find the location
     if (indexOfInterruption === -1)
-      interruptedTurn.content = clipString(prevContent, 0.5);
+      interruptedTurn.content = clipString(prevContent);
     // the entire statement was interrupted
     else if (!contentSplitWithInterrupt?.length)
-      interruptedTurn.content = clipString(_interruptedClause, 0.5);
+      interruptedTurn.content = clipString(_interruptedClause);
     // interruption string too short to be reliable
     else if (_interruptedClause.length <= 3)
-      interruptedTurn.content = clipString(prevContent, 0.5);
+      interruptedTurn.content = clipString(prevContent);
     // usually a zero length interruptedClause but adding a check just in case
     else if (prevContent === contentSplitWithInterrupt)
       interruptedTurn.content =
-        contentSplitWithOutInterrupt + clipString(_interruptedClause, 0.5);
+        contentSplitWithOutInterrupt + clipString(_interruptedClause);
     // the split was successful
     else interruptedTurn.content = contentSplitWithInterrupt;
 
@@ -374,7 +374,7 @@ export class TurnStore {
 }
 
 /** splits a string by a percent without braking word */
-function clipString(item: string, pct: number) {
+function clipString(item: string, pct: number = 0.65) {
   if (item.length <= 4) return item;
 
   const middle = Math.floor(item.length * pct);
