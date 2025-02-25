@@ -95,25 +95,14 @@ export const procedures: Record<string, Procedure> = [
           "Use order number, confirmation ID, or search by user purchase history to locate the exact order",
       },
       {
-        id: "gather_refund_reason",
-        description:
-          "Collect the reason for the refund request from the customer",
-        strictness: "conditional",
-        conditions:
-          "Do not ask the user for a reason if they have already stated one.",
-        completionCriteria: "A clear reason for the refund has been documented",
-        instructions:
-          "Document the specific reason provided by the customer for requesting the refund. ",
-      },
-      {
         id: "request_human_approval",
         description:
           "Obtain approval from a human agent for refunds outside standard criteria",
         strictness: "critical",
         completionCriteria:
           "Human agent has provided explicit approval for the refund",
-        // conditions:
-        //   "Apply if order total is  $50-$150 OR refund is requested between 48 hours and 1 week after delivery",
+        conditions:
+          "Apply if order total is  $50-$150 OR refund is requested between 48 hours and 1 week after delivery",
         instructions:
           "Contact human agent with order details, refund reason, and request approval for processing",
       },
