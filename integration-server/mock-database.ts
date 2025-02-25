@@ -5,16 +5,20 @@ import type {
   UserRecord,
 } from "../shared/db-entities.js";
 
-const { DEVELOPERS_PHONE_NUMBER, DEVELOPERS_FIRST_NAME, DEVELOPERS_LAST_NAME } =
-  process.env;
+const {
+  DEVELOPERS_EMAIL,
+  DEVELOPERS_FIRST_NAME,
+  DEVELOPERS_LAST_NAME,
+  DEVELOPERS_PHONE_NUMBER,
+} = process.env;
 
 const demoUser: UserRecord = {
   ...makeBaseRecord(1000, 60),
   id: "us-0001",
 
-  email: "jcarter@gmail.com",
   first_name: DEVELOPERS_FIRST_NAME ?? "Jake",
   last_name: DEVELOPERS_LAST_NAME ?? "Carter",
+  email: DEVELOPERS_EMAIL ?? "jcarter@gmail.com",
   mobile_phone: DEVELOPERS_PHONE_NUMBER ?? "+12345550001",
 
   city: "Chicago",
