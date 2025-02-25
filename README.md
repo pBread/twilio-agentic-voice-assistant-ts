@@ -1,5 +1,7 @@
 # Twilio Agentic Voice Bot
 
+THIS IS NOT YET RELEASED. IT IS PUBLIC FOR INTERNAL TESTING REASONS
+
 ## Setup
 
 ### Step 0: Prerequisites
