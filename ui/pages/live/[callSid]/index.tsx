@@ -87,7 +87,7 @@ function Conscious() {
       </Paper>
       <Paper className="paper">
         <Title order={4}>Human in the Loop</Title>
-        <HumanConsultation />
+        <HumanInTheLoop />
       </Paper>
     </div>
   );
@@ -188,7 +188,7 @@ function HumanRow({ turnId }: TurnRow) {
  Human Consultation
 ****************************************************/
 
-function HumanConsultation() {
+function HumanInTheLoop() {
   const router = useRouter();
   const callSid = router.query.callSid as string;
 
@@ -247,7 +247,17 @@ function QuestionRow({
         <TruncatedText text={question?.recommendation ?? ""} maxLength={250} />
       </Table.Td>
       <Table.Td style={{ width: "22%" }}> {question.answer}</Table.Td>
-      <Table.Td style={{ width: "40px" }}> {question.status}</Table.Td>
+      <Table.Td style={{ width: "40px" }}>
+        {question.status === "new" && question.status}
+        {question.status === "special" && question.status}
+
+        {question.status === "approved" && (
+          <Badge color="green"> {question.status}</Badge>
+        )}
+        {question.status === "rejected" && (
+          <Badge color="red"> {question.status}</Badge>
+        )}
+      </Table.Td>
     </Table.Tr>
   );
 }
