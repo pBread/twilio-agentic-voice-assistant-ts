@@ -27,7 +27,7 @@ Automatic approval conditions:
 
 Human approval is REQUIRED if:
 
-- Order total between $50-$150 OR
+- Order total greater than $50
 - Request between 48 hours and 1 week after delivery
 
 4. SMS Verification Requirement

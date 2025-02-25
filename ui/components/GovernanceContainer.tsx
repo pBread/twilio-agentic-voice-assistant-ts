@@ -13,11 +13,14 @@ export function GovernanceContainer({ callSid }: { callSid: string }) {
   const theme = useMantineTheme();
 
   let color = "";
-  if (governance?.rating > 4) color = "green";
-  else if (governance?.rating > 3) color = "green";
-  else if (governance?.rating > 2) color = "yellow";
-  else if (governance?.rating > 1) color = "orange";
-  else if (governance?.rating > 0) color = "red";
+  // Default color when no rating exists
+  if (!governance || governance.rating === undefined) color = "gray";
+  else if (governance.rating > 3.5) color = "green";
+  else if (governance.rating > 2.5) color = "yellow";
+  else if (governance.rating > 1.5) color = "orange";
+  else if (governance.rating > 0) color = "red";
+  // For rating = 0
+  else color = "red";
 
   return (
     <div
@@ -29,7 +32,13 @@ export function GovernanceContainer({ callSid }: { callSid: string }) {
     >
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title order={4}>Governance Bot</Title>
-        <Rating value={governance?.rating ?? 0} readOnly color={color} />
+        {governance?.rating}
+        <Rating
+          value={governance?.rating ?? 0}
+          readOnly
+          color={color}
+          fractions={10}
+        />
       </div>
       <GovernanceDetails callSid={callSid} />
 

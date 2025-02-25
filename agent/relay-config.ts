@@ -3,6 +3,7 @@ import type { ConversationRelayAttributes } from "twilio/lib/twiml/VoiceResponse
 const goodTTS = {
   google: { journeyD: { ttsProvider: "google", voice: "en-US-Journey-D" } },
   elevenLabs: {
+    jessicaAnne: { ttsProvider: "ElevenLabs", voice: "UgBBYS2sOqTuMpoF3BR0" }, // motherly
     mark: { ttsProvider: "ElevenLabs", voice: "UgBBYS2sOqTuMpoF3BR0" }, // conversational, natural
     cassidy: { ttsProvider: "ElevenLabs", voice: "56AoDkrOh6qfVPDXZ7Pt" }, //
     grandpaSpuds: { ttsProvider: "ElevenLabs", voice: "NOpBlnGInO9m6vDvFkFC" }, // humorous, disarming
@@ -14,5 +15,5 @@ const goodTTS = {
 };
 
 export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
-  ...goodTTS.elevenLabs.mark,
+  ...goodTTS.elevenLabs.jessicaAnne,
 };
