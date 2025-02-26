@@ -13,7 +13,6 @@ export interface SessionContext {
   procedures: Record<string, Procedure>;
   questions: AIQuestionState;
   summary: CallSummary;
-  toolConfig: Record<string, ToolConfiguration>;
   user: UserRecord;
 }
 
@@ -22,10 +21,6 @@ export interface SessionMetaData {
   id: string; // callSid
   callSid: string;
   dateCreated: string;
-}
-
-export interface ToolConfiguration {
-  restricted?: boolean;
 }
 
 export interface AuxiliaryMessage {
