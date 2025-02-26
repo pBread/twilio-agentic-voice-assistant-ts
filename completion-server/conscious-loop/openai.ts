@@ -9,7 +9,7 @@ import type { Stream } from "openai/streaming";
 import { v4 as uuidV4 } from "uuid";
 import type { ToolResponse, ToolSpec } from "../../agent/types.js";
 import { TypedEventEmitter } from "../../lib/events.js";
-import log, { createLogStreamer, getMakeLogger } from "../../lib/logger.js";
+import log, { getMakeLogger } from "../../lib/logger.js";
 import { OPENAI_API_KEY } from "../../shared/env.js";
 import type { OpenAIConfig } from "../../shared/openai.js";
 import type {
