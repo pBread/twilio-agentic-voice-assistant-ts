@@ -7,6 +7,7 @@ import {
   getSummaryState,
 } from "@/state/sessions";
 import { selectCallTurns, selectTurnById } from "@/state/turns";
+import { redactPhoneNumbers } from "@/util/strings";
 import {
   Badge,
   Paper,
@@ -134,7 +135,7 @@ function BotRow({ turnId }: TurnRow) {
   if (turn.type === "tool") {
     for (const tool of turn.tool_calls) {
       const fn = tool.function.name;
-      const args = JSON.stringify(tool.function.arguments);
+      const args = redactPhoneNumbers(JSON.stringify(tool.function.arguments));
       content.push(`${fn}(${args})`.replaceAll("\\", ""));
     }
   } else content = [turn.content];
@@ -279,10 +280,10 @@ function AuxiliaryMessageTable() {
     <Table stickyHeader>
       <Table.Thead>
         <Table.Tr>
-          <Table.Th style={{}}>Channel</Table.Th>
-          <Table.Th style={{}}>From</Table.Th>
-          <Table.Th style={{}}>To</Table.Th>
-          <Table.Th style={{}}>Body</Table.Th>
+          <Table.Th>Channel</Table.Th>
+          <Table.Th>From</Table.Th>
+          <Table.Th>To</Table.Th>
+          <Table.Th>Body</Table.Th>
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
@@ -309,10 +310,10 @@ function AuxMessageRow({ callSid, msgId }: { callSid: string; msgId: string }) {
 
   return (
     <Table.Tr>
-      <Table.Td style={{}}> {msg.channel}</Table.Td>
-      <Table.Td style={{}}> {msg.from}</Table.Td>
-      <Table.Td style={{}}> {msg.to}</Table.Td>
-      <Table.Td style={{}}> {msg.body}</Table.Td>
+      <Table.Td> {msg.channel}</Table.Td>
+      <Table.Td> {redactPhoneNumbers(msg.from)}</Table.Td>
+      <Table.Td> {redactPhoneNumbers(msg.to)}</Table.Td>
+      <Table.Td> {msg.body}</Table.Td>
     </Table.Tr>
   );
 }
