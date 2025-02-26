@@ -194,6 +194,8 @@ export class AgentResolver implements IAgentResolver {
 
         const bestPhrase = this.phrasePicker(phrases);
         this.sayPhrase(bestPhrase, args);
+
+        return this.clearFillerPhraseTimers;
       }, 300);
 
     if (!this.fillerTimeout2)
