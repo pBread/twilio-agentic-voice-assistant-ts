@@ -101,8 +101,7 @@ export const procedures: Record<string, Procedure> = [
         strictness: "critical",
         completionCriteria:
           "Human agent has provided explicit approval for the refund",
-        // conditions:
-        //   "Apply if order total is  $50-$150 OR refund is requested between 48 hours and 1 week after delivery",
+        conditions: "Apply if refunded items are worth more then $50.",
         instructions:
           "Contact human agent with order details, refund reason, and request approval for processing",
       },
