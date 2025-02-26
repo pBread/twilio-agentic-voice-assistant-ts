@@ -1,4 +1,4 @@
-# Twilio Agentic Voice Bot
+# Twilio Agentic Voice Assistant
 
 THIS IS NOT YET RELEASED. IT IS PUBLIC FOR INTERNAL TESTING REASONS
 
