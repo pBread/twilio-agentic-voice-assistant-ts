@@ -13,7 +13,25 @@ import type { BotToolTurn } from "../../shared/session/turns.js";
 import type { SessionStore } from "../session-store/index.js";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay.js";
 import type { AgentResolverConfig, IAgentResolver } from "./types.js";
-
+/**
+ * AgentResolver is a dynamic configuration manager for real-time conversational AI agents.
+ *
+ * This resolver acts as a runtime configuration orchestrator, enabling just-in-time
+ * modification of an agent's core parameters such as:
+ * - System instructions
+ * - Available tools
+ * - Language model configuration
+ *
+ * Key Features:
+ * - Supports dynamic tool authorization and restriction
+ * - Provides context-aware instruction templating
+ * - Manages filler phrases for improved conversational flow
+ * - Handles tool execution with dependency injection
+ *
+ * Design Pattern: Adapter/Configurator for conversational AI runtime
+ * Use Case: Enabling flexible, context-sensitive agent behavior in real-time
+ * communication systems (e.g., voice bots with low-latency requirements)
+ */
 export class AgentResolver implements IAgentResolver {
   private log: ReturnType<typeof getMakeLogger>;
   protected instructions?: string;
@@ -34,6 +52,15 @@ export class AgentResolver implements IAgentResolver {
     this.phrasePicker = createRoundRobinPicker();
   }
 
+  /**
+   * Merges the provided configuration with existing values:
+   * - Instructions are replaced if provided
+   * - LLM config is replaced if provided
+   * - Tool manifest is additive: new tools are added without removing existing ones
+   * - Filler phrases are additive: new phrases are appended to existing phrases
+   */
+  // todo: this should be more clear. the configure method updates some and replaces others. confusing
+
   configure = (config: Partial<AgentResolverConfig>) => {
     const { instructions, fillerPhrases, llmConfig, toolManifest } = config;
     this.instructions = instructions ?? this.instructions;
@@ -43,28 +70,32 @@ export class AgentResolver implements IAgentResolver {
     this.fillerPhrases = { ...this.fillerPhrases, ...fillerPhrases };
   };
 
-  /****************************************************
-   Intstructions
-  ****************************************************/
+  /**
+   * Retrieves the current system instructions with context interpolation
+   * @returns Contextualized system instructions
+   * @throws {Error} If resolver is not properly initialized
+   */
+
   getInstructions = (): string => {
     this.assertReady();
     return interpolateTemplate(this.instructions, this.store.context);
   };
 
-  /****************************************************
-   LLM Configuration
-  ****************************************************/
+  /*
+   * Retrieves the current language model configuration
+   * @returns LLM configuration
+   */
   getLLMConfig = (): LLMConfig => {
     this.assertReady();
-    return this.llm;
+    return this.llm; // The LLM configuration can be modified here
   };
 
-  /****************************************************
-   Tools
-  ****************************************************/
+  /**
+   * Retrieves the list of currently available tools
+   * @returns Array of authorized tool specifications
+   */
   getTools = (): ToolSpec[] => {
     this.assertReady();
-
     return [...this.toolMap.values()]; // add tool restrictions by filtering this array
   };
 
@@ -236,9 +267,11 @@ export class AgentResolver implements IAgentResolver {
     this.log.info("agent.filler", `"${phrase.trim()}"`);
   };
 
-  /****************************************************
-   Misc Utilities
-  ****************************************************/
+  /**
+   * Ensures that the resolver is properly initialized before method execution
+   * @throws {Error} If instructions or LLM configuration are missing
+   * @private
+   */
   private assertReady: () => asserts this is this & {
     instructions: string;
     llm: LLMConfig;
