@@ -148,7 +148,7 @@ At the heart of this implementation is Twilio Conversation Relay, providing crit
 
 - **Premium Speech Services**: Integration with best-in-class STT (Deepgram, Google) and TTS (Amazon, Google, ElevenLabs)
 - **Multi-Language Support**: Dynamic language switching during conversations
-- **Low-Latency Processing**: Sub-300ms response times for natural conversation flow
+- **Low-Latency**: Ultra low latency transcription and speech
 - **Natural Interactions**: Barge-in capability for interruption handling
 - **LLM Provider Flexibility**: Swap AI providers without significant rework
 - **Full Twilio Platform Access**: Leverage Twilio's comprehensive communications suite including transfers, SIP integration, recordings, call queueing, and PCI-compliant payments
