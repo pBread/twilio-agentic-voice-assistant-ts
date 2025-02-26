@@ -1,3 +1,4 @@
+import { Client as ConversationsClient } from "@twilio/conversations";
 import Twilio from "twilio";
 import { v4 as uuidV4 } from "uuid";
 import type {
@@ -5,6 +6,7 @@ import type {
   ToolDependencies,
   ToolParameters,
 } from "../../agent/types.js";
+import log from "../../lib/logger.js";
 import {
   FLEX_QUEUE_SID,
   FLEX_WORKER_SID,
@@ -16,9 +18,6 @@ import {
   TWILIO_API_SECRET,
   TWILIO_CONVERSATIONS_SVC_SID,
 } from "../../shared/env.js";
-
-import { Client as ConversationsClient } from "@twilio/conversations";
-import log from "../../lib/logger.js";
 import { AIQuestion } from "./types.js";
 
 const twilio = Twilio(TWILIO_API_KEY, TWILIO_API_SECRET, {
