@@ -3,7 +3,8 @@ import { getMakeLogger } from "../lib/logger.js";
 
 const router = Router();
 
-// receives events from sync
+// receives voice intelligence webhook
+// todo: close the loop w/transcripts
 router.post(`/voice-intelligence`, async (req, res) => {
   const payload = req.body;
   const log = getMakeLogger(payload.CallSid);
