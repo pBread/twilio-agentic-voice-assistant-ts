@@ -32,7 +32,6 @@ export class SessionStore {
     this.eventEmitter = new TypedEventEmitter<TurnEvents>();
 
     this.context = context ?? {};
-    this.context.toolConfig = context?.toolConfig ?? {};
 
     this.turns = new TurnStore(callSid, this.eventEmitter); // turn events are emitted in the turn store
 
