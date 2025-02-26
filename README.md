@@ -116,3 +116,13 @@ Here's what the script does:
 - Configure the [voice webhooks](https://www.twilio.com/docs/usage/webhooks/voice-webhooks) for the `DEFAULT_TWILIO_NUMBER` to allow incoming calls
 - Create a Voice Intelligence service, if `TWILIO_VOICE_INTELLIGENCE_SVC_SID` is undefined
 - Configure Voice Intelligence with operators
+
+## Demo Scenarios
+
+### Refund
+
+- Start the app and the UI
+- Login to Flex and set yourself to `available`
+- Call your demo phone number
+- Tell the agent that you received an order the other day and just realized that you are missing your "Waygu Steak."
+- The AI agent will help you process the refund.
