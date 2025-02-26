@@ -18,7 +18,7 @@ Locate exact order record using order number, confirmation ID, or purchase histo
 Confirm order belongs to verified customer
 Critical step - cannot be skipped
 
-3. Human Approval is Required for orders greater than $50 of value
+3. Human Approval is required for refunds
 
 4. SMS Verification Requirement
 

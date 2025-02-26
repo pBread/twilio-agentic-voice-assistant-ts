@@ -101,7 +101,6 @@ export const procedures: Record<string, Procedure> = [
         strictness: "critical",
         completionCriteria:
           "Human agent has provided explicit approval for the refund",
-        conditions: "Apply if refunded items are worth more then $50.",
         instructions:
           "Contact human agent with order details, refund reason, and request approval for processing",
       },
