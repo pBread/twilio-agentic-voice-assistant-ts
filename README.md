@@ -1,6 +1,6 @@
 # Twilio Agentic Voice Assistant
 
-A demonstration implementation of an AI-driven voice agent built on Twilio Conversation Relay.
+A demonstration implementation of an AI-driven voice agent built on [Twilio Conversation Relay](https://www.twilio.com/docs/voice/twiml/connect/conversationrelay).
 
 ## Feature Summary
 
@@ -130,16 +130,6 @@ Here's what the script does:
 - Create a Voice Intelligence service, if `TWILIO_VOICE_INTELLIGENCE_SVC_SID` is undefined
 - Configure Voice Intelligence with operators
 
-## Demo Scenarios
-
-### Refund
-
-- Start the app and the UI
-- Login to Flex and set yourself to `available`
-- Call your demo phone number
-- Tell the agent that you received an order the other day and just realized that you are missing your "Waygu Steak."
-- The AI agent will help you process the refund.
-
 ## Application Overview
 
 ### Twilio Conversation Relay
@@ -164,7 +154,7 @@ The Session Store serves as the conversation's memory system:
 - **Turn History Management**: Records each interaction between user and agent, maintaining a complete conversation transcript
 - **Persistent State**: Preserves conversation state across multiple turns, allowing for contextual references
 - **Event Publishing**: Emits events for conversation updates that can trigger actions in other system components
-- **Synchronization**: Works with Twilio Sync to maintain state across distributed components
+- **Synchronization**: Works with [Twilio Sync Service](https://www.twilio.com/docs/sync) to maintain state across distributed components
 
 #### Context
 
@@ -208,7 +198,7 @@ Enables seamless transition from AI to human support:
 
 #### Human in the Loop
 
-Facilitates collaborative AI-human interaction:
+Facilitates collaborative AI-human interaction using [Twilio Conversations](https://www.twilio.com/docs/conversations):
 
 - **Real-Time Assistance**: Allows the AI to request human approval for specific actions
 - **Agent Monitoring**: Enables supervisors to observe and intervene in conversations
@@ -229,3 +219,13 @@ Provides AI supervision of conversations:
 - **Procedure Tracking**: Identifies and monitors business processes being followed
 - **Step Completion Status**: Ensures all required actions are properly completed
 - **Compliance Monitoring**: Helps ensure adherence to regulatory requirements
+
+## Demo Scenarios
+
+### Refund
+
+- Start the app and the UI
+- Login to Flex and set yourself to `available`
+- Call your demo phone number
+- Tell the agent that you received an order the other day and just realized that you are missing your "Waygu Steak."
+- The AI agent will help you process the refund.
