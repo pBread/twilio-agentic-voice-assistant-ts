@@ -194,7 +194,7 @@ export class OpenAIConsciousLoop
 
       if (this.activeCompletionId !== completionId) return; // check to make the stream that started this completion is still the same. if it's not, that means there was an interruption or error. a subsequent completion is not warranted
       this.stream = undefined;
-      return this.doCompletion();
+      return this.doCompletion(); // start another completion after tools are resolved
     }
 
     // todo: add handlers for these situations
