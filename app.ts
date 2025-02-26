@@ -46,5 +46,7 @@ Outbound Call Route       https://${HOSTNAME}/outbound
                           https://${HOSTNAME}/outbound?to=${examplePhone}
 
 Demo Phone Number         ${defaultPhone}
+
+Agent Desktop             https://www.twilio.com/console/flex/service-login
 `);
 });
