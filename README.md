@@ -93,7 +93,7 @@ Note: The script uses the `HOSTNAME` env var as the ngrok private domain.
 npm run ui
 ```
 
-<img src="docs/terminal-ui.jpg" style="max-height: 100px; width: auto;">
+<img src="docs/terminal-ui.jpg" height="100px">
 
 ### Step 5: Try It
 
