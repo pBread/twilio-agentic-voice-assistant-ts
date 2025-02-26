@@ -98,7 +98,6 @@ async function checkVoiceIntelligenceOperators(env: EnvManager) {
     const operatorsToAdd = prebuiltOperators
       .filter((operator) =>
         [
-          "AgentIntroduction",
           "CallTransfer",
           "EscalationRequest",
           "SentimentAnalysis",
