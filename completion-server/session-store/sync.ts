@@ -72,21 +72,18 @@ export async function warmUpSyncSession(callSid: string) {
     sync.map(makeTurnMapName(callSid)),
   ]);
 
-  const timeout = setTimeout(
-    () => {
-      // delete unaccessed sync clients after 5 minutes to avoid memory leaks
-      const entry = tempSyncClientCache.get(callSid);
-      const sync = entry?.sync;
-      if (!sync) return;
+  const timeout = setTimeout(() => {
+    // delete unaccessed sync clients after 5 minutes to avoid memory leaks
+    const entry = tempSyncClientCache.get(callSid);
+    const sync = entry?.sync;
+    if (!sync) return;
 
-      sync.removeAllListeners();
-      sync.shutdown();
+    sync.removeAllListeners();
+    sync.shutdown();
 
-      tempSyncClientCache.delete(callSid);
-      log.warn("sync-client", `cleaned up unused sync client for ${callSid}`);
-    },
-    5 * 60 * 1000,
-  );
+    tempSyncClientCache.delete(callSid);
+    log.warn("sync-client", `cleaned up unused sync client for ${callSid}`);
+  }, 5 * 60 * 1000);
 
   tempSyncClientCache.set(callSid, { sync, timeout });
 
@@ -362,7 +359,7 @@ export class SyncQueueService {
         intervalCap: 100,
         interval: 1000,
         carryoverConcurrencyCount: true,
-        timeout: 10000,
+        timeout: 10 * 1000,
       });
 
       queue.on("error", (error) => {
