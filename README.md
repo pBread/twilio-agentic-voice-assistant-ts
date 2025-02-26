@@ -1,8 +1,20 @@
 # Twilio Agentic Voice Assistant
 
-THIS IS NOT YET RELEASED. IT IS PUBLIC FOR INTERNAL TESTING REASONS
+A demonstration implementation of an AI-driven voice agent built on Twilio Conversation Relay.
 
-## Setup
+## Feature Summary
+
+- **Advanced Conversational AI**: Build sophisticated voice agents powered by your LLM of choice
+- **Contextual Understanding**: Dynamic resolver leverages structured data to personalize conversations
+- **Human in the Loop**: Transfer to agent and ask agent questions capabilities
+- **Agentic System**: Architecture supporting multiple coordinated LLMs for different functions
+- **Interruptions**: Natural barge-in capability for realistic conversations
+- **Voice Intelligence**: Real-time transcription, summarization, and topic extraction
+- **Governance & Compliance**: AI supervisor for procedure tracking and conversation monitoring
+- **Flexible Architecture**: Modular design with Express and TypeScript for easy customization
+- **Debugging User Interface**: A user interface allows you to see what's happening behind the scenes.
+
+## Getting Started
 
 ### Step 0: Prerequisites
 
@@ -127,3 +139,93 @@ Here's what the script does:
 - Call your demo phone number
 - Tell the agent that you received an order the other day and just realized that you are missing your "Waygu Steak."
 - The AI agent will help you process the refund.
+
+## Application Overview
+
+### Twilio Conversation Relay
+
+At the heart of this implementation is Twilio Conversation Relay, providing critical voice capabilities:
+
+- **Premium Speech Services**: Integration with best-in-class STT (Deepgram, Google) and TTS (Amazon, Google, ElevenLabs)
+- **Multi-Language Support**: Dynamic language switching during conversations
+- **Low-Latency Processing**: Sub-300ms response times for natural conversation flow
+- **Natural Interactions**: Barge-in capability for interruption handling
+- **LLM Provider Flexibility**: Swap AI providers without significant rework
+- **Full Twilio Platform Access**: Leverage Twilio's comprehensive communications suite including transfers, SIP integration, recordings, call queueing, and PCI-compliant payments
+
+### Completion Server
+
+Orchestrates the AI conversation loop with these key components that work together to create dynamic, contextually aware voice interactions.
+
+#### Store
+
+The Session Store serves as the conversation's memory system:
+
+- **Turn History Management**: Records each interaction between user and agent, maintaining a complete conversation transcript
+- **Persistent State**: Preserves conversation state across multiple turns, allowing for contextual references
+- **Event Publishing**: Emits events for conversation updates that can trigger actions in other system components
+- **Synchronization**: Works with Twilio Sync to maintain state across distributed components
+
+#### Context
+
+The Context system manages structured data that influences the conversation:
+
+- **User Profile Data**: Customer information that personalizes interactions (name, membership level, etc.)
+- **Procedural State**: System-controlled data tracking conversation progress and status
+- **Dynamic Updates**: Can be modified by tools, subconscious processes, or external systems
+- **Template Variables**: Provides data for handlebar injections in system instructions (e.g., {{user.name}})
+- **Tool Filtering**: Controls which tools are available to the LLM based on contextual criteria
+
+#### Resolver
+
+The Agentic Resolver dynamically composes the LLM's operating parameters:
+
+- **System Instructions**: Combines static prompts with context-specific data through template processing
+- **Tool Manifests**: Selects and configures available tools based on conversation context
+- **Configuration Management**: Adjusts model parameters (temperature, top-p, etc.) based on the conversation needs
+- **Multi-LLM Coordination**: Manages interactions between conscious and subconscious AI components
+- **Dynamic Adaptation**: Reconfigures the AI's behavior in real-time as conversation context evolves
+
+#### Twilio Sync
+
+Twilio Sync provides real-time state synchronization across the system:
+
+- **State Distribution**: Broadcasts conversation state to all connected components
+- **UI Updates**: Powers the debugging interface with live conversation data
+- **Webhook Integration**: Enables external systems to receive state updates via webhooks
+- **Subconscious Processing**: Allows monitoring processes to observe conversation progress
+- **Bidirectional Communication**: Enables external systems to influence conversation by updating Context
+
+### Modules
+
+#### Transfer to Agent
+
+Enables seamless transition from AI to human support:
+
+- **Twilio Flex Integration**: Ready-to-use connection with Twilio's contact center solution
+- **Third-Party Compatibility**: Support for external systems like Genesys
+- **Context Preservation**: Maintains conversation history when transferring
+
+#### Human in the Loop
+
+Facilitates collaborative AI-human interaction:
+
+- **Real-Time Assistance**: Allows the AI to request human approval for specific actions
+- **Agent Monitoring**: Enables supervisors to observe and intervene in conversations
+- **Twilio Conversations**: Utilizes Twilio's digital messaging platform for collaboration
+
+#### Voice Intelligence
+
+Enhances conversations with AI-powered analytics:
+
+- **Real-Time Transcription**: Converts speech to text for processing and storage
+- **Conversation Summarization**: Automatically generates call summaries
+- **Topic Extraction**: Identifies key subjects discussed during interactions
+
+#### Governance Bot
+
+Provides AI supervision of conversations:
+
+- **Procedure Tracking**: Identifies and monitors business processes being followed
+- **Step Completion Status**: Ensures all required actions are properly completed
+- **Compliance Monitoring**: Helps ensure adherence to regulatory requirements
