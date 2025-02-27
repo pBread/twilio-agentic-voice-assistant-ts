@@ -1,11 +1,7 @@
 import { Client as ConversationsClient } from "@twilio/conversations";
 import Twilio from "twilio";
 import { v4 as uuidV4 } from "uuid";
-import type {
-  ToolDefinition,
-  ToolDependencies,
-  ToolParameters,
-} from "../../agent/types.js";
+import type { ToolDependencies, ToolExecutor } from "../../agent/types.js";
 import log from "../../lib/logger.js";
 import {
   FLEX_QUEUE_SID,
@@ -24,73 +20,41 @@ const twilio = Twilio(TWILIO_API_KEY, TWILIO_API_SECRET, {
   accountSid: TWILIO_ACCOUNT_SID,
 });
 
-/****************************************************
- Transfer to Flex Agent
-****************************************************/
-const AskAgentParams: ToolParameters = {
-  type: "object",
-  properties: {
-    question: {
-      type: "string",
-      description: "The question you want the agent to answer",
-    },
-
-    explanation: {
-      type: "string",
-      description:
-        "A detailed explanation of the situation. Include any and all relevant information the agent may need to make their decision.",
-    },
-
-    recommendation: {
-      type: "string",
-      description: "What you recommend the agent should do.",
-    },
-  },
-  required: ["question", "explanation", "recommendation"],
-};
-
 interface AskAgent {
   question: string;
   explanation: string;
   recommendation: string;
 }
 
-export let askAgent: ToolDefinition<AskAgent> | undefined; // do not export tool if transfer to flex is not enabled
-if (IS_TRANSFER_TO_FLEX_ENABLED) {
-  askAgent = {
-    name: "askAgent",
-    description: "Sends a question to an agent",
-    parameters: AskAgentParams,
-    type: "function",
-    fillers: ["Give me a second. I'll reach out to a human agent now."], // let the bot naturally create their own filler
-    // function executor
-    async fn(args: AskAgent, deps) {
-      deps.log.info("bot.fn", "bot is asking an agent");
+// Only define if transfer to flex is enabled
+export const askAgent: ToolExecutor<AskAgent> | undefined =
+  IS_TRANSFER_TO_FLEX_ENABLED
+    ? async (args, deps) => {
+        deps.log.info("bot.fn", "bot is asking an agent");
 
-      const question: AIQuestion = {
-        createdAt: new Date().toLocaleString(),
-        answer: "",
-        callSid: deps.store.callSid,
-        id: uuidV4(),
-        question: args.question,
-        status: "new",
-        explanation: args.explanation,
-        recommendation: args.recommendation ?? "No recommendation",
-      };
+        const question: AIQuestion = {
+          createdAt: new Date().toLocaleString(),
+          answer: "",
+          callSid: deps.store.callSid,
+          id: uuidV4(),
+          question: args.question,
+          status: "new",
+          explanation: args.explanation,
+          recommendation: args.recommendation ?? "No recommendation",
+        };
 
-      const questions = {
-        ...(deps.store.context.questions ?? {}),
-        [question.id]: question,
-      };
+        const questions = {
+          ...(deps.store.context.questions ?? {}),
+          [question.id]: question,
+        };
 
-      deps.store.setContext({ questions });
+        deps.store.setContext({ questions });
 
-      createFlexTask(question, deps);
+        createFlexTask(question, deps);
 
-      return "waiting-for-human-response";
-    },
-  };
-}
+        return "waiting-for-human-response";
+      }
+    : undefined;
 
 async function createFlexTask(question: AIQuestion, deps: ToolDependencies) {
   const from = deps.store.context.call?.from as string;
