@@ -1,14 +1,14 @@
 import Twilio from "twilio";
 import { v4 as uuidV4 } from "uuid";
-import { db } from "../../integration-server/mock-database.js";
+import { db } from "../../../integration-server/mock-database.js";
 import {
   DEFAULT_TWILIO_NUMBER,
   TWILIO_ACCOUNT_SID,
   TWILIO_API_KEY,
   TWILIO_API_SECRET,
-} from "../../shared/env.js";
-import type { AuxiliaryMessage } from "../../shared/session/context.js";
-import type { ToolExecutor } from "../types.js";
+} from "../../../shared/env.js";
+import type { AuxiliaryMessage } from "../../../shared/session/context.js";
+import type { ToolExecutor } from "../../types.js";
 
 const twilio = Twilio(TWILIO_API_KEY, TWILIO_API_SECRET, {
   accountSid: TWILIO_ACCOUNT_SID,

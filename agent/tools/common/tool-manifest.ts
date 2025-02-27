@@ -1,6 +1,6 @@
-import type { ToolSpec } from "../types.js";
+import type { ToolSpec } from "../../types.js";
 
-export const toolManifest: ToolSpec[] = [
+export const commonToolManifest: ToolSpec[] = [
   {
     name: "getUserByEmailOrPhone",
     description: "Find a user by their email address or their phone number.",
