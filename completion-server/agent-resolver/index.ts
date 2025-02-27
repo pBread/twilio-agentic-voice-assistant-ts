@@ -62,7 +62,7 @@ export class AgentResolver implements IAgentResolver {
    */
   // todo: this should be more clear. the configure method updates some and replaces others. confusing
 
-  configure = (config: Partial<AgentResolverConfig>) => {
+  public configure = (config: Partial<AgentResolverConfig>) => {
     const { instructions, fillerPhrases, llmConfig, toolManifest } = config;
     this.instructions = instructions ?? this.instructions;
     this.llm = llmConfig ?? this.llm;
@@ -77,7 +77,7 @@ export class AgentResolver implements IAgentResolver {
    * @throws {Error} If resolver is not properly initialized
    */
 
-  getInstructions = (): string => {
+  public getInstructions = (): string => {
     this.assertReady();
     return interpolateTemplate(this.instructions, this.store.context);
   };
@@ -86,7 +86,7 @@ export class AgentResolver implements IAgentResolver {
    * Retrieves the current language model configuration
    * @returns LLM configuration
    */
-  getLLMConfig = (): LLMConfig => {
+  public getLLMConfig = (): LLMConfig => {
     this.assertReady();
     return this.llm; // The LLM configuration can be modified here
   };
@@ -95,18 +95,20 @@ export class AgentResolver implements IAgentResolver {
    * Retrieves the list of currently available tools
    * @returns Array of authorized tool specifications
    */
-  getTools = (): ToolDefinition[] => {
+  public getTools = (): ToolDefinition[] => {
     this.assertReady();
     return [...this.toolMap.values()]; // add tool restrictions by filtering this array
   };
 
-  setTool = (name: string, tool: ToolDefinition) => {
+  public setTool = (name: string, tool: ToolDefinition) => {
     if (this.toolMap.has(tool.name))
       this.log.warn("resolver", `overriding tool ${tool.name}`);
     this.toolMap.set(name, tool);
   };
 
-  getTool = (toolName: string): [Error] | [undefined, ToolDefinition] => {
+  private getTool = (
+    toolName: string,
+  ): [Error] | [undefined, ToolDefinition] => {
     const tool = this.toolMap.get(toolName);
     if (!tool) {
       return [
@@ -132,7 +134,7 @@ export class AgentResolver implements IAgentResolver {
     return [, tool];
   };
 
-  executeTool = async (
+  public executeTool = async (
     turnId: string,
     toolName: string,
     args?: object,
