@@ -37,10 +37,6 @@ type StrictLevel =
 /****************************************************
  Tool Definitions
 ****************************************************/
-// this is what is exported from the tools
-export type ToolDefinition<T extends object = object> = FunctionToolSpec & {
-  fn: ToolExecutor<T>;
-};
 
 export type ToolSpec = FunctionToolSpec; // this is what is ingested by the completion server
 export type ToolParameters = ObjectPropertySchema;
