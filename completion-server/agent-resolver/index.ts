@@ -161,6 +161,7 @@ export class AgentResolver implements IAgentResolver {
           log: this.log,
           relay: this.relay,
           store: this.store,
+          tool,
         };
 
         return {

@@ -15,5 +15,5 @@ const goodTTS = {
 };
 
 export const relayConfig: Omit<ConversationRelayAttributes, "url"> = {
-  ...goodTTS.google.journeyD,
+  ...goodTTS.elevenLabs.mark,
 };

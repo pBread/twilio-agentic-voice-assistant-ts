@@ -66,6 +66,7 @@ export interface ToolDependencies {
   log: ReturnType<typeof getMakeLogger>;
   relay: ConversationRelayAdapter;
   store: SessionStore;
+  tool: ToolSpec;
 }
 
 export type ToolResponse =
