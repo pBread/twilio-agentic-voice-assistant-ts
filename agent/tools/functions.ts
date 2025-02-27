@@ -17,7 +17,7 @@ const twilio = Twilio(TWILIO_API_KEY, TWILIO_API_SECRET, {
 /****************************************************
  Get User Profile
 ****************************************************/
-const GetProfileParams: ToolParameters = {
+const GetUserByEmailOrPhone: ToolParameters = {
   type: "object",
   properties: {
     email: { type: "string", description: "The user's email address" },
@@ -29,58 +29,17 @@ const GetProfileParams: ToolParameters = {
   required: [],
 };
 
-interface GetProfile {
+interface GetUserByEmailOrPhone {
   email?: string;
   phone?: string;
 }
 
-export const getUserByEmailOrPhoneSpec: ToolDefinition = {
+export const getUserByEmailOrPhone: ToolDefinition<GetUserByEmailOrPhone> = {
   name: "getUserByEmailOrPhone",
   description: "Find a user by their email address or their phone number.",
+  parameters: GetUserByEmailOrPhone,
   type: "function",
-  parameters: {
-    type: "object",
-    properties: {
-      email: { type: "string", description: "The user's email address" },
-      phone: {
-        type: "string",
-        description: "The user's phone in e164 format, i.e. +12223330001",
-      },
-    },
-    required: [],
-  },
-};
-
-interface GetProfileByEmailOrPhone {
-  email?: string;
-  phone?: string;
-}
-
-export const getUserByEmailOrPhone: ToolExecutor<
-  GetProfileByEmailOrPhone
-> = async (args, deps) => {
-  await new Promise((resolve) => setTimeout(() => resolve(null), 600));
-  if (!args.email && !args.phone) return;
-
-  const _email = args.email?.toLowerCase().trim();
-  const _phone = args.phone?.replace(/\D/g, "");
-  const user = db.users.find((user) => {
-    if (_email && user.email?.toLowerCase() === _email) return true;
-    if (_phone && _phone === user.mobile_phone?.replace(/\D/g, "")) return true;
-
-    return false;
-  });
-
-  if (user) deps.store.setContext({ user }); // set the user in the session context after successfully fetching
-  return user;
-};
-
-export const getUserByEmailOrPhone: ToolDefinition<GetProfile> = {
-  name: "getUserByEmailOrPhone",
-  description: "Find a user by their email address or their phone number.",
-  parameters: GetProfileParams,
-  type: "function",
-  async fn(args: GetProfile, deps) {
+  async fn(args: GetUserByEmailOrPhone, deps) {
     await new Promise((resolve) => setTimeout(() => resolve(null), 600));
     if (!args.email && !args.phone) return;
 
