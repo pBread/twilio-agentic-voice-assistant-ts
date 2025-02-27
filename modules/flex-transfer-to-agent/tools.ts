@@ -34,7 +34,6 @@ interface TransferToFlexAgent {
   reason: string;
 }
 
-// only define the function if transfer to flex is enabled
 export const transferToFlexAgent: ToolExecutor<TransferToFlexAgent> = async (
   args,
   deps,

@@ -55,7 +55,6 @@ interface AskAgent {
   recommendation: string;
 }
 
-// Only define if transfer to flex is enabled
 export const askAgent: ToolExecutor<AskAgent> = async (args, deps) => {
   deps.log.info("bot.fn", "bot is asking an agent");
 
