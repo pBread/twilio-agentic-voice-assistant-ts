@@ -6,7 +6,7 @@ import {
   askAgent,
   askAgentSpec,
 } from "../../modules/human-consultation/tools.js";
-import { ToolExecutor, ToolDefinition } from "../types.js";
+import { ToolDefinition, ToolExecutor } from "../types.js";
 import * as commonToolFunctions from "./common/tool-functions.js";
 import { commonToolManifest } from "./common/tool-manifest.js";
 
