@@ -17,7 +17,8 @@ import type { AgentResolverConfig } from "./agent-resolver/types.js";
 import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
 import { makeCallDetail } from "./helpers.js";
 import { SessionStore } from "./session-store/index.js";
-import { updateCallStatus, warmUpSyncSession } from "./session-store/sync.js";
+import { warmUpSyncSession } from "./session-store/sync-client.js";
+import { updateCallStatus } from "./session-store/sync-queue.js";
 import {
   ConversationRelayAdapter,
   makeConversationRelayTwiML,

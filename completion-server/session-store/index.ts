@@ -14,7 +14,8 @@ import type {
   MapItemRemovedEvent,
   MapItemUpdatedEvent,
 } from "../../shared/sync/types.js";
-import { getSyncClient, SyncQueueService } from "./sync.js";
+import { getSyncClient } from "./sync-client.js";
+import { SyncQueueService } from "./sync-queue.js";
 import { TurnStore } from "./turn-store.js";
 
 export type * from "./turn-store.js";
