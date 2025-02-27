@@ -106,9 +106,7 @@ export class AgentResolver implements IAgentResolver {
     this.toolMap.set(name, tool);
   };
 
-  getToolDefinition = (
-    toolName: string,
-  ): [Error] | [undefined, ToolDefinition] => {
+  getTool = (toolName: string): [Error] | [undefined, ToolDefinition] => {
     const tool = this.toolMap.get(toolName);
     if (!tool) {
       return [
@@ -139,8 +137,11 @@ export class AgentResolver implements IAgentResolver {
     toolName: string,
     args?: object,
   ): Promise<ToolResponse> => {
-    const [error, tool] = this.getToolDefinition(toolName);
-    if (error) return { status: "error", error: error.message }; // tool not found
+    const [error, tool] = this.getTool(toolName);
+    if (error) {
+      this.log.warn("agent", "unable to find tool: ", error);
+      return { status: "error", error: error.message };
+    }
 
     this.makeFillerPhraseTimer(turnId, tool, args);
 
@@ -195,7 +196,7 @@ export class AgentResolver implements IAgentResolver {
     toolName: string,
     args?: object,
   ) => {
-    const [error, tool] = this.getToolDefinition(toolName);
+    const [error, tool] = this.getTool(toolName);
     if (error) return; // the error will be handled by executeTool
 
     this.makeFillerPhraseTimer(turnId, tool, args);
