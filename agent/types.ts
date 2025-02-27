@@ -37,12 +37,8 @@ type StrictLevel =
 /****************************************************
  Tool Definitions
 ****************************************************/
-// this is what is exported from the tools
-export type ToolDefinition<T extends object = object> = FunctionToolSpec & {
-  fn: ToolExecutor<T>;
-};
 
-export type ToolSpec = FunctionToolSpec; // this is what is ingested by the completion server
+export type ToolDefinition = FunctionToolDefinition; // this is what is ingested by the completion server
 export type ToolParameters = ObjectPropertySchema;
 
 interface BaseTool {
@@ -52,7 +48,7 @@ interface BaseTool {
   fillers?: string[] | null;
 }
 
-export interface FunctionToolSpec extends BaseTool {
+export interface FunctionToolDefinition extends BaseTool {
   type: "function";
 }
 
@@ -66,6 +62,7 @@ export interface ToolDependencies {
   log: ReturnType<typeof getMakeLogger>;
   relay: ConversationRelayAdapter;
   store: SessionStore;
+  tool: ToolDefinition;
 }
 
 export type ToolResponse =

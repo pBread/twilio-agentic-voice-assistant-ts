@@ -3,7 +3,7 @@ import type {
   LLMConfig,
   ToolDependencies,
   ToolResponse,
-  ToolSpec,
+  ToolDefinition,
 } from "../../agent/types.js";
 import { getMakeLogger } from "../../lib/logger.js";
 import { createRoundRobinPicker } from "../../lib/round-robin-picker.js";
@@ -13,6 +13,7 @@ import type { BotToolTurn } from "../../shared/session/turns.js";
 import type { SessionStore } from "../session-store/index.js";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay.js";
 import type { AgentResolverConfig, IAgentResolver } from "./types.js";
+
 /**
  * AgentResolver is a dynamic configuration manager for real-time conversational AI agents.
  *
@@ -36,7 +37,7 @@ export class AgentResolver implements IAgentResolver {
   private log: ReturnType<typeof getMakeLogger>;
   protected instructions?: string;
   protected llm?: LLMConfig;
-  protected toolMap = new Map<string, ToolSpec>();
+  protected toolMap = new Map<string, ToolDefinition>();
   protected fillerPhrases: { primary: string[]; secondary: string[] } = {
     primary: [],
     secondary: [],
@@ -61,7 +62,7 @@ export class AgentResolver implements IAgentResolver {
    */
   // todo: this should be more clear. the configure method updates some and replaces others. confusing
 
-  configure = (config: Partial<AgentResolverConfig>) => {
+  public configure = (config: Partial<AgentResolverConfig>) => {
     const { instructions, fillerPhrases, llmConfig, toolManifest } = config;
     this.instructions = instructions ?? this.instructions;
     this.llm = llmConfig ?? this.llm;
@@ -76,7 +77,7 @@ export class AgentResolver implements IAgentResolver {
    * @throws {Error} If resolver is not properly initialized
    */
 
-  getInstructions = (): string => {
+  public getInstructions = (): string => {
     this.assertReady();
     return interpolateTemplate(this.instructions, this.store.context);
   };
@@ -85,7 +86,7 @@ export class AgentResolver implements IAgentResolver {
    * Retrieves the current language model configuration
    * @returns LLM configuration
    */
-  getLLMConfig = (): LLMConfig => {
+  public getLLMConfig = (): LLMConfig => {
     this.assertReady();
     return this.llm; // The LLM configuration can be modified here
   };
@@ -94,23 +95,27 @@ export class AgentResolver implements IAgentResolver {
    * Retrieves the list of currently available tools
    * @returns Array of authorized tool specifications
    */
-  getTools = (): ToolSpec[] => {
+  public getTools = (): ToolDefinition[] => {
     this.assertReady();
     return [...this.toolMap.values()]; // add tool restrictions by filtering this array
   };
 
-  setTool = (name: string, tool: ToolSpec) => {
+  public setTool = (name: string, tool: ToolDefinition) => {
     if (this.toolMap.has(tool.name))
       this.log.warn("resolver", `overriding tool ${tool.name}`);
     this.toolMap.set(name, tool);
   };
 
-  getToolSpec = (toolName: string) => {
+  private getTool = (
+    toolName: string,
+  ): [Error] | [undefined, ToolDefinition] => {
     const tool = this.toolMap.get(toolName);
     if (!tool) {
-      const error = `Attempted to execute a tool (${toolName}) that does not exist.`;
-      this.log.warn("agent", error);
-      return error;
+      return [
+        new Error(
+          `Attempted to execute a tool (${toolName}) that does not exist.`,
+        ),
+      ];
     }
 
     // Tools can be restricted from the bot's manifest. The bot may believe the tool exists if it previously executed it or if the system instructions reference a tool not in the tool-manifest.
@@ -119,23 +124,28 @@ export class AgentResolver implements IAgentResolver {
     );
 
     if (!isToolAvailable) {
-      const error = `Attempted to execute a tool (${toolName}) that is not authorized.`;
-      this.log.warn("agent", error);
-      return error;
+      return [
+        new Error(
+          `Attempted to execute a tool (${toolName}) that is not authorized.`,
+        ),
+      ];
     }
 
-    return tool;
+    return [, tool];
   };
 
-  executeTool = async (
+  public executeTool = async (
     turnId: string,
     toolName: string,
     args?: object,
   ): Promise<ToolResponse> => {
-    const tool = this.getToolSpec(toolName);
-    if (typeof tool == "string") return { status: "error", error: tool }; // tool not found
+    const [error, tool] = this.getTool(toolName);
+    if (error) {
+      this.log.warn("agent", "unable to find tool: ", error);
+      return { status: "error", error: error.message };
+    }
 
-    const cancelFillerPhrase = this.makeFillerPhraseTimer(turnId, tool, args);
+    this.makeFillerPhraseTimer(turnId, tool, args);
 
     const resultPromise = await this.executeToolHandler(tool, args);
 
@@ -144,7 +154,7 @@ export class AgentResolver implements IAgentResolver {
   };
 
   private executeToolHandler = async (
-    tool: ToolSpec,
+    tool: ToolDefinition,
     args: any,
   ): Promise<ToolResponse> => {
     if (tool.type === "function") {
@@ -161,6 +171,7 @@ export class AgentResolver implements IAgentResolver {
           log: this.log,
           relay: this.relay,
           store: this.store,
+          tool,
         };
 
         return {
@@ -187,15 +198,15 @@ export class AgentResolver implements IAgentResolver {
     toolName: string,
     args?: object,
   ) => {
-    const tool = this.getToolSpec(toolName);
-    if (typeof tool === "string") return; // tool not found
+    const [error, tool] = this.getTool(toolName);
+    if (error) return; // the error will be handled by executeTool
 
     this.makeFillerPhraseTimer(turnId, tool, args);
   };
 
   private makeFillerPhraseTimer = (
     turnId: string,
-    tool: ToolSpec,
+    tool: ToolDefinition,
     args: object = {},
   ) => {
     if (!this.fillerTimeout1)

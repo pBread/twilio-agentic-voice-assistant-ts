@@ -1,4 +1,8 @@
-import type { LLMConfig, ToolResponse, ToolSpec } from "../../agent/types.js";
+import type {
+  LLMConfig,
+  ToolDefinition,
+  ToolResponse,
+} from "../../agent/types.js";
 
 /**
  * Interface defining the core functionality of an Agent Runtime
@@ -6,9 +10,9 @@ import type { LLMConfig, ToolResponse, ToolSpec } from "../../agent/types.js";
 export interface IAgentResolver {
   getInstructions(): string;
   getLLMConfig(): LLMConfig;
-  getTools(): ToolSpec[];
+  getTools(): ToolDefinition[];
 
-  setTool(name: string, tool: ToolSpec): void;
+  setTool(name: string, tool: ToolDefinition): void;
 
   executeTool(
     turnId: string,
@@ -23,5 +27,5 @@ export interface AgentResolverConfig {
   fillerPhrases: { primary: string[]; seconary: string[] };
   instructions: string;
   llmConfig: LLMConfig;
-  toolManifest: ToolSpec[];
+  toolManifest: ToolDefinition[];
 }
