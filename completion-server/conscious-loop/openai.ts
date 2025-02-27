@@ -7,7 +7,7 @@ import type {
 import type { ChatCompletionCreateParamsStreaming } from "openai/src/resources/index.js";
 import type { Stream } from "openai/streaming";
 import { v4 as uuidV4 } from "uuid";
-import type { ToolResponse, ToolSpec } from "../../agent/types.js";
+import type { ToolDefinition, ToolResponse } from "../../agent/types.js";
 import { TypedEventEmitter } from "../../lib/events.js";
 import log, { getMakeLogger } from "../../lib/logger.js";
 import { OPENAI_API_KEY } from "../../shared/env.js";
@@ -301,7 +301,7 @@ export class OpenAIConsciousLoop
   };
 
   private translateToolSpec = (
-    tool: ToolSpec,
+    tool: ToolDefinition,
   ): ChatCompletionTool | undefined => {
     if (tool.type === "function") {
       return {

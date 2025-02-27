@@ -1,9 +1,9 @@
-import type { ToolExecutor, ToolSpec } from "../../agent/types.js";
+import type { ToolDefinition, ToolExecutor } from "../../agent/types.js";
 import { ConversationRelayAdapter } from "../../completion-server/twilio/conversation-relay.js";
 import { TWILIO_ACCOUNT_SID } from "../../shared/env.js";
 import type { TransferToFlexHandoff } from "./types.js";
 
-export const transferToFlexAgentSpec: ToolSpec = {
+export const transferToFlexAgentSpec: ToolDefinition = {
   name: "transferToAgent",
   description: "Transfers the call to a Flex agent",
   type: "function",

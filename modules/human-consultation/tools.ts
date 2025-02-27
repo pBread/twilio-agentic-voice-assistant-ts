@@ -4,7 +4,7 @@ import { v4 as uuidV4 } from "uuid";
 import type {
   ToolDependencies,
   ToolExecutor,
-  ToolSpec,
+  ToolDefinition,
 } from "../../agent/types.js";
 import log from "../../lib/logger.js";
 import {
@@ -23,7 +23,7 @@ const twilio = Twilio(TWILIO_API_KEY, TWILIO_API_SECRET, {
   accountSid: TWILIO_ACCOUNT_SID,
 });
 
-export const askAgentSpec: ToolSpec = {
+export const askAgentSpec: ToolDefinition = {
   name: "askAgent",
   description: "Sends a question to an agent",
   type: "function",

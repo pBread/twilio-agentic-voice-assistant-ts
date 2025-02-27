@@ -6,11 +6,11 @@ import {
   askAgent,
   askAgentSpec,
 } from "../../modules/human-consultation/tools.js";
-import { ToolExecutor, ToolSpec } from "../types.js";
+import { ToolExecutor, ToolDefinition } from "../types.js";
 import * as commonToolFunctions from "./common/tool-functions.js";
 import { commonToolManifest } from "./common/tool-manifest.js";
 
-export const toolManifest: ToolSpec[] = [
+export const toolManifest: ToolDefinition[] = [
   ...commonToolManifest,
   askAgentSpec,
   transferToFlexAgentSpec,
