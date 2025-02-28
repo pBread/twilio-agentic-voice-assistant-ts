@@ -26,6 +26,10 @@ import {
 // todo: add service-level queue to ensure one call doesn't affect others
 // todo: add global queue to ensure the webhook executions don't affect the other services
 
+// https://www.twilio.com/docs/sync/limits#sync-activity-limits
+const SYNC_WRITE_RATE_LIMIT = 20; // 20 writes per second per object; 2 writes per second if object is >10kb (this could be an issue w/context)
+const SYNC_BURST_WINDOW = 10 * 1000; // 10 second burst window
+
 export class SyncQueueService {
   private queueCounts: Map<string, number> = new Map(); // Prevents updates from stacking. Updates occur much more quickly than the update requests resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
   private queues: Map<string, PQueue> = new Map();
@@ -34,6 +38,9 @@ export class SyncQueueService {
   public turnMapPromise: Promise<SyncMap>;
 
   private log: ReturnType<typeof getMakeLogger>;
+
+  private contextQueue: PQueue; // rate limiting queue
+  private turnQueue: PQueue; // rate limiting queue
 
   constructor(
     private callSid: string,
@@ -46,13 +53,32 @@ export class SyncQueueService {
     this.ctxMapPromise = this.sync.map(makeContextMapName(this.callSid));
     this.turnMapPromise = this.sync.map(makeTurnMapName(this.callSid));
 
+    this.contextQueue = new PQueue({
+      concurrency: 50, // concurrency doesn't matter
+      intervalCap: SYNC_WRITE_RATE_LIMIT * (SYNC_BURST_WINDOW / 1000), // total operations allowed per burst window
+      interval: SYNC_BURST_WINDOW, // length of the burst window in milliseconds
+      carryoverConcurrencyCount: true,
+      timeout: 15 * 1000,
+    });
+
+    this.turnQueue = new PQueue({
+      concurrency: 50, // concurrency doesn't matter
+      intervalCap: SYNC_WRITE_RATE_LIMIT * (SYNC_BURST_WINDOW / 1000), // total operations allowed per burst window
+      interval: SYNC_BURST_WINDOW, // length of the burst window in milliseconds
+      carryoverConcurrencyCount: true,
+      timeout: 15 * 1000,
+    });
+
+    this.setupErrorHandling(this.contextQueue, "contextQueue");
+    this.setupErrorHandling(this.turnQueue, "turnQueue");
+
     this.initialize();
   }
 
   private initialize = async () => {
-    await this.ctxMapPromise;
-    await this.turnMapPromise;
-    await this.sendNewCallStreamMsg();
+    await this.ctxMapPromise; // SyncMap is created when this resolves
+    await this.turnMapPromise; //SyncMap is created when this resolves
+    await this.sendNewCallStreamMsg(); // emit an event that a new call is initialized. used by the ui to detect new calls
   };
 
   sendNewCallStreamMsg = async () => {
@@ -111,10 +137,14 @@ export class SyncQueueService {
           );
         }
 
-        const ctxMap = await this.ctxMapPromise;
-        if (value === null || value === undefined)
-          await ctxMap.remove(key); // removed undefined properties
-        else await ctxMap.set(key, value as unknown as Record<string, unknown>);
+        // rate limit context updates
+        await this.contextQueue.add(async () => {
+          const ctxMap = await this.ctxMapPromise;
+          if (value === null || value === undefined)
+            await ctxMap.remove(key); // removed undefined properties
+          else
+            await ctxMap.set(key, value as unknown as Record<string, unknown>);
+        });
       });
     } catch (error) {
       if (isSyncMapItemNotFound(error)) {
@@ -147,8 +177,11 @@ export class SyncQueueService {
         this.queueCounts.delete(queueKey);
         if (!turn) return; // the turn may have been deleted by the time this update was triggered
 
-        const turnMap = await this.turnMapPromise;
-        await turnMap.set(turnId, turn as unknown as Record<string, unknown>);
+        // rate limit turn updates
+        await this.turnQueue.add(async () => {
+          const turnMap = await this.turnMapPromise;
+          await turnMap.set(turnId, turn as unknown as Record<string, unknown>);
+        });
       });
     } catch (error) {
       this.log.error(
@@ -168,13 +201,19 @@ export class SyncQueueService {
     try {
       await queue.add(
         async () => {
-          const turnMap = await this.turnMapPromise;
-          await turnMap.set(
-            turn.id,
-            turn as unknown as Record<string, unknown>,
-          );
+          // rate-limited turn queue with higher priority
+          await this.turnQueue.add(
+            async () => {
+              const turnMap = await this.turnMapPromise;
+              await turnMap.set(
+                turn.id,
+                turn as unknown as Record<string, unknown>,
+              );
+            },
+            { priority: 1 },
+          ); // higher priority within the rate-limited queue
         },
-        { priority: 1 }, // Higher priority for new turns
+        { priority: 1 }, // higher priority for new turns in the local queue
       );
     } catch (error) {
       this.log.error(
@@ -193,8 +232,10 @@ export class SyncQueueService {
 
     try {
       await queue.add(async () => {
-        const turnMap = await this.turnMapPromise;
-        await turnMap.remove(turnId);
+        await this.turnQueue.add(async () => {
+          const turnMap = await this.turnMapPromise;
+          await turnMap.remove(turnId);
+        });
       });
     } catch (error) {
       if (isSyncMapItemNotFound(error)) {
@@ -254,6 +295,27 @@ export class SyncQueueService {
     queue.removeAllListeners();
     this.queues.delete(queueKey);
   };
+
+  private setupErrorHandling(queue: PQueue, queueName: string): void {
+    queue.on("error", (error) => {
+      if (isSyncMapItemNotFound(error)) {
+        this.log.warn(
+          "sync.queue",
+          `sync error: unable to find item in ${queueName}.`,
+        );
+        return;
+      }
+      if (isSyncRateLimitError(error)) {
+        this.log.error(
+          "sync.queue",
+          `sync rate limiting error in ${queueName}: ${error.code}`,
+        );
+        return;
+      }
+
+      this.log.error("sync.queue", `${queueName} error:`, error);
+    });
+  }
 }
 
 function isSyncMapItemNotFound(error: any) {
