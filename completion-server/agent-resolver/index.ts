@@ -62,7 +62,7 @@ export class AgentResolver implements IAgentResolver {
    */
   // todo: this should be more clear. the configure method updates some and replaces others. confusing
 
-  public configure = (config: Partial<AgentResolverConfig>) => {
+  configure = (config: Partial<AgentResolverConfig>) => {
     const { instructions, fillerPhrases, llmConfig, toolManifest } = config;
     this.instructions = instructions ?? this.instructions;
     this.llm = llmConfig ?? this.llm;
@@ -77,7 +77,7 @@ export class AgentResolver implements IAgentResolver {
    * @throws {Error} If resolver is not properly initialized
    */
 
-  public getInstructions = (): string => {
+  getInstructions = (): string => {
     this.assertReady();
     return interpolateTemplate(this.instructions, this.store.context);
   };
@@ -86,7 +86,7 @@ export class AgentResolver implements IAgentResolver {
    * Retrieves the current language model configuration
    * @returns LLM configuration
    */
-  public getLLMConfig = (): LLMConfig => {
+  getLLMConfig = (): LLMConfig => {
     this.assertReady();
     return this.llm; // The LLM configuration can be modified here
   };
@@ -95,12 +95,12 @@ export class AgentResolver implements IAgentResolver {
    * Retrieves the list of currently available tools
    * @returns Array of authorized tool specifications
    */
-  public getTools = (): ToolDefinition[] => {
+  getTools = (): ToolDefinition[] => {
     this.assertReady();
     return [...this.toolMap.values()]; // add tool restrictions by filtering this array
   };
 
-  public setTool = (name: string, tool: ToolDefinition) => {
+  setTool = (name: string, tool: ToolDefinition) => {
     if (this.toolMap.has(tool.name))
       this.log.warn("resolver", `overriding tool ${tool.name}`);
     this.toolMap.set(name, tool);
@@ -134,7 +134,7 @@ export class AgentResolver implements IAgentResolver {
     return [, tool];
   };
 
-  public executeTool = async (
+  executeTool = async (
     turnId: string,
     toolName: string,
     args?: object,
@@ -193,11 +193,7 @@ export class AgentResolver implements IAgentResolver {
   private phrasePicker: ReturnType<typeof createRoundRobinPicker>;
   private fillerTimeout1: NodeJS.Timeout | undefined;
   private fillerTimeout2: NodeJS.Timeout | undefined; // 2nd phrase for when tools take a very long time
-  public queueFillerPhrase = (
-    turnId: string,
-    toolName: string,
-    args?: object,
-  ) => {
+  queueFillerPhrase = (turnId: string, toolName: string, args?: object) => {
     const [error, tool] = this.getTool(toolName);
     if (error) return; // the error will be handled by executeTool
 
@@ -252,7 +248,7 @@ export class AgentResolver implements IAgentResolver {
       }, 5000);
   };
 
-  clearFillerPhraseTimers = () => {
+  private clearFillerPhraseTimers = () => {
     clearTimeout(this.fillerTimeout1);
     this.fillerTimeout1 = undefined;
     clearTimeout(this.fillerTimeout2);
