@@ -19,6 +19,7 @@ import {
   makeContextMapName,
   makeTurnMapName,
 } from "../../shared/sync/ids.js";
+import debounce from "lodash.debounce";
 
 /****************************************************
  Sync Queue Service
@@ -29,9 +30,10 @@ import {
 // https://www.twilio.com/docs/sync/limits#sync-activity-limits
 const SYNC_WRITE_RATE_LIMIT = 17; // 20 writes per second per object; 2 writes per second if object is >10kb (this could be an issue w/context)
 const SYNC_BURST_WINDOW = 2 * 1000; // 10 second burst window max
+const DEBOUNCE_DELAY = 50; // ms to wait before processing an update, allowing newer ones to arrive
 
 export class SyncQueueService {
-  private queueCounts: Map<string, number> = new Map(); // Prevents updates from stacking. Updates occur much more quickly than the update requests resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
+  private queueCounts: Map<string, number> = new Map(); // prevents updates from stacking. Updates occur much more quickly than the update requests resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
   private queues: Map<string, PQueue> = new Map();
 
   public ctxMapPromise: Promise<SyncMap>;
@@ -164,30 +166,51 @@ export class SyncQueueService {
     this.cleanupQueue(queue, queueKey);
   };
 
+  private updateDebounceMap = new Map<string, ReturnType<typeof debounce>>();
   updateTurn = async (turnId: string): Promise<void> => {
     const queueKey = `${this.callSid}:turn:${turnId}`;
     const queue = this.getQueue(queueKey);
 
+    let debouncedFn = this.updateDebounceMap.get(queueKey);
+
     try {
-      await queue.add(async () => {
-        const count = this.queueCounts.get(queueKey) || 0;
-        if (count > 1) return this.queueCounts.set(queueKey, count - 1);
+      // ensure this queue has a debounced function
+      if (this.updateDebounceMap.has(queueKey)) {
+        const _debounce = debounce(
+          async () =>
+            await queue.add(async () => {
+              this.updateDebounceMap.delete(queueKey);
 
-        const turn = this.getTurn(turnId); // get latest version of the turn
-        this.queueCounts.delete(queueKey);
-        if (!turn) return; // the turn may have been deleted by the time this update was triggered
+              const count = this.queueCounts.get(queueKey) || 0;
+              if (count > 1) return this.queueCounts.set(queueKey, count - 1);
 
-        // rate limit turn updates
-        await this.turnQueue.add(async () => {
-          this.log.info(
-            "sync.queue",
-            `Executing turn update for ${turnId}, queue size: ${this.turnQueue.size}`,
-          );
+              const turn = this.getTurn(turnId); // get latest version of the turn
+              this.queueCounts.delete(queueKey);
+              if (!turn) return; // the turn may have been deleted by the time this update was triggered
 
-          const turnMap = await this.turnMapPromise;
-          await turnMap.set(turnId, turn as unknown as Record<string, unknown>);
-        });
-      });
+              // rate limit turn updates
+              await this.turnQueue.add(async () => {
+                this.log.info(
+                  "sync.queue",
+                  `Executing turn update for ${turnId}, queue size: ${this.turnQueue.size}`,
+                );
+
+                const turnMap = await this.turnMapPromise;
+                await turnMap.set(
+                  turnId,
+                  turn as unknown as Record<string, unknown>,
+                );
+              });
+            }),
+
+          DEBOUNCE_DELAY,
+          { leading: false, trailing: true, maxWait: 100 },
+        );
+
+        this.updateDebounceMap.set(queueKey, _debounce);
+      }
+
+      this.updateDebounceMap.get(queueKey)!(); // call the debounced function
     } catch (error) {
       this.log.error(
         "sync.queue",
