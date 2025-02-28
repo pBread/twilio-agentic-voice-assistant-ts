@@ -1,9 +1,9 @@
 import { getToolExecutor } from "../../agent/tools/index.js";
 import type {
   LLMConfig,
+  ToolDefinition,
   ToolDependencies,
   ToolResponse,
-  ToolDefinition,
 } from "../../agent/types.js";
 import { getMakeLogger } from "../../lib/logger.js";
 import { createRoundRobinPicker } from "../../lib/round-robin-picker.js";
