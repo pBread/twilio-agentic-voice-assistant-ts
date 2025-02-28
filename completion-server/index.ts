@@ -209,10 +209,6 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
     const config = JSON.parse(params.agent) as Partial<AgentResolverConfig>;
     agent.configure(config);
 
-    // start subconscious
-    governanceBot.start();
-    summaryBot.start();
-
     const greeting = JSON.parse(params.welcomeGreeting);
     if (greeting) {
       store.turns.addBotText({
@@ -222,6 +218,10 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
       });
       log.info("llm.transcript", `"${greeting}"`);
     }
+
+    // start subconscious
+    governanceBot.start();
+    summaryBot.start();
   });
 
   relay.onPrompt((ev) => {
