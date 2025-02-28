@@ -27,8 +27,8 @@ import {
 // todo: add global queue to ensure the webhook executions don't affect the other services
 
 // https://www.twilio.com/docs/sync/limits#sync-activity-limits
-const SYNC_WRITE_RATE_LIMIT = 20; // 20 writes per second per object; 2 writes per second if object is >10kb (this could be an issue w/context)
-const SYNC_BURST_WINDOW = 10 * 1000; // 10 second burst window
+const SYNC_WRITE_RATE_LIMIT = 17; // 20 writes per second per object; 2 writes per second if object is >10kb (this could be an issue w/context)
+const SYNC_BURST_WINDOW = 2 * 1000; // 10 second burst window max
 
 export class SyncQueueService {
   private queueCounts: Map<string, number> = new Map(); // Prevents updates from stacking. Updates occur much more quickly than the update requests resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
@@ -179,6 +179,11 @@ export class SyncQueueService {
 
         // rate limit turn updates
         await this.turnQueue.add(async () => {
+          this.log.info(
+            "sync.queue",
+            `Executing turn update for ${turnId}, queue size: ${this.turnQueue.size}`,
+          );
+
           const turnMap = await this.turnMapPromise;
           await turnMap.set(turnId, turn as unknown as Record<string, unknown>);
         });
@@ -204,10 +209,20 @@ export class SyncQueueService {
           // rate-limited turn queue with higher priority
           await this.turnQueue.add(
             async () => {
+              this.log.info(
+                "sync.queue",
+                `Executing turn add for ${turn.id}, queue size: ${this.turnQueue.size}`,
+              );
+
               const turnMap = await this.turnMapPromise;
               await turnMap.set(
                 turn.id,
                 turn as unknown as Record<string, unknown>,
+              );
+
+              this.log.info(
+                "sync.queue",
+                `Executing turn add for ${turn.id}, queue size: ${this.turnQueue.size}`,
               );
             },
             { priority: 1 },
