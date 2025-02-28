@@ -21,7 +21,7 @@ import type { AgentResolverConfig, IAgentResolver } from "./types.js";
  * modification of an agent's core parameters such as:
  * - System instructions
  * - Available tools
- * - Language model configuration
+ * - Model configuration
  *
  * Key Features:
  * - Supports dynamic tool authorization and restriction
