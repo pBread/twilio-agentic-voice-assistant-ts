@@ -221,23 +221,6 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
         status: "complete",
       });
       log.info("llm.transcript", `"${greeting}"`);
-
-      for (let i = 0; i < 10; i++) {
-        const turn = store.turns.addBotText({
-          content: "",
-          origin: "greeting",
-          status: "complete",
-        });
-
-        for (let j = 0; j < 100; j++) {
-          turn.content += `${i}-${j}`;
-          await new Promise((resolve) =>
-            setTimeout(() => {
-              resolve(null);
-            }, 10),
-          );
-        }
-      }
     }
   });
 

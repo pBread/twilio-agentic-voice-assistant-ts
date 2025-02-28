@@ -30,8 +30,8 @@ import debounce from "lodash.debounce";
 // https://www.twilio.com/docs/sync/limits#sync-activity-limits
 const SYNC_WRITE_RATE_LIMIT = 17; // 20 writes per second per object; 2 writes per second if object is >10kb (this could be an issue w/context)
 const SYNC_BURST_WINDOW = 2 * 1000; // 10 second burst window max
-const TURN_UPDATE_DEBOUNCE_MIN = 50; // wait 50ms to execute any turn update
-const TURN_UPDATE_DEBOUNCE_MAX = 100; // wait a maximum of 100ms before executing
+const TURN_UPDATE_DEBOUNCE_MIN = 50; // wait to execute any turn update
+const TURN_UPDATE_DEBOUNCE_MAX = 150; // maximum wait before executing
 
 export class SyncQueueService {
   private queueCounts: Map<string, number> = new Map(); // prevents updates from stacking. Updates occur much more quickly than the update requests resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
@@ -185,11 +185,6 @@ export class SyncQueueService {
             if (!turn) return;
 
             await this.turnQueue.add(async () => {
-              this.log.info(
-                "sync.queue",
-                `Executing turn update for ${turnId}, queue size: ${this.turnQueue.size}`,
-              );
-
               const turnMap = await this.turnMapPromise;
               await turnMap.set(
                 turnId,
@@ -232,20 +227,10 @@ export class SyncQueueService {
           // rate-limited turn queue with higher priority
           await this.turnQueue.add(
             async () => {
-              this.log.info(
-                "sync.queue",
-                `Executing turn add for ${turn.id}, queue size: ${this.turnQueue.size}`,
-              );
-
               const turnMap = await this.turnMapPromise;
               await turnMap.set(
                 turn.id,
                 turn as unknown as Record<string, unknown>,
-              );
-
-              this.log.info(
-                "sync.queue",
-                `Executing turn add for ${turn.id}, queue size: ${this.turnQueue.size}`,
               );
             },
             { priority: 1 },
