@@ -2,9 +2,9 @@ import { Client as ConversationsClient } from "@twilio/conversations";
 import Twilio from "twilio";
 import { v4 as uuidV4 } from "uuid";
 import type {
+  ToolDefinition,
   ToolDependencies,
   ToolExecutor,
-  ToolDefinition,
 } from "../../agent/types.js";
 import log from "../../lib/logger.js";
 import {
