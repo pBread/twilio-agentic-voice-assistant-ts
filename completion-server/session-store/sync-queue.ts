@@ -21,27 +21,48 @@ import {
 } from "../../shared/sync/ids.js";
 import debounce from "lodash.debounce";
 
-/****************************************************
- Sync Queue Service
-****************************************************/
+/**
+ * @fileoverview
+ * This module provides services for managing synchronization with Twilio Sync.
+ * It implements a multi-level queuing system to manage data updates:
+ * 1. Per-key sequential queues - Ensures updates to the same key happen in order
+ * 2. Rate-limited queues - Enforces Twilio Sync service rate limits
+ * 3. Debounced updates - Combines rapid-fire updates (like streaming LLM completions)
+ */
+
 // https://www.twilio.com/docs/sync/limits#sync-activity-limits
 const SYNC_WRITE_RATE_LIMIT = 17; // maximum: 20 writes per second per object and 2 writes per second if object is >10kb (this could be an issue w/context)
 const SYNC_BURST_WINDOW = 2 * 1000; // 10 second burst window max
 const TURN_UPDATE_DEBOUNCE_MIN = 50; // wait to execute any turn update
 const TURN_UPDATE_DEBOUNCE_MAX = 150; // maximum wait before executing
 
+/**
+ * @class SyncQueueService
+ * Manages synchronization of session data with Twilio Sync.
+ * Implements three levels of queuing:
+ * 1. Per-key sequential queues - Each context property or turn has its own queue to ensure sequential consistency
+ * 2. Rate-limited queues - Separate queues for context and turns that respect Twilio Sync rate limits
+ * 3. Debounced updates - For turns, combines rapid updates into single sync operations
+ */
 export class SyncQueueService {
-  private queueCounts: Map<string, number> = new Map(); // prevents updates from stacking. Updates occur much more quickly than the update requests resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
-  private queues: Map<string, PQueue> = new Map();
+  private queueCounts: Map<string, number> = new Map(); // map to track pending update counts to prevent stacking
+  private queues: Map<string, PQueue> = new Map(); // map of queues that ensure sequential consistency
 
   public ctxMapPromise: Promise<SyncMap>; // Sync Map instance that stores SessionContext. It is promisfied to ensure the SyncMap is created before the NewCallStreamMsg is sent out
   public turnMapPromise: Promise<SyncMap>; // Sync Map instance that stores SessionContext. It is promisfied to ensure the SyncMap is created before the NewCallStreamMsg is sent out
 
   private log: ReturnType<typeof getMakeLogger>;
 
-  private contextQueue: PQueue; // rate limiting queue
-  private turnQueue: PQueue; // rate limiting queue
+  private contextQueue: PQueue; // rate limiting queue for context updates
+  private turnQueue: PQueue; // rate limiting queue for turn updates
 
+  /**
+   * @constructor
+   * @param {string} callSid - the Twilio call SID
+   * @param {SyncClient} sync - Twilio Sync client instance
+   * @param {Function} getContext - function that returns the current session context
+   * @param {Function} getTurn - function that returns a specific turn record
+   */
   constructor(
     private callSid: string,
     private sync: SyncClient,
@@ -53,6 +74,7 @@ export class SyncQueueService {
     this.ctxMapPromise = this.sync.map(makeContextMapName(this.callSid));
     this.turnMapPromise = this.sync.map(makeTurnMapName(this.callSid));
 
+    // configure rate-limited queue for context updates
     this.contextQueue = new PQueue({
       concurrency: 50, // concurrency doesn't matter
       intervalCap: SYNC_WRITE_RATE_LIMIT * (SYNC_BURST_WINDOW / 1000), // total operations allowed per burst window
@@ -61,6 +83,7 @@ export class SyncQueueService {
       timeout: 15 * 1000,
     });
 
+    // configure rate-limited queue for turn updates
     this.turnQueue = new PQueue({
       concurrency: 50, // concurrency doesn't matter
       intervalCap: SYNC_WRITE_RATE_LIMIT * (SYNC_BURST_WINDOW / 1000), // total operations allowed per burst window
@@ -119,9 +142,12 @@ export class SyncQueueService {
   };
 
   /**
-   * SessionContext is stored in Twilio Sync as a Sync Map with each key is stored as a SyncMapItem. Update context takes a key, queues an update, then grabs the latest version of the local state before the update.
-   * @param key the key of the Session
-   * @returns
+   * Updates a specific property of the session context in Twilio Sync.
+   * Uses two levels of queuing:
+   * 1. Per-key queue ensures sequential updates to the same property
+   * 2. Rate-limited contextQueue ensures Sync rate limits are respected
+   *
+   * @param {K} key - The key of the context property to update
    */
 
   updateContext = async <K extends keyof SessionContext>(
@@ -173,10 +199,15 @@ export class SyncQueueService {
     this.cleanupQueue(queue, queueKey);
   };
 
-  private updateDebounceMap = new Map<string, ReturnType<typeof debounce>>(); // turns are updated very quickly, dozens of times per second. slightly delaying the update greatly reduces the number of sync updates
+  private updateDebounceMap = new Map<string, ReturnType<typeof debounce>>(); // map storing debounced update functions for each turn
   /**
-   * Queues a turn update. It only takes a turnId because the latest version is grabbed from the store immediately before the update request is sent. This prevents update race conditions.
-   * @param turnId
+   * Updates a turn record in Twilio Sync.
+   * Implements all three levels of queuing:
+   * 1. Per-turn queue ensures sequential updates to the same turn
+   * 2. Debounced updates combine rapid LLM streaming updates (dozens per second)
+   * 3. Rate-limited turnQueue ensures Sync rate limits are respected
+   *
+   * @param {string} turnId - ID of the turn to update
    */
   updateTurn = async (turnId: string): Promise<void> => {
     const queueKey = `${this.callSid}:turn:${turnId}`;
@@ -229,8 +260,13 @@ export class SyncQueueService {
   };
 
   /**
-   * Creates a new Sync Map Item for a Turn. The queueKey is identitcal to the updateTurn queueKey and addTurn is given priority. This guarantees the adds occur before the updates.
-   * @param turn
+   * Creates a new Sync Map Item for a Turn.
+   *
+   * Uses two levels of priority:
+   * 1. Per-turn queue with higher priority than updates. addTurn & updateTurn share a queueKey and addTurn is given higher priority to ensure updates are sent only after the SyncMapItem is created.
+   * 2. Rate-limited turnQueue ensures Sync rate limits are respected
+   *
+   * @param {TurnRecord} turn - Turn record to add to Sync
    */
   addTurn = async (turn: TurnRecord): Promise<void> => {
     const queueKey = `${this.callSid}:turn:${turn.id}`;
@@ -265,9 +301,14 @@ export class SyncQueueService {
   };
 
   /**
-   * Deletes the Sync Map Item representing this turn.
-   * @param turnId
+   * Deletes a Turn's Sync Map Item.
+   * Uses two levels of queuing:
+   * 1. Per-turn queue ensures sequential operations
+   * 2. Rate-limited turnQueue ensures Sync rate limits are respected
+   *
+   * @param {string} turnId - ID of the turn to delete
    */
+
   deleteTurn = async (turnId: string): Promise<void> => {
     const queueKey = `${this.callSid}:turn:${turnId}`;
     const queue = this.getQueue(queueKey);
@@ -295,6 +336,11 @@ export class SyncQueueService {
     this.cleanupQueue(queue, queueKey);
   };
 
+  /**
+   * Gets or creates a per-key queue for sequential operations
+   * @param {string} queueKey - The unique key identifying the queue
+   * @returns {PQueue} The queue instance for this key
+   */
   private getQueue = (queueKey: string): PQueue => {
     let queue = this.queues.get(queueKey);
     if (!queue) {
@@ -332,9 +378,8 @@ export class SyncQueueService {
   };
 
   /**
-   * Deletes a PQueue instance
+   * Removes empty queues to prevent memory leaks
    */
-
   private cleanupQueue = (queue: PQueue, queueKey: string): void => {
     if (queue.size !== 0 || queue.pending !== 0) return; // do nothing if queue has items pending
 
