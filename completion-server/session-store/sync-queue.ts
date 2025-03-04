@@ -24,11 +24,8 @@ import debounce from "lodash.debounce";
 /****************************************************
  Sync Queue Service
 ****************************************************/
-// todo: add service-level queue to ensure one call doesn't affect others
-// todo: add global queue to ensure the webhook executions don't affect the other services
-
 // https://www.twilio.com/docs/sync/limits#sync-activity-limits
-const SYNC_WRITE_RATE_LIMIT = 17; // 20 writes per second per object; 2 writes per second if object is >10kb (this could be an issue w/context)
+const SYNC_WRITE_RATE_LIMIT = 17; // maximum: 20 writes per second per object and 2 writes per second if object is >10kb (this could be an issue w/context)
 const SYNC_BURST_WINDOW = 2 * 1000; // 10 second burst window max
 const TURN_UPDATE_DEBOUNCE_MIN = 50; // wait to execute any turn update
 const TURN_UPDATE_DEBOUNCE_MAX = 150; // maximum wait before executing
@@ -37,8 +34,8 @@ export class SyncQueueService {
   private queueCounts: Map<string, number> = new Map(); // prevents updates from stacking. Updates occur much more quickly than the update requests resolve. We skip all update queue items except for the last one to ensure only no redundant updates fire.
   private queues: Map<string, PQueue> = new Map();
 
-  public ctxMapPromise: Promise<SyncMap>;
-  public turnMapPromise: Promise<SyncMap>;
+  public ctxMapPromise: Promise<SyncMap>; // Sync Map instance that stores SessionContext. It is promisfied to ensure the SyncMap is created before the NewCallStreamMsg is sent out
+  public turnMapPromise: Promise<SyncMap>; // Sync Map instance that stores SessionContext. It is promisfied to ensure the SyncMap is created before the NewCallStreamMsg is sent out
 
   private log: ReturnType<typeof getMakeLogger>;
 
@@ -80,10 +77,13 @@ export class SyncQueueService {
 
   private initialize = async () => {
     await this.ctxMapPromise; // SyncMap is created when this resolves
-    await this.turnMapPromise; //SyncMap is created when this resolves
+    await this.turnMapPromise; // SyncMap is created when this resolves
     await this.sendNewCallStreamMsg(); // emit an event that a new call is initialized. used by the ui to detect new calls
   };
 
+  /**
+   * Send a Sync Stream event to notify external systems that a new call has started.
+   */
   sendNewCallStreamMsg = async () => {
     const client = twilio(TWILIO_API_KEY, TWILIO_API_SECRET, { accountSid });
 
@@ -117,6 +117,12 @@ export class SyncQueueService {
       .syncStreams(CALL_STREAM)
       .streamMessages.create({ data: session });
   };
+
+  /**
+   * SessionContext is stored in Twilio Sync as a Sync Map with each key is stored as a SyncMapItem. Update context takes a key, queues an update, then grabs the latest version of the local state before the update.
+   * @param key the key of the Session
+   * @returns
+   */
 
   updateContext = async <K extends keyof SessionContext>(
     key: K,
@@ -168,10 +174,15 @@ export class SyncQueueService {
   };
 
   private updateDebounceMap = new Map<string, ReturnType<typeof debounce>>(); // turns are updated very quickly, dozens of times per second. slightly delaying the update greatly reduces the number of sync updates
+  /**
+   * Queues a turn update. It only takes a turnId because the latest version is grabbed from the store immediately before the update request is sent. This prevents update race conditions.
+   * @param turnId
+   */
   updateTurn = async (turnId: string): Promise<void> => {
     const queueKey = `${this.callSid}:turn:${turnId}`;
     const queue = this.getQueue(queueKey);
 
+    // turns are streamed from the LLM provider. there can be dozens of updates within a second or two. the update requests are debounced to ensure the
     let debouncedFn = this.updateDebounceMap.get(queueKey);
 
     if (!debouncedFn) {
@@ -217,6 +228,10 @@ export class SyncQueueService {
     this.cleanupQueue(queue, queueKey);
   };
 
+  /**
+   * Creates a new Sync Map Item for a Turn. The queueKey is identitcal to the updateTurn queueKey and addTurn is given priority. This guarantees the adds occur before the updates.
+   * @param turn
+   */
   addTurn = async (turn: TurnRecord): Promise<void> => {
     const queueKey = `${this.callSid}:turn:${turn.id}`;
     const queue = this.getQueue(queueKey);
@@ -249,6 +264,10 @@ export class SyncQueueService {
     this.cleanupQueue(queue, queueKey);
   };
 
+  /**
+   * Deletes the Sync Map Item representing this turn.
+   * @param turnId
+   */
   deleteTurn = async (turnId: string): Promise<void> => {
     const queueKey = `${this.callSid}:turn:${turnId}`;
     const queue = this.getQueue(queueKey);
@@ -312,6 +331,10 @@ export class SyncQueueService {
     return queue;
   };
 
+  /**
+   * Deletes a PQueue instance
+   */
+
   private cleanupQueue = (queue: PQueue, queueKey: string): void => {
     if (queue.size !== 0 || queue.pending !== 0) return; // do nothing if queue has items pending
 
@@ -362,8 +385,8 @@ function isSyncRateLimitError(error: any) {
 }
 
 /****************************************************
-   REST API Methods
-  ****************************************************/
+  REST API Methods
+****************************************************/
 /**
  * Updates the status of a Twilio Sync Map Item that holds the "call" details.
  *
