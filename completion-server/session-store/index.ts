@@ -20,6 +20,27 @@ import { TurnStore } from "./turn-store.js";
 
 export type * from "./turn-store.js";
 
+/**
+ * @class SessionStore
+ * @description Manages the state for a voice agent session, including conversation history and
+ * context. The SessionStore is the central component for maintaining conversation state and synchronizing
+ * with external services via Twilio Sync.
+ *
+ * The store consists of two main parts:
+ * 1. Context - Structured state used to dynamically configure the LLM (system instructions, tools, etc.)
+ * 2. Turns - Ordered history of conversation interactions between the bot and human
+ *
+ * Context is synchronized bidirectionally with Twilio Sync, allowing external processes to affect
+ * the conscious LLM by updating the Sync object for the context.
+ *
+ * Turns are only synchronized unidirectionally, i.e. the external systems can subscribe to the turns
+ * but cannot affect them in memory.
+ *
+ * @note Turn objects are proxied, so modifications to turn properties will automatically emit update events.
+ * @note Context objects are NOT proxied. The context must be updated using the setContext method to trigger events.
+ *
+ */
+
 export class SessionStore {
   public context: Partial<SessionContext>; // discrete variables used to dynamically configure the LLM
   public turns: TurnStore; // conversation history
@@ -80,6 +101,7 @@ export class SessionStore {
   // the parkingLot is needed because if turns are added to the store while a human is speaking or a bot is in the middle of a completion run, the bot may think that the issue was already addressed. this ensures these async messages are top of mind for the LLM on the next completion
   private parkingLot: Map<string, HumanTextTurnParams | SystemTurnParams> =
     new Map();
+  // todo: this is a hacky solution that only supports the demo use-case. need to make it generic
   public addParkingLotItem = (params: {
     human?: HumanTextTurnParams;
     system?: SystemTurnParams;
