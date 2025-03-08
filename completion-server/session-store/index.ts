@@ -42,7 +42,11 @@ export type * from "./turn-store.js";
  */
 
 export class SessionStore {
-  public context: Partial<SessionContext>; // discrete variables used to dynamically configure the LLM
+  private _context: Readonly<Partial<SessionContext>>; // discrete variables used to dynamically configure the LLM
+  public get context() {
+    return this._context;
+  }
+
   public turns: TurnStore; // conversation history
 
   private syncClient: SyncClient;
@@ -53,7 +57,7 @@ export class SessionStore {
     this.log = getMakeLogger(callSid);
     this.eventEmitter = new TypedEventEmitter<TurnEvents>();
 
-    this.context = context ?? {};
+    this._context = Object.freeze(context ?? {});
 
     this.turns = new TurnStore(callSid, this.eventEmitter); // turn events are emitted in the turn store
 
@@ -127,18 +131,35 @@ export class SessionStore {
     if (humanTurnParams) this.turns.addHumanText(humanTurnParams);
   };
 
-  /****************************************************
-   Session Context
-  ****************************************************/
-  setContext = (update: Partial<SessionContext>, sendToSync = true) => {
-    const prev = this.context;
+  /**
+   * @method setContext
+   * @description Updates the session context with new values and synchronizes to Twilio Sync.
+   * Only changed values are emitted as events and synchronized.
+   *
+   * @important This is the ONLY way to update context values. Direct mutations to the context object
+   * will NOT emit events or synchronize changes.
+   *
+   * @param {Partial<SessionContext>} update - Partial context object with values to update
+   * @param {boolean} [sendToSync=true] - Whether to send the updates to Twilio Sync
+   * @fires SessionStore#contextUpdated
+   *
+   * @example
+   * // Correct way to update context
+   * sessionStore.setContext({ agentName: "SupportBot" });
+   *
+   * // Incorrect way (won't trigger events or sync)
+   * sessionStore.context.agentName = "SupportBot"; // Don't do this!
+   */
 
-    const context = { ...(this.context ?? {}), ...update };
+  setContext = (update: Partial<SessionContext>, sendToSync = true) => {
+    const prev = this._context;
+
+    const context = Object.freeze({ ...prev, ...update }); // new context
 
     const diff = deepDiff(prev, context);
     if (!diff) return;
 
-    this.context = context;
+    this._context = context;
 
     const keys = diff.map(({ path }) => path![0]) as (keyof SessionContext)[];
     this.eventEmitter.emit("contextUpdated", { context, prev, keys });
@@ -157,6 +178,7 @@ export type StoreEventEmitter = TypedEventEmitter<
   TurnEvents & ContextEvents & HumanInLoop
 >;
 
+// todo: make this generic
 export interface HumanInLoop {
   // tryCompletion will trigger the consciousLLM to attempt a completion. this is a bit hacky but it is done to avoid mixing the concerns of the LLM service with the store
   tryCompletion: () => void;
