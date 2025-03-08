@@ -7,7 +7,7 @@ import type {
 } from "../../agent/types.js";
 import { getMakeLogger } from "../../lib/logger.js";
 import { createRoundRobinPicker } from "../../lib/round-robin-picker.js";
-import { chunkIntoSentences } from "../../lib/strings.js";
+import { chunkIntoSentences } from "../../lib/sentences.js";
 import { interpolateTemplate } from "../../lib/template.js";
 import type { BotToolTurn } from "../../shared/session/turns.js";
 import type { SessionStore } from "../session-store/index.js";

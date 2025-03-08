@@ -2,7 +2,7 @@ import { Router, type RequestHandler } from "express";
 import type { WebsocketRequestHandler } from "express-ws";
 import { getAgentConfig } from "../agent/index.js";
 import { deleteLogger, getMakeLogger } from "../lib/logger.js";
-import { hasEndPunctuation } from "../lib/strings.js";
+import { hasEndPunctuation } from "../lib/sentences.js";
 import { prettyXML } from "../lib/xml.js";
 import {
   makeTransferToFlexHandoff,
