@@ -17,6 +17,20 @@ export const commonToolManifest: ToolDefinition[] = [
       required: [],
     },
   },
+
+  {
+    name: "getOrderByConfirmationNumber",
+    description: "Find an order by its confirmation number.",
+    type: "function",
+    parameters: {
+      type: "object",
+      properties: {
+        orderId: { type: "string", description: "The ID of the order" },
+      },
+      required: ["orderId"],
+    },
+  },
+
   {
     name: "getOrderByConfirmationNumber",
     description: "Find an order by its confirmation number.",
