@@ -8,7 +8,6 @@ router.post(`/getOrderByConfirmationNumber`, async (req, res) => {
   const { call, ...args } = req.body;
   const log = getMakeLogger(call?.callSid);
 
-  log.debug("/server", "getOrderByConfirmationNumber args", args);
   if (!args.orderId) {
     res.status(400).json({ error: "invalid arguments" });
     return;
@@ -26,7 +25,6 @@ router.post(`/getUserOrders`, async (req, res) => {
   const { call, ...args } = req.body;
   const log = getMakeLogger(call?.callSid);
 
-  log.debug("/server", "getUserOrders args ", args, "req.body", req.body);
   if (!args.userId) {
     res.status(400).json({ error: "invalid arguments" });
     return;
