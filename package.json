@@ -6,7 +6,7 @@
   "scripts": {
     "clear:sessions": "tsx scripts/sessions/clear.ts",
     "clear": "yarn clear:sessions",
-    "dev": "nodemon --exec tsx app.ts --delay 1500ms --ignore /ui",
+    "dev": "nodemon --exec tsx app.ts --ext ts,js,json --delay 1500ms --ignore /ui",
     "grok": "tsx scripts/ngrok.ts",
     "setup:apikey": "tsx scripts/setup/api-key.ts",
     "setup:flex": "tsx scripts/setup/flex.ts",
