@@ -50,7 +50,7 @@ interface BaseTool {
 
 export interface RequestToolDefinition extends BaseTool {
   type: "request";
-  endpoint: string;
+  url: string;
 }
 
 export interface FunctionToolDefinition extends BaseTool {
