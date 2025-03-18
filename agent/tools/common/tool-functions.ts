@@ -14,6 +14,8 @@ const twilio = Twilio(TWILIO_API_KEY, TWILIO_API_SECRET, {
   accountSid: TWILIO_ACCOUNT_SID,
 });
 
+// note: request tools are defined with an endpoint url and located in the integration-server
+
 /****************************************************
  Get User By Email or Phone
 ****************************************************/
@@ -39,45 +41,6 @@ export const getUserByEmailOrPhone: ToolExecutor<
 
   if (user) deps.store.setContext({ user }); // set the user in the session context after successfully fetching
   return user;
-};
-
-/****************************************************
- Get Order By Confirmation Number
-****************************************************/
-interface GetOrderByConfirmationNumber {
-  orderId: string;
-}
-
-export const getOrderByConfirmationNumber: ToolExecutor<
-  GetOrderByConfirmationNumber
-> = async (args, deps) => {
-  await sleep(500);
-
-  const orderId = args.orderId.replace(/\-/g, "").toLowerCase();
-
-  return db.orders.find(
-    (order) => order.id.replace(/\-/g, "").toLowerCase() === orderId,
-  );
-};
-
-/****************************************************
- Get User Orders
-****************************************************/
-interface GetUserOrders {
-  userId: string;
-}
-
-export const getUserOrders: ToolExecutor<GetUserOrders> = async (
-  args,
-  deps,
-) => {
-  await sleep(500); // simulate latency
-
-  const userId = args.userId.replace(/\-/g, "").toLowerCase();
-
-  return db.orders.filter(
-    (order) => order.user_id.replace(/\-/g, "").toLowerCase() === userId,
-  );
 };
 
 /****************************************************
