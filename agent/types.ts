@@ -38,7 +38,7 @@ type StrictLevel =
  Tool Definitions
 ****************************************************/
 
-export type ToolDefinition = FunctionToolDefinition; // this is what is ingested by the completion server
+export type ToolDefinition = FunctionToolDefinition | RequestToolDefinition; // this is what is ingested by the completion server
 export type ToolParameters = ObjectPropertySchema;
 
 interface BaseTool {
@@ -46,6 +46,11 @@ interface BaseTool {
   name: string;
   parameters?: ToolParameters;
   fillers?: string[] | null;
+}
+
+export interface RequestToolDefinition extends BaseTool {
+  type: "request";
+  endpoint: string;
 }
 
 export interface FunctionToolDefinition extends BaseTool {
