@@ -3,6 +3,7 @@ import type {
   LLMConfig,
   ToolDefinition,
   ToolDependencies,
+  ToolExecutor,
   ToolResponse,
 } from "../../agent/types.js";
 import { getMakeLogger } from "../../lib/logger.js";
@@ -157,34 +158,37 @@ export class AgentResolver implements IAgentResolver {
     tool: ToolDefinition,
     args: any,
   ): Promise<ToolResponse> => {
-    if (tool.type === "function") {
-      const exec = getToolExecutor(tool.name);
-      if (!exec) {
-        const error = `No executor found for ${tool.name}`;
-        this.log.error("resolver", error);
-        return { status: "error", error };
-      }
+    let exec: ToolExecutor | undefined;
 
-      try {
-        const deps: ToolDependencies = {
-          agent: this,
-          log: this.log,
-          relay: this.relay,
-          store: this.store,
-          tool,
-        };
-
-        return {
-          status: "complete",
-          result: await exec(args, deps),
-        };
-      } catch (error) {
-        return { status: "error", error: `${error}` };
-      }
+    if (tool.type === "request") exec = getToolExecutor("requestToolExecutor");
+    else if (tool.type === "function") exec = getToolExecutor(tool.name);
+    else {
+      this.log.warn("resolver", "unknown tool type: ", tool);
+      return { status: "error", error: "Unknown tool type" };
     }
 
-    this.log.warn("resolver", "unknown tool type: ", tool);
-    return { status: "error", error: "Unknown tool type" };
+    if (!exec) {
+      const error = `No executor found for ${tool.name}`;
+      this.log.error("resolver", error);
+      return { status: "error", error };
+    }
+
+    try {
+      const deps: ToolDependencies = {
+        agent: this,
+        log: this.log,
+        relay: this.relay,
+        store: this.store,
+        tool,
+      };
+
+      return {
+        status: "complete",
+        result: await exec(args, deps),
+      };
+    } catch (error) {
+      return { status: "error", error: `${error}` };
+    }
   };
 
   /****************************************************
