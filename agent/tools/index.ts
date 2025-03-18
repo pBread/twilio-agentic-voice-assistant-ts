@@ -9,6 +9,7 @@ import {
 import { ToolDefinition, ToolExecutor } from "../types.js";
 import * as commonToolFunctions from "./common/tool-functions.js";
 import { commonToolManifest } from "./common/tool-manifest.js";
+import { requestToolExecutor } from "./request-tool.ts";
 
 export const toolManifest: ToolDefinition[] = [
   ...commonToolManifest,
@@ -21,6 +22,7 @@ const toolFunctionRegistry = new Map<string, ToolExecutor<any>>([
     ...commonToolFunctions,
     askAgent,
     transferToFlexAgent,
+    requestToolExecutor,
   }),
 ]);
 
