@@ -10,17 +10,17 @@ export const requestToolExecutor: ToolExecutor = async (args, deps) => {
     throw Error(msg);
   }
 
-  log.debug("tools.request", "args", args, "deps.tool", deps.tool);
-
   try {
+    const body = JSON.stringify({
+      call: deps.store.context.call,
+      ...args,
+    });
+
     const result = await fetch(tool.url, {
       method: "POST",
-      body: JSON.stringify({
-        ...args,
-        call: deps.store.context.call,
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: body,
     }).then((res) => res.json());
-    log.debug("tools.request", "result", result);
 
     return result;
   } catch (error) {
