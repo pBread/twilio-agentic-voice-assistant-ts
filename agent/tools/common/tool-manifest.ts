@@ -2,27 +2,10 @@ import { HOSTNAME } from "../../../shared/env.ts";
 import type { ToolDefinition } from "../../types.js";
 
 export const commonToolManifest: ToolDefinition[] = [
-  // {
-  //   name: "getUserByEmailOrPhone",
-  //   description: "Find a user by their email address or their phone number.",
-  //   type: "function",
-  //   parameters: {
-  //     type: "object",
-  //     properties: {
-  //       email: { type: "string", description: "The user's email address" },
-  //       phone: {
-  //         type: "string",
-  //         description: "The user's phone in e164 format, i.e. +12223330001",
-  //       },
-  //     },
-  //     required: [],
-  //   },
-  // },
   {
     name: "getUserByEmailOrPhone",
     description: "Find a user by their email address or their phone number.",
-    type: "request",
-    url: `http://${HOSTNAME}/debug`,
+    type: "function",
     parameters: {
       type: "object",
       properties: {
@@ -39,7 +22,8 @@ export const commonToolManifest: ToolDefinition[] = [
   {
     name: "getOrderByConfirmationNumber",
     description: "Find an order by its confirmation number.",
-    type: "function",
+    type: "request",
+    url: `http://${HOSTNAME}/getOrderByConfirmationNumber`,
     parameters: {
       type: "object",
       properties: {
@@ -50,21 +34,10 @@ export const commonToolManifest: ToolDefinition[] = [
   },
 
   {
-    name: "getOrderByConfirmationNumber",
-    description: "Find an order by its confirmation number.",
-    type: "function",
-    parameters: {
-      type: "object",
-      properties: {
-        orderId: { type: "string", description: "The ID of the order" },
-      },
-      required: ["orderId"],
-    },
-  },
-  {
     name: "getUserOrders",
     description: "Get all orders for a specific user.",
-    type: "function",
+    type: "request",
+    url: `http://${HOSTNAME}/getUserOrders`,
     parameters: {
       type: "object",
       properties: {
