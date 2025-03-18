@@ -5,9 +5,11 @@ const router = Router();
 
 // receives voice intelligence webhook
 // todo: close the loop w/transcripts
-router.get(`/debug`, async (req, res) => {
+router.use(`/debug`, async (req, res) => {
   const payload = req.body;
-  const log = getMakeLogger(payload.CallSid);
+  const log = getMakeLogger(payload?.call?.callSid);
+
+  log.debug("/debug", "payload", payload);
 
   res.status(200).send({ status: "success" });
 });
