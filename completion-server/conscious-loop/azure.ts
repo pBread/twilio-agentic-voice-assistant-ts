@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { AzureOpenAI } from "openai";
 import type {
   ChatCompletionChunk,
   ChatCompletionMessageParam,
@@ -7,10 +7,10 @@ import type {
 import type { ChatCompletionCreateParamsStreaming } from "openai/src/resources/index.js";
 import type { Stream } from "openai/streaming";
 import { v4 as uuidV4 } from "uuid";
+import { llmConfig } from "../../agent/llm-config.js";
 import type { ToolDefinition, ToolResponse } from "../../agent/types.js";
 import { TypedEventEmitter } from "../../lib/events.js";
 import log, { getMakeLogger } from "../../lib/logger.js";
-import { OPENAI_API_KEY } from "../../shared/env.js";
 import type { OpenAIConfig } from "../../shared/openai.js";
 import type {
   BotTextTurn,
@@ -25,10 +25,15 @@ import type { SessionStore } from "../session-store/index.js";
 import type { ConversationRelayAdapter } from "../twilio/conversation-relay.js";
 import type { ConsciousLoopEvents, IConsciousLoop } from "./types.js";
 
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+const llm = new AzureOpenAI({
+  apiKey: process.env.AZURE_API_KEY,
+  endpoint: process.env.AZURE_ENDPOINT,
+  apiVersion: "2024-10-21",
+  deployment: llmConfig.model,
+});
 const LLM_MAX_RETRY_ATTEMPTS = 3;
 
-export class OpenAIConsciousLoop
+export class AzureOpenAIConsciousLoop
   implements
     IConsciousLoop<
       OpenAIConfig,
@@ -88,7 +93,7 @@ export class OpenAIConsciousLoop
     try {
       const tools = this.getTools();
       args = { ...this.getConfig(), messages, stream: true, tools };
-      this.stream = await openai.chat.completions.create(args);
+      this.stream = await llm.chat.completions.create(args);
     } catch (error) {
       const _args = JSON.stringify({ turns: this.store.turns.list(), ...args });
       this.log.error("llm", "Error attempting completion", error, "\n", _args);

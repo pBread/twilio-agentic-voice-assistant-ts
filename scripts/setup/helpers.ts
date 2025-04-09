@@ -226,7 +226,8 @@ function makeEnv(envVars: dotenv.DotenvFlowParseResult): EnvVars {
 
     TWILIO_AUTH_TOKEN: envVars.TWILIO_AUTH_TOKEN,
 
-    OPENAI_API_KEY: envVars.OPENAI_API_KEY,
+    AZURE_ENDPOINT: envVars.AZURE_ENDPOINT,
+    AZURE_API_KEY: envVars.AZURE_API_KEY,
 
     TWILIO_API_KEY: envVars.TWILIO_API_KEY,
     TWILIO_API_SECRET: envVars.TWILIO_API_SECRET,
@@ -265,7 +266,8 @@ interface EnvVars {
 
   TWILIO_AUTH_TOKEN: string | undefined;
 
-  OPENAI_API_KEY: string | undefined;
+  AZURE_API_KEY: string | undefined;
+  AZURE_ENDPOINT: string | undefined;
 
   TWILIO_API_KEY: string | undefined;
   TWILIO_API_SECRET: string | undefined;

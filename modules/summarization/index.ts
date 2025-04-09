@@ -1,5 +1,5 @@
 import { readFileSync } from "fs";
-import OpenAI from "openai";
+import OpenAI, { AzureOpenAI } from "openai";
 import type { ChatCompletion } from "openai/resources/index.mjs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
@@ -7,13 +7,18 @@ import type { AgentResolver } from "../../completion-server/agent-resolver/index
 import type { SessionStore } from "../../completion-server/session-store/index.js";
 import { getMakeLogger } from "../../lib/logger.js";
 import { interpolateTemplate } from "../../lib/template.js";
-import { OPENAI_API_KEY } from "../../shared/env.js";
+import { AZURE_API_KEY, AZURE_ENDPOINT } from "../../shared/env.js";
 import type { CallSummary } from "./types.js";
+import { llmConfig } from "../../agent/llm-config.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url)); // this directory
 
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
-
+const llm = new AzureOpenAI({
+  apiKey: AZURE_API_KEY,
+  endpoint: AZURE_ENDPOINT,
+  apiVersion: "2024-10-21",
+  deployment: llmConfig.model,
+});
 const instructionsTemplate = readFileSync(
   join(__dirname, "instructions.md"),
   "utf-8",
@@ -53,7 +58,7 @@ export class SummarizationService {
 
     let completion: ChatCompletion;
     try {
-      completion = await openai.chat.completions.create({
+      completion = await llm.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [{ role: "user", content: instructions }],
         response_format: { type: "json_object" },

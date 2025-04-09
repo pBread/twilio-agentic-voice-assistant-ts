@@ -24,8 +24,10 @@ else if (!isValidHostname(HOSTNAME)) {
   );
 }
 
-export const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
-if (!OPENAI_API_KEY) missingRequired("OPENAI_API_KEY");
+export const AZURE_API_KEY = process.env.AZURE_API_KEY as string;
+export const AZURE_ENDPOINT = process.env.AZURE_ENDPOINT as string;
+if (!AZURE_API_KEY) missingRequired("AZURE_API_KEY");
+if (!AZURE_ENDPOINT) missingRequired("AZURE_ENDPOINT");
 
 export const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID as string;
 export const TWILIO_API_KEY = process.env.TWILIO_API_KEY as string;

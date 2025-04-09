@@ -56,7 +56,8 @@ cp ui/.env.example ui/.env
 HOSTNAME=
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN= # The Twilio auth token is only required to run setup script and it's only used to generate TWILIO_API_KEY & TWILIO_API_SECRET. If you provide the key/secret, then the auth token is is not required.
-OPENAI_API_KEY=
+AZURE_API_KEY=
+AZURE_ENDPOINT=
 ```
 
 ### Step 3: Run Setup Script

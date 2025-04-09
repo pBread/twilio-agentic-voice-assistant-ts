@@ -14,7 +14,7 @@ import { DEFAULT_TWILIO_NUMBER, HOSTNAME } from "../shared/env.js";
 import type { CallDetails, SessionContext } from "../shared/session/context.js";
 import { AgentResolver } from "./agent-resolver/index.js";
 import type { AgentResolverConfig } from "./agent-resolver/types.js";
-import { OpenAIConsciousLoop } from "./conscious-loop/openai.js";
+import { AzureOpenAIConsciousLoop } from "./conscious-loop/azure.js";
 import { makeCallDetail } from "./helpers.js";
 import { SessionStore } from "./session-store/index.js";
 import { warmUpSyncSession } from "./session-store/sync-client.js";
@@ -176,7 +176,7 @@ export const conversationRelayWebsocketHandler: WebsocketRequestHandler = (
   const store = new SessionStore(callSid);
 
   const agent = new AgentResolver(relay, store);
-  const consciousLoop = new OpenAIConsciousLoop(store, agent, relay);
+  const consciousLoop = new AzureOpenAIConsciousLoop(store, agent, relay);
 
   const governanceBot = new GovernanceService(store, agent, {
     frequency: 5 * 1000,
