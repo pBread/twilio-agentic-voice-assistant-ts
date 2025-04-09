@@ -10,7 +10,7 @@ import { v4 as uuidV4 } from "uuid";
 import { llmConfig } from "../../agent/llm-config.js";
 import type { ToolDefinition, ToolResponse } from "../../agent/types.js";
 import { TypedEventEmitter } from "../../lib/events.js";
-import log, { getMakeLogger } from "../../lib/logger.js";
+import log, { createLogStreamer, getMakeLogger } from "../../lib/logger.js";
 import type { OpenAIConfig } from "../../shared/openai.js";
 import type {
   BotTextTurn,
@@ -50,12 +50,18 @@ export class AzureOpenAIConsciousLoop
     this.log = getMakeLogger(store.callSid);
     this.eventEmitter = new TypedEventEmitter<ConsciousLoopEvents>();
 
+    this.streamLogger = createLogStreamer(
+      new Date().toLocaleDateString() + new Date().toLocaleTimeString(),
+    );
+
     // the conscious loop can be trigger by certain store events
     this.store.on("tryCompletion", () => {
       if (this.stream) return;
       this.run();
     });
   }
+
+  private streamLogger: ReturnType<typeof createLogStreamer>;
 
   private stream?: Stream<ChatCompletionChunk>;
   private activeCompletionId: string | undefined; // keeps track of
@@ -107,6 +113,8 @@ export class AzureOpenAIConsciousLoop
 
     for await (const chunk of this.stream) {
       const choice = chunk.choices[0];
+      if (!choice) continue;
+
       const delta = choice.delta;
 
       const content =
