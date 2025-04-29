@@ -1,0 +1,1 @@
+this file is here to ensure the logs directory is pushed to git
