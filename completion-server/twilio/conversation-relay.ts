@@ -103,7 +103,13 @@ export class ConversationRelayAdapter<
    * @param {string} [fullText] - The full text if available.
    */
   sendTextToken = (text: string, last: boolean) => {
-    this.dispatch({ type: "text", token: text, last });
+    const typeofText = typeof text;
+    if (typeofText !== "string")
+      console.error(
+        `Error: sendTextToken expects a string, received ${typeofText}. This can cause the websocket to crash.`,
+      );
+
+    this.dispatch({ type: "text", token: text ?? "", last });
   };
 
   /**
