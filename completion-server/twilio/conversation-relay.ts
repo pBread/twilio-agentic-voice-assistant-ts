@@ -115,8 +115,8 @@ export class ConversationRelayAdapter<
   /**
    * Switches the transcription language.
    */
-  switchSTTLanguage = (ttsLanguage: string) =>
-    this.dispatch({ type: "language", ttsLanguage });
+  switchSTTLanguage = (transcriptionLanguage: string) =>
+    this.dispatch({ type: "language", transcriptionLanguage });
 
   /**
    * Switches the spoken language.

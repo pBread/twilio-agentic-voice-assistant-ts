@@ -79,6 +79,7 @@ export class AgentResolver implements IAgentResolver {
 
   getInstructions = (): string => {
     this.assertReady();
+
     return interpolateTemplate(this.instructions, this.store.context);
   };
 
