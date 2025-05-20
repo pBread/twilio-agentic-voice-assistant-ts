@@ -105,7 +105,7 @@ export class OpenAIConsciousLoop
       const delta = choice.delta;
 
       const content =
-        delta.content || (delta.content === null ? "" : delta.content); // bugfix-text: does delta.content being null cause the first iteration to misfire?
+        delta.content || (delta.content === null ? "" : delta.content);
 
       const isTextDelta = content !== undefined;
       const isToolDelta = "tool_calls" in delta;
